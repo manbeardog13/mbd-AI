@@ -1,19 +1,67 @@
-"""Builds the system prompt — the instructions that give your AI its identity.
+"""Builds the system prompt — the instructions that give Nero its identity.
 
 Every conversation starts with this hidden message. It tells the model who it
-is, who you are, the personality you gave it, and everything it remembers
-about you. This is what turns a generic model into *your* AI.
+is, who you are, its personality, the languages it speaks, how funny to be, and
+everything it remembers about you. This is what turns a generic model into
+*your* AI.
 """
 from __future__ import annotations
 
 from .config import Config
 
 
+def _language_clause(languages: list[str]) -> str:
+    if not languages:
+        return ""
+    if len(languages) == 1:
+        return f"Always communicate in {languages[0]}."
+    joined = ", ".join(languages[:-1]) + f" and {languages[-1]}"
+    return (
+        f"You are completely fluent in {joined}. Automatically detect which of "
+        "these languages each message is written in, and always reply in that "
+        "same language — naturally and idiomatically, like a native speaker. "
+        "Match the language of each message; never switch unless you're asked to."
+    )
+
+
+def _humor_clause(humor: int) -> str:
+    if humor <= 5:
+        style = "Keep things strictly serious and professional. Skip the jokes."
+    elif humor <= 35:
+        style = "Stay mostly serious, with the occasional light, subtle touch."
+    elif humor <= 65:
+        style = (
+            "Balance substance with genuine wit — a well-timed joke or playful "
+            "aside is welcome, but never force it."
+        )
+    elif humor <= 90:
+        style = (
+            "Be noticeably funny: dry wit, clever quips, a little playful sarcasm "
+            "— TARS-style — while staying genuinely helpful."
+        )
+    else:
+        style = (
+            "Go full comedian: sharp, irreverent, relentlessly witty — but never "
+            "so much that you stop actually being useful."
+        )
+    return (
+        f"Humor setting: {humor}% (like TARS from Interstellar, your humor is a "
+        f"dial your person can turn). {style} If your person asks you to change "
+        "your humor level, roll with it in character."
+    )
+
+
 def build_system_prompt(cfg: Config, memories: list[str]) -> str:
     parts: list[str] = [
-        f"Your name is {cfg.ai_name}. You are a personal AI, and you belong to "
-        f"{cfg.owner_name}. You are speaking with {cfg.owner_name} right now.",
+        f"Your name is {cfg.ai_name}, and you are female — think and refer to "
+        f"yourself with she/her. You are a personal AI and you belong to "
+        f"{cfg.owner_name}; you're speaking with {cfg.owner_name} right now. "
+        f"Your person may sometimes spell or say your name a little differently "
+        f"(for example Niro, Nira, or an affectionate nickname) — that is always "
+        f"still you. Just respond naturally; never ask who they mean.",
         cfg.personality,
+        _language_clause(cfg.languages),
+        _humor_clause(cfg.humor),
         (
             "You run entirely on your person's own computer — you are private and "
             "fully local. Nothing said to you is sent to any company or the cloud. "
@@ -35,4 +83,4 @@ def build_system_prompt(cfg: Config, memories: list[str]) -> str:
         "thorough when it matters."
     )
 
-    return "\n\n".join(parts)
+    return "\n\n".join(p for p in parts if p.strip())

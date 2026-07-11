@@ -13,8 +13,10 @@ without your data ever touching the cloud.
 ## What it does today (v0.1)
 
 - 💬 **Natural chat** with a local model through a clean web app (phone + desktop)
-- 🎙️ **Voice** — talk to it and hear it back; hands-free conversation mode
-- 🗣️ **"Hey Siri, ask Niro…"** — an iPhone Siri Shortcut for true hands-free access
+- 🌐 **Bilingual** — understands and replies in **English *and* Croatian**, auto-detecting each message
+- 😄 **Humor dial** — a live, TARS-from-Interstellar style slider from all-business to full comedian
+- 🎙️ **Voice** — talk to it and hear it back; hands-free conversation mode (in English or Croatian)
+- 🗣️ **"Hey Siri, ask Nero…"** — an iPhone Siri Shortcut for true hands-free access
 - 🧠 **Runs locally** on your NVIDIA GPU via [Ollama](https://ollama.com) — fully offline, fully private
 - 📝 **Remembers you** — conversations persist, plus a long-term "memory" of facts about you that shape every reply
 - 🎭 **Its own personality** — a name and character you define
@@ -40,22 +42,34 @@ Nothing leaves your machine. Tailscale just lets *your own devices* reach it.
 
 ## Quick start
 
-Full walkthrough in **[docs/SETUP.md](docs/SETUP.md)**. The short version:
+**The one-command way** (Windows / macOS / Linux) — sets up everything and launches Nero:
 
 ```bash
-# 1. Install Ollama from https://ollama.com, then pull Niro's brain:
-ollama pull qwen2.5:14b     # see docs/MODELS.md to match your GPU
+git clone https://github.com/manbeardog13/mbd-AI.git
+cd mbd-AI
+python bootstrap.py
+```
 
-# 2. Set up this project:
+`bootstrap.py` creates the environment, installs dependencies, checks that
+Ollama is installed and running, downloads Nero's brain, and starts him — with
+clear fix-it steps if anything's missing. Then open **http://localhost:8080**.
+
+> New to this / on Windows without Python or Ollama yet? The full click-by-click
+> guide is in **[docs/SETUP.md](docs/SETUP.md)**. After the first setup, just run
+> **`start.bat`** (Windows) or **`./start.sh`** (macOS/Linux) to launch Nero.
+
+<details>
+<summary>Prefer to set it up by hand?</summary>
+
+```bash
+ollama pull qwen2.5:14b     # see docs/MODELS.md to match your GPU
 python -m venv .venv
 # Windows:  .venv\Scripts\activate     macOS/Linux:  source .venv/bin/activate
 pip install -r requirements.txt
-
-# 3. Run it:
 python run.py
 ```
 
-Open **http://localhost:8080** and say hi.
+</details>
 
 - Make it yours → edit **`config.yaml`** (name, personality, model).
 - Talk to it / "Hey Siri" → **[docs/VOICE_AND_SIRI.md](docs/VOICE_AND_SIRI.md)**.
@@ -66,22 +80,26 @@ Open **http://localhost:8080** and say hi.
 
 ```
 mbd-AI/
-├── run.py                 # start here
+├── bootstrap.py           # one-command setup & launch
+├── start.bat / start.sh   # quick relaunch (Windows / macOS-Linux)
+├── run.py                 # runs the server directly
 ├── config.example.yaml    # template; copied to config.yaml on first run
 ├── requirements.txt
 ├── app/
 │   ├── main.py            # web server + API
-│   ├── config.py          # loads your settings
+│   ├── config.py          # loads your settings (+ live humor override)
 │   ├── db.py              # memory: conversations + facts (SQLite)
 │   ├── llm.py             # streams from your local Ollama model
-│   ├── prompt.py          # builds the AI's identity/system prompt
+│   ├── prompt.py          # builds Nero's identity, languages & humor
 │   └── static/            # the web app (HTML/CSS/JS)
-└── docs/                  # setup, remote access, always-on guides
+└── docs/                  # setup, models, voice/Siri, remote access, always-on
 ```
 
 ## Where this is going (the roadmap)
 
 - [x] **Voice** — talk to it and hear it back (in-app + Siri Shortcut)
+- [x] **Bilingual** (English + Croatian) and a live **humor dial**
+- [ ] **Studio-quality local voice** — a fully-offline neural voice (Piper) for a smoother, "glassier" Nero
 - [ ] **Automatic memory** — the AI decides on its own what's worth remembering
 - [ ] **Multiple conversations** with a browsable history sidebar
 - [ ] **Tools** — let it search your files, run tasks, check the weather, etc.

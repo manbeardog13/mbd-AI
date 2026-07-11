@@ -80,13 +80,62 @@ html, body {
 }
 
 .memory-section h3,
-.voice-section h3 {
+.voice-section h3,
+.humor-section h3 {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: var(--muted);
   margin: 0 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+
+/* ---- Humor dial ---- */
+.humor-section {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.humor-val {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+#humor {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.hint {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+
+/* ---- Voice language selector ---- */
+.voice-lang {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: var(--text);
+}
+.voice-lang select {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.voice-lang select:focus { outline: none; border-color: var(--accent); }
 
 /* ---- Voice settings ---- */
 .voice-section {

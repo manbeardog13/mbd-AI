@@ -20,6 +20,10 @@ const els = {
   sidebar: document.getElementById("sidebar"),
   speakToggle: document.getElementById("speak-toggle"),
   handsfreeToggle: document.getElementById("handsfree-toggle"),
+  micLang: document.getElementById("mic-lang"),
+  ttsVoice: document.getElementById("tts-voice"),
+  humor: document.getElementById("humor"),
+  humorVal: document.getElementById("humor-val"),
 };
 
 let aiName = "Your AI";
@@ -197,16 +201,77 @@ async function deleteMemory(id, li) {
 
 const ttsSupported = "speechSynthesis" in window;
 
+// Guess the language so replies are spoken with the right voice. Croatian
+// uses these diacritics; if we see them, speak in Croatian, else English.
+function detectLang(text) {
+  return /[čćđšž]/i.test(text) ? "hr-HR" : "en-US";
+}
+
+// Names that tend to be smooth, natural female voices across Windows/Mac/mobile.
+const FEMALE_HINTS = [
+  "female", "natural", "zira", "jenny", "aria", "hazel", "amy", "eva", "emma",
+  "sonia", "libby", "natasha", "michelle", "samantha", "victoria", "fiona",
+  "tessa", "karen", "moira", "serena", "google uk english female", "google us english",
+];
+
+function femaleScore(name) {
+  const n = (name || "").toLowerCase();
+  let score = FEMALE_HINTS.reduce((s, k) => s + (n.includes(k) ? 1 : 0), 0);
+  if (n.includes("male") && !n.includes("female")) score -= 2; // penalize clearly-male
+  return score;
+}
+
+function allVoices() {
+  return window.speechSynthesis.getVoices() || [];
+}
+
+// Choose the voice to speak `langCode` in: the user's pick if it fits the
+// language, otherwise the smoothest female voice available for that language.
+function chooseVoice(langCode) {
+  const prefix = langCode.slice(0, 2).toLowerCase();
+  const voices = allVoices();
+  const inLang = voices.filter((v) => (v.lang || "").toLowerCase().startsWith(prefix));
+  const pool = inLang.length ? inLang : voices;
+
+  const picked = localStorage.getItem("ttsVoice");
+  if (picked) {
+    const match = pool.find((v) => v.name === picked);
+    if (match) return match;
+  }
+  return [...pool].sort((a, b) => femaleScore(b.name) - femaleScore(a.name))[0] || null;
+}
+
 function speak(text) {
   if (!ttsSupported || !text.trim()) return Promise.resolve();
   return new Promise((resolve) => {
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = 1.0;
+    utter.lang = detectLang(text);
+    const voice = chooseVoice(utter.lang);
+    if (voice) utter.voice = voice;
+    utter.rate = 0.98;   // a touch calmer
+    utter.pitch = 1.05;  // a touch brighter — smoother, "glassier"
     utter.onend = resolve;
     utter.onerror = resolve;
     window.speechSynthesis.speak(utter);
   });
+}
+
+// Fill the voice picker with the installed voices, best female first.
+function populateVoicePicker() {
+  if (!ttsSupported) return;
+  const voices = [...allVoices()].sort((a, b) => femaleScore(b.name) - femaleScore(a.name));
+  if (!voices.length) return;
+  const saved = localStorage.getItem("ttsVoice");
+  els.ttsVoice.innerHTML = "";
+  for (const v of voices) {
+    const opt = document.createElement("option");
+    opt.value = v.name;
+    opt.textContent = `${v.name} (${v.lang})`;
+    if (v.name === saved) opt.selected = true;
+    els.ttsVoice.appendChild(opt);
+  }
+  if (!saved && voices[0]) localStorage.setItem("ttsVoice", voices[0].name);
 }
 
 // ---- Voice: listening (speech-to-text) -------------------------------
@@ -255,6 +320,7 @@ function startListening() {
   if (ttsSupported) window.speechSynthesis.cancel(); // don't hear ourselves
   try {
     els.input.value = "";
+    recognition.lang = els.micLang.value || "en-US"; // English or Croatian
     recognition.start();
     listening = true;
     els.mic.classList.add("listening");
@@ -327,13 +393,60 @@ els.menuToggle.addEventListener("click", () => {
 function loadVoicePrefs() {
   els.speakToggle.checked = localStorage.getItem("speak") === "1";
   els.handsfreeToggle.checked = localStorage.getItem("handsfree") === "1";
-  if (!ttsSupported) els.speakToggle.parentElement.style.display = "none";
-  if (!sttSupported) els.handsfreeToggle.parentElement.style.display = "none";
+  els.micLang.value = localStorage.getItem("micLang") || "en-US";
+  if (!ttsSupported) {
+    els.speakToggle.parentElement.style.display = "none";
+    els.ttsVoice.parentElement.style.display = "none";
+  } else {
+    populateVoicePicker();
+    // Voices often load asynchronously; refresh the list when they arrive.
+    window.speechSynthesis.onvoiceschanged = populateVoicePicker;
+  }
+  if (!sttSupported) {
+    els.handsfreeToggle.parentElement.style.display = "none";
+    els.micLang.parentElement.style.display = "none";
+  }
 }
 els.speakToggle.addEventListener("change", () =>
   localStorage.setItem("speak", els.speakToggle.checked ? "1" : "0"));
 els.handsfreeToggle.addEventListener("change", () =>
   localStorage.setItem("handsfree", els.handsfreeToggle.checked ? "1" : "0"));
+els.micLang.addEventListener("change", () =>
+  localStorage.setItem("micLang", els.micLang.value));
+els.ttsVoice.addEventListener("change", () => {
+  localStorage.setItem("ttsVoice", els.ttsVoice.value);
+  if (els.speakToggle.checked) speak("Hi, this is how I sound."); // instant preview
+});
+
+// ---- Humor dial (live, TARS-style) ----------------------------------
+
+let humorTimer = null;
+
+function reflectHumor(v) {
+  els.humor.value = v;
+  els.humorVal.textContent = v + "%";
+}
+
+async function loadSettings() {
+  try {
+    const s = await (await fetch("/api/settings")).json();
+    if (typeof s.humor === "number") reflectHumor(s.humor);
+  } catch (_) { /* keep default */ }
+}
+
+els.humor.addEventListener("input", () => {
+  els.humorVal.textContent = els.humor.value + "%";
+  clearTimeout(humorTimer);
+  humorTimer = setTimeout(async () => {
+    try {
+      await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ humor: Number(els.humor.value) }),
+      });
+    } catch (_) { /* ignore */ }
+  }, 400);
+});
 
 // ---- Boot -------------------------------------------------------------
 
@@ -341,7 +454,7 @@ els.handsfreeToggle.addEventListener("change", () =>
   loadVoicePrefs();
   await loadConfig();
   showEmptyState();
-  await Promise.all([loadStatus(), loadHistory(), loadMemories()]);
+  await Promise.all([loadStatus(), loadHistory(), loadMemories(), loadSettings()]);
   els.input.focus();
   setInterval(loadStatus, 30000);
 })();

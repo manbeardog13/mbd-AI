@@ -28,6 +28,12 @@
 
       <button id="new-chat" class="btn">＋ New conversation</button>
 
+      <div class="humor-section">
+        <h3>Humor <span id="humor-val" class="humor-val">75%</span></h3>
+        <input type="range" id="humor" min="0" max="100" step="5" value="75" />
+        <p class="hint">TARS-style dial. Slide it any time — 0 is all business, 100 is full comedian.</p>
+      </div>
+
       <div class="voice-section">
         <h3>Voice</h3>
         <label class="toggle">
@@ -38,6 +44,17 @@
           <input type="checkbox" id="handsfree-toggle" />
           <span>Hands-free (auto-listen after each reply)</span>
         </label>
+        <div class="voice-lang">
+          <label for="tts-voice">Her voice</label>
+          <select id="tts-voice"></select>
+        </div>
+        <div class="voice-lang">
+          <label for="mic-lang">Voice input language</label>
+          <select id="mic-lang">
+            <option value="en-US">English</option>
+            <option value="hr-HR">Hrvatski</option>
+          </select>
+        </div>
       </div>
 
       <div class="memory-section">

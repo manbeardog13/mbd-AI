@@ -1,13 +1,13 @@
-# Choosing Niro's Brain (the model)
+# Choosing Nero's Brain (the model)
 
-Niro's intelligence comes from the model it runs. The rule of thumb:
+Nero's intelligence comes from the model it runs. The rule of thumb:
 
 > **More parameters = smarter, but needs more GPU memory (VRAM).**
 
 The magic of this project is that the brain is swappable. Pick a bigger model
-as your hardware allows, and Niro instantly gets smarter — everything else
+as your hardware allows, and Nero instantly gets smarter — everything else
 (memory, voice, personality, remote access) stays exactly the same. As new,
-stronger models are released, you just pull them and point Niro at them.
+stronger models are released, you just pull them and point Nero at them.
 
 ---
 
@@ -50,22 +50,34 @@ and pull any chat/instruct model the same way. Bigger number of "b" (billions)
    ollama pull qwen2.5:14b
    ```
 
-2. **Point Niro at it** — edit `config.yaml`:
+2. **Point Nero at it** — edit `config.yaml`:
 
    ```yaml
    model: "qwen2.5:14b"
    ```
 
-3. **Restart** Niro (`Ctrl+C`, then `python run.py` again).
+3. **Restart** Nero (`Ctrl+C`, then `python run.py` again).
 
 The first message after a switch is a little slow while the model loads into
 your GPU; after that it's fast.
 
 ---
 
+## Bilingual (English & Croatian)
+
+Nero automatically detects whether you're writing in English or Croatian and
+replies in that same language — this is built into her system prompt, so it
+works with any model. `qwen2.5:14b` handles both well.
+
+If Croatian ever feels weak, bigger models generally speak it better. Two
+strong multilingual alternatives worth trying on a 10–12 GB card are
+`gemma2:9b` and `mistral-nemo` (both notably good across European languages).
+Switch the same way as any model (edit `config.yaml`, `ollama pull`, restart).
+You can add or change languages in `config.yaml` under `languages:`.
+
 ## Tuning tips
 
-- **Watch it use the GPU:** run `nvidia-smi` while Niro is replying — you should
+- **Watch it use the GPU:** run `nvidia-smi` while Nero is replying — you should
   see GPU memory used and activity. If it barely touches the GPU, the model may
   be too big and is falling back to CPU (slow) — drop to a smaller one.
 - **Higher-quality quant:** tags like `qwen2.5:14b-instruct-q5_K_M` are a bit
@@ -73,4 +85,4 @@ your GPU; after that it's fast.
 - **Speed vs. smarts:** if replies feel slow, go one size down; if the machine
   has headroom, go one size up. You can change it any time.
 - **Context length:** bigger models with spare VRAM can hold more of your
-  conversation in mind. We'll expose this setting as Niro grows.
+  conversation in mind. We'll expose this setting as Nero grows.

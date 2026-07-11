@@ -6,7 +6,7 @@ two layers to that, and you can use either or both.
 | Layer | What it gives you | Where it works |
 |-------|-------------------|----------------|
 | **In-app voice** | Tap 🎤 to talk; it reads replies aloud | Desktop & Android (mic needs HTTPS — see below). Speaking-aloud works everywhere, including iPhone. |
-| **Siri Shortcut** | *"Hey Siri, ask Niro…"* — fully hands-free | iPhone / iPad / Apple Watch |
+| **Siri Shortcut** | *"Hey Siri, ask Nero…"* — fully hands-free | iPhone / iPad / Apple Watch |
 
 ---
 
@@ -21,6 +21,21 @@ In the web app's left panel, under **Voice**, you'll find:
   back-and-forth conversation.
 
 And in the message bar, the **🎤 mic button** lets you talk instead of type.
+
+### Her voice
+
+Under **Voice** there's a **"Her voice"** picker. Nero defaults to the smoothest
+**female** voice your device has, and she automatically speaks Croatian replies
+with a Croatian voice and English replies with an English one. Pick whichever
+installed voice sounds best to you — your choice is remembered, and you'll hear
+a quick preview when you change it.
+
+> **Want a nicer, "glassier" voice?** The browser uses the voices installed on
+> your device. On Windows 11 you can add high-quality **Natural** neural voices
+> under *Settings → Time & language → Speech → Manage voices → Add voices*
+> (look for names like *Aria*, *Jenny*, *Ava*). Once installed they show up in
+> the picker. A fully-local, studio-quality neural voice (Piper) is on the
+> roadmap — see the README.
 
 ### Enabling the mic over Tailscale (one-time)
 
@@ -51,7 +66,7 @@ On *that* address the 🎤 mic works from your phone and laptop anywhere. (The
 
 ---
 
-## Layer 2 — The Siri Shortcut ("Hey Siri, ask Niro…")
+## Layer 2 — The Siri Shortcut ("Hey Siri, ask Nero…")
 
 This is the closest thing to real Siri. You say a phrase, dictate your question
 using the iPhone's own voice recognition, your AI answers, and your phone speaks
@@ -83,8 +98,8 @@ it back — without opening anything.
    - Set its input to the **Contents of URL** variable (the reply from step ②).
 
 3. Tap the shortcut's name at the top and rename it to something Siri-friendly,
-   like **"Ask Niro"** (use your AI's actual name).
-4. Done. Now say: **"Hey Siri, Ask Niro"** → speak your question → hear the answer.
+   like **"Ask Nero"** (use your AI's actual name).
+4. Done. Now say: **"Hey Siri, Ask Nero"** → speak your question → hear the answer.
 
 > **Tip:** Add the shortcut to your Home Screen or Lock Screen for a one-tap
 > button too (share icon → *Add to Home Screen*).

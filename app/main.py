@@ -22,7 +22,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import db
-from .config import load_config
+from .config import load_config, set_override
 from .llm import check_ollama, stream_chat
 from .prompt import build_system_prompt
 
@@ -46,6 +46,11 @@ class MemoryIn(BaseModel):
     content: str
 
 
+class SettingsIn(BaseModel):
+    humor: int | None = None
+    voice: str | None = None
+
+
 # ---- Pages & basic info ----
 
 @app.get("/")
@@ -57,6 +62,22 @@ def index() -> FileResponse:
 def get_config_info() -> dict:
     cfg = load_config()
     return {"ai_name": cfg.ai_name, "owner_name": cfg.owner_name, "model": cfg.model}
+
+
+@app.get("/api/settings")
+def get_settings() -> dict:
+    cfg = load_config()
+    return {"humor": cfg.humor, "languages": cfg.languages, "voice": cfg.voice}
+
+
+@app.post("/api/settings")
+def update_settings(payload: SettingsIn) -> dict:
+    if payload.humor is not None:
+        set_override("humor", max(0, min(100, int(payload.humor))))
+    if payload.voice is not None:
+        set_override("voice", payload.voice.strip())
+    cfg = load_config()
+    return {"humor": cfg.humor, "voice": cfg.voice}
 
 
 @app.get("/api/status")

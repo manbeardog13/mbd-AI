@@ -20,7 +20,7 @@ Ollama runs the language model on your GPU and handles all the heavy lifting.
 Your GPU's VRAM decides how big a model you can run. Bigger = smarter but heavier.
 
 ```bash
-ollama pull qwen2.5:14b     # Niro's default brain, great on a 10–12 GB GPU
+ollama pull qwen2.5:14b     # Nero's default brain, great on a 10–12 GB GPU
 ```
 
 Pick the right size for your card (full guide in **[MODELS.md](MODELS.md)**):
@@ -86,7 +86,7 @@ python run.py
 You'll see something like:
 
 ```
-  ── Niro ──
+  ── Nero ──
   Brain:  llama3.1:8b  (via Ollama at http://localhost:11434)
   Open:   http://localhost:8080
 ```
