@@ -94,11 +94,16 @@ first) is in [DIRECTIVE.md](DIRECTIVE.md).
   checks pass on the owner's PC.
 - Hardened by **four adversarial multi-lens reviews** (foundation, memory,
   Windows setup, world model) — ~29 real issues caught and fixed before merge.
-- On the RTX 4070: config, gpu, ollama, memory, embeddings, **world_model** all
-  green. `verify_reflection` was storing 0 memories (a reasoning model exhausting
-  its token budget before emitting JSON) — fixed by raising the reflection budget
-  (`REFLECTION_NUM_PREDICT=1024`) and adding raw-output diagnostics; re-verify on
-  the owner's PC is pending before merge.
+- On the RTX 4070: config, gpu, ollama, memory, embeddings, and world_model
+  logic all green. `verify_reflection` stored 0 memories — live diagnostics
+  revealed the real cause: **qwen3:4b ignores `think=False` and reasons in plain
+  prose** (no `<think>` tags), rambling 4000+ chars and never reaching the JSON.
+  Fixed by constraining output with **Ollama's structured-output `format`** (a
+  JSON schema), which makes prose grammatically impossible. Applied to *both*
+  reflection and the world model (same model, same latent bug — the world would
+  silently never have updated on a real machine), and added a **live
+  end-to-end world-model verify** (the offline-only check had masked it).
+  Re-verify on the owner's PC is pending before merge.
 
 **Repo layout**
 ```
