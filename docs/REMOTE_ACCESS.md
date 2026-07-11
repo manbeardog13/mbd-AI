@@ -87,6 +87,6 @@ For this to work when you're away, your PC needs to be **on and running the app*
 ## Want voice / "Hey Siri"?
 
 Once you can reach it over Tailscale, see **[VOICE_AND_SIRI.md](VOICE_AND_SIRI.md)**
-to talk to your AI by voice and set up the *"Hey Siri, ask Nova…"* shortcut on
+to talk to your AI by voice and set up the *"Hey Siri, ask Niro…"* shortcut on
 your iPhone. (Using the microphone from your phone needs HTTPS, which Tailscale
 provides for free — that guide walks you through it.)

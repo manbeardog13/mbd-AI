@@ -6,7 +6,7 @@ two layers to that, and you can use either or both.
 | Layer | What it gives you | Where it works |
 |-------|-------------------|----------------|
 | **In-app voice** | Tap 🎤 to talk; it reads replies aloud | Desktop & Android (mic needs HTTPS — see below). Speaking-aloud works everywhere, including iPhone. |
-| **Siri Shortcut** | *"Hey Siri, ask Nova…"* — fully hands-free | iPhone / iPad / Apple Watch |
+| **Siri Shortcut** | *"Hey Siri, ask Niro…"* — fully hands-free | iPhone / iPad / Apple Watch |
 
 ---
 
@@ -51,7 +51,7 @@ On *that* address the 🎤 mic works from your phone and laptop anywhere. (The
 
 ---
 
-## Layer 2 — The Siri Shortcut ("Hey Siri, ask Nova…")
+## Layer 2 — The Siri Shortcut ("Hey Siri, ask Niro…")
 
 This is the closest thing to real Siri. You say a phrase, dictate your question
 using the iPhone's own voice recognition, your AI answers, and your phone speaks
@@ -83,8 +83,8 @@ it back — without opening anything.
    - Set its input to the **Contents of URL** variable (the reply from step ②).
 
 3. Tap the shortcut's name at the top and rename it to something Siri-friendly,
-   like **"Ask Nova"** (use your AI's actual name).
-4. Done. Now say: **"Hey Siri, Ask Nova"** → speak your question → hear the answer.
+   like **"Ask Niro"** (use your AI's actual name).
+4. Done. Now say: **"Hey Siri, Ask Niro"** → speak your question → hear the answer.
 
 > **Tip:** Add the shortcut to your Home Screen or Lock Screen for a one-tap
 > button too (share icon → *Add to Home Screen*).

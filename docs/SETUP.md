@@ -86,7 +86,7 @@ python run.py
 You'll see something like:
 
 ```
-  ── Nova ──
+  ── Niro ──
   Brain:  llama3.1:8b  (via Ollama at http://localhost:11434)
   Open:   http://localhost:8080
 ```

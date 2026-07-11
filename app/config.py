@@ -50,7 +50,7 @@ def load_config() -> Config:
         data = yaml.safe_load(f) or {}
 
     return Config(
-        ai_name=data.get("ai_name", "Nova"),
+        ai_name=data.get("ai_name", "Niro"),
         owner_name=data.get("owner_name", "friend"),
         personality=data.get("personality", "You are a helpful personal AI.").strip(),
         model=data.get("model", "llama3.1:8b"),

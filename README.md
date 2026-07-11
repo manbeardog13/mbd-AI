@@ -14,7 +14,7 @@ without your data ever touching the cloud.
 
 - 💬 **Natural chat** with a local model through a clean web app (phone + desktop)
 - 🎙️ **Voice** — talk to it and hear it back; hands-free conversation mode
-- 🗣️ **"Hey Siri, ask Nova…"** — an iPhone Siri Shortcut for true hands-free access
+- 🗣️ **"Hey Siri, ask Niro…"** — an iPhone Siri Shortcut for true hands-free access
 - 🧠 **Runs locally** on your NVIDIA GPU via [Ollama](https://ollama.com) — fully offline, fully private
 - 📝 **Remembers you** — conversations persist, plus a long-term "memory" of facts about you that shape every reply
 - 🎭 **Its own personality** — a name and character you define
