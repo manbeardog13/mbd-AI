@@ -2,11 +2,12 @@
 
 *A living, honest snapshot of where Nero stands — kept current as she evolves.
 It doubles as a self-contained handoff you can give to an external advisor
-(e.g. ChatGPT) to get sharper guidance: it captures what actually exists today,
-the known gaps, the roadmap, and pointed open questions. Blunt, specific
-feedback is welcome — what to cut as readily as what to add.*
+(e.g. ChatGPT) to get sharper guidance: what actually exists today, the known
+gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
+welcome — what to cut as readily as what to add.*
 
-*Last updated: v0.1 foundation (pre-merge), before the Memory & Identity core.*
+*Last updated: Phase 1 complete (identity + memory core), running on real
+hardware (RTX 4070). Next: Phase 2 — World Model.*
 
 ---
 
@@ -18,133 +19,119 @@ Reachable from anywhere over a private encrypted network (Tailscale).
 
 The explicit goal is to grow from "a chatbot" into a **cognitive companion**.
 **North Star: continuity** — she should wake up already knowing what the owner
-was doing and quietly help without being asked.
+was doing and quietly help without being asked. The full architecture is in
+[VISION.md](VISION.md); the governing philosophy (local-first, verification-
+first) is in [DIRECTIVE.md](DIRECTIVE.md).
 
-Guiding principle: the **model (brain) is swappable**, so the architecture is
-built to outlive any single model. Build the "mind" once; upgrade the brain over
-time.
-
-## 2. The owner & hard constraints
+## 2. The owner & hardware
 
 - **Owner:** Toni.
-- **Wants:** feels like a real person (not a command bot); accessible "like Siri"
-  (voice, hands-free); no login friction; **bilingual English + Croatian**
-  (auto-detect per message); a **TARS-from-Interstellar humor dial**; a smooth
-  **female voice**.
-- **Hardware:** Windows 10/11 PC, single **NVIDIA GPU with ~10–12 GB VRAM**.
-- **Constraints:** local-only / private; minimal-friction setup; must run well on
-  that GPU; swappable model.
+- **Wants:** feels like a real person; accessible "like Siri" (voice, hands-free);
+  no login friction; **bilingual English + Croatian**; a **TARS humor dial**; a
+  female voice.
+- **Hardware (confirmed):** Windows 11 PC, **NVIDIA RTX 4070 (12 GB VRAM)**,
+  **64 GB RAM**. Everything is tuned to this.
 
-## 3. Current architecture (v0.1 — what actually exists today)
+## 3. Current architecture (what actually exists today)
 
 **Stack**
-- **Backend:** Python **FastAPI**; async streaming via `httpx`.
-- **Brain:** **Ollama** running **`qwen3:14b`** locally (swappable via config).
-- **Memory store:** **SQLite** (stdlib `sqlite3`).
-- **Frontend:** a single **vanilla HTML/CSS/JS** web app (no framework, no build
-  step) — responsive, works on phone + desktop, installable (PWA manifest).
-- **Access:** Tailscale (device-only; Tailscale *is* the auth — no app login).
-- **Setup:** one-command `bootstrap.py` (creates venv, installs deps, checks
-  Ollama, pulls the model, launches); `start.bat`/`start.sh` to relaunch.
+- **Backend:** Python **FastAPI**, async streaming via `httpx`.
+- **Models (all local via Ollama):**
+  - chat → **`qwen3:14b`** (~9 GB, fits fully on the 4070)
+  - reflection → **`qwen3:4b`** (unloaded right after each use so it doesn't
+    crowd VRAM)
+  - embeddings → **`nomic-embed-text`** (768-dim)
+  - "Thinking" (Qwen3 `<think>` reasoning) is **disabled by default** for direct
+    replies and clean reflection output; a `thinking: true` config flag re-enables it.
+- **Storage:** **SQLite** (conversations, messages, memories).
+- **Frontend:** a single **vanilla HTML/CSS/JS** web app (responsive, PWA-installable).
+- **Access:** local network + Tailscale (device-only; no app login).
+- **Setup:** one-command `bootstrap.py` (venv + deps + pulls all 3 models + launch).
 
-**How her personality/behavior works today**
-- On **every message**, the backend builds a **system prompt** from config +
-  memory. It contains: identity (name, she/her, tolerance for name
-  variants/nicknames), a personality paragraph, a **language directive**
-  (auto-detect and reply in English or Croatian), a **humor directive** derived
-  from a 0–100 dial, and any long-term facts.
-- **Humor dial** is live-adjustable from the web UI (a slider), persisted
-  server-side; it reshapes tone from "all business" to "full comedian."
+**Identity & behavior** (built from config into the system prompt each turn)
+- Name Nero (she/her, tolerant of name variants), owner Toni, personality.
+- **Goals** and **principles** she weighs decisions against.
+- **Confidence-based answering** ("I know" / "I think…" / "I'm not sure").
+- **Bilingual** — auto-detects English/Croatian per message and replies in kind.
+- **Humor dial** (0–100, TARS-style, adjustable live in the UI).
 
-**Memory today (important — this is the seed, not the vision yet)**
-- **Conversation history:** stored in SQLite; the last N messages are injected as
-  context each turn.
-- **Long-term "facts":** a single flat table of strings, injected **wholesale**
-  into every system prompt. The owner can add/remove them in the UI.
-- There is **no** layering, **no** confidence scores, **no** decay, **no**
-  automatic capture, and **no** semantic/embedding retrieval yet. Memory
-  currently grows the prompt roughly linearly.
+**Memory (this is now real, not a stub)**
+- **Typed memories** (semantic · episodic · preference · experience · procedural),
+  each with **confidence, importance, timestamp, source, entities, embedding,
+  last-reinforced**. Safe schema migration for older DBs.
+- **Retrieval:** ranks by **confidence × time-decay × relevance**; relevance is
+  semantic (cosine over `nomic-embed`) when embeddings are comparable, else a
+  lexical/recency fallback — always on one comparable scale. Only the top-k most
+  relevant memories are injected into the prompt.
+- **Decay:** unreinforced memories fade (half-life); recalled/repeated ones are
+  reinforced toward confidence 1.
+- **Reflection:** after each exchange, a background pass (small model, `think=false`)
+  extracts durable facts, **dedupes** against existing memories (text + embedding),
+  and reinforces or adds. Writes are serialized (lock) to avoid duplicate races.
+- **Voice:** browser TTS (prefers a female voice; speaks Croatian for Croatian
+  replies), STT (EN/HR), an iPhone **Siri Shortcut**.
+- **Observability:** `GET /api/metrics` exposes retrieval latency + counts.
 
-**Voice today**
-- **Text-to-speech:** browser `speechSynthesis` — prefers a female voice; picks a
-  Croatian voice for Croatian replies and English for English (by detecting
-  Croatian diacritics); user can pick the voice; a small pitch/rate tweak for
-  smoothness.
-- **Speech-to-text:** browser Web Speech API mic (English/Croatian selectable).
-  Requires an HTTPS/secure context (provided via `tailscale serve`).
-- **iPhone:** a Siri Shortcut ("Hey Siri, ask Nero…") posts to the same API and
-  speaks the reply — true hands-free.
-- Voice quality is limited by the OS's installed voices. A fully-local **neural**
-  voice (Piper) is planned for a "glassier" sound.
+**Quality process (per the Directive)**
+- A **verification framework** — `python verify/verify_everything.py` runs
+  `verify_{gpu,ollama,config,memory,embeddings,reflection}.py`; each subsystem
+  ships its own check. Currently **6/6 green on the owner's PC**.
+- Hardened by **three adversarial multi-lens reviews** (foundation, memory,
+  Windows setup) — ~22 real issues caught and fixed before merge.
 
 **Repo layout**
 ```
-bootstrap.py            one-command setup & launch
-start.bat / start.sh    quick relaunch
-run.py                  runs the FastAPI server
-config.example.yaml     template -> config.yaml (private) on first run
-app/
-  main.py               FastAPI routes (chat stream, memories, settings, status)
-  config.py             loads config + live overrides (humor/voice) from settings.json
-  db.py                 SQLite: conversations, messages, facts
-  llm.py                streams from local Ollama
-  prompt.py             builds the system prompt (identity, languages, humor, memories)
-  static/               the web app (index.html, app.js, style.css)
-docs/                   SETUP, MODELS, VOICE_AND_SIRI, REMOTE_ACCESS, ALWAYS_ON, VISION
+bootstrap.py · start.bat/.sh · run.py · config.example.yaml
+app/  main.py · config.py · db.py · memory.py · llm.py · prompt.py · static/
+verify/  verify_*.py           docs/  DIRECTIVE · VISION · PROJECT_BRIEF · MODELS · SETUP · …
+tests/   test_memory.py        PROGRESS.md
 ```
 
-## 4. Current limitations / known gaps
+## 4. Known gaps / not built yet
 
-- Memory is **flat** — no layers, confidence, decay, or retrieval; it just gets
-  dumped into the prompt, which won't scale.
-- **No reflection/learning loop** — she doesn't yet decide what to remember.
-- **No world model** — she re-infers context every turn.
-- **No tools / no planner** — she can only talk, not act.
-- **No embeddings / semantic search.**
-- **No observability** (no view into memory hits, latency, reasoning).
-- **Single conversation thread** (multi-conversation is planned).
-- Voice is only as good as the OS voices (neural TTS planned).
+- **No world model / continuity** — she re-infers context each turn (next up).
+- **Knowledge graph** — memories store `entities`, but they aren't yet *connected*
+  into a graph.
+- **No Insight Engine** — she remembers, but doesn't yet synthesize patterns.
+- **No tools / planner / skills** — she can only converse, not act.
+- **No proactivity / desktop sensing** — purely reactive.
+- **Single active conversation thread** (multi-conversation not built).
+- **Retrieval is a linear scan** over SQLite (fine at current scale; no vector DB yet).
+- **Observability is minimal** (`/api/metrics`); no dashboard.
+- **Voice** is limited to OS voices (a local neural voice, Piper, is planned).
 
-## 5. The roadmap (see [VISION.md](VISION.md) for the full architecture)
+## 5. Roadmap
 
-Phased, each phase its own reviewed change:
-
-- **Phase 1 (next):** *Memory & Identity core* — layered memory (semantic /
-  episodic / preference) with **confidence + decay**; **reflection** so Nero
-  decides what to remember after an exchange; a dedicated **identity file**
-  (persona + **goals** + **principles**); **confidence-based answers**; live
-  "thinking…" status.
-- **Phase 2:** *World model* (continuity) + wiring the full cognitive loop
-  (Perceive → Retrieve → Update world model → Plan → Act → Reflect → Learn).
-- **Phase 3:** tools + a **planner**; a **skills plugin** system; an
-  **observability dashboard**.
-- **Later:** desktop **sensing + proactivity + attention scoring** (opt-in,
-  local); slow personality drift.
+- ✅ **Done:** v0.1 foundation · Phase 1 (identity: goals/principles/confidence +
+  the full memory subsystem) · Development Directive + verification framework ·
+  Qwen3 defaults · thinking disabled.
+- 🔜 **Next — Phase 2:** **World Model** (continuity) + wiring the full cognitive
+  loop (perceive → retrieve → update world model → plan → act → reflect → learn).
+- 🗓️ **Then:** knowledge-graph connections · **Insight Engine** (Second Brain) ·
+  tools + planner · skills plugins · observability dashboard.
+- 🗓️ **Later (opt-in, local):** desktop sensing + proactivity + attention · a
+  local neural voice (Piper) · multi-agent · digital twin.
 
 ## 6. Open questions where outside advice is most valuable
 
-1. **Local memory architecture** — best lightweight design for layered memory
-   with confidence + decay + retrieval for a single-user local app? SQLite + a
-   local embedding model (e.g. `nomic-embed-text` via Ollama)? How should the
-   decay/reinforcement math work?
-2. **Keeping the prompt small** — retrieval + periodic summarization strategy so
-   only relevant memories are injected as the store grows.
-3. **Reflection cadence & cost** — every turn / end-of-session / importance-
-   triggered? Worth a smaller/faster model just for reflection + extraction?
-   How to dedupe/merge memories.
-4. **World model** — how to represent and continuously update it cheaply, locally.
-5. **Continuity mechanics** — session summaries, a "since we last spoke" digest?
-6. **Proactivity on Windows** — safe, privacy-respecting context sensing (active
-   window, battery, GPU, files) + an attention/importance design.
-7. **Voice** — is Piper right for a local, low-latency, "glassy" female voice
-   with Croatian support? Streaming TTS approach?
-8. **Bilingual reliability** — pitfalls making one model reliably switch EN/HR;
-   better Croatian-capable models at ~12 GB.
-9. **Evaluation** — lightweight way to tell if a change makes her better / more
-   "alive."
-10. **Over-engineering check** — the two highest-ROI next steps, and what to cut.
+1. **World model** — best representation + a *cheap* way to keep it continuously
+   updated locally (structured JSON updated by an LLM step?).
+2. **Continuity mechanics** — session summaries, a "since we last spoke" digest?
+3. **Knowledge graph** — how to connect memories (entities/relations) so it's
+   genuinely useful; when to graduate from a linear scan to a vector DB.
+4. **Insight Engine** — how often to run pattern-analysis, and how to surface
+   insights without becoming noisy.
+5. **Reflection tuning** — is a 4B model good enough at extraction? Dedup
+   thresholds? Should importance/confidence be model-set or heuristic?
+6. **Proactivity on Windows** — a safe, private way to sense context (active app,
+   files, GPU) + an attention/importance model that helps without nagging.
+7. **Voice** — is **Piper** the right local, low-latency, female (Croatian-capable)
+   neural voice? Best way to stream it.
+8. **Evaluation** — for a *personal* companion, how do we tell if a change makes
+   her genuinely better / more "alive"?
+9. **Over-engineering check** — the two highest-ROI next steps, and what to cut.
 
 ---
 
-*Maintenance note: update this brief at the end of each phase so it always
+*Maintenance note: refresh this brief at the end of each phase so it always
 reflects reality — it's the fastest way to onboard a human or an AI advisor.*
