@@ -99,7 +99,9 @@ mbd-AI/
 
 > The full architecture — turning Nero from a chatbot into a **cognitive
 > companion** (layered memory, identity, reflection, world model, continuity) —
-> is mapped in **[docs/VISION.md](docs/VISION.md)**.
+> is mapped in **[docs/VISION.md](docs/VISION.md)**. A living snapshot of the
+> current state (and open questions) lives in
+> **[docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md)**.
 
 
 - [x] **Voice** — talk to it and hear it back (in-app + Siri Shortcut)
