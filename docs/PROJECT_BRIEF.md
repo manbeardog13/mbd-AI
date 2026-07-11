@@ -6,9 +6,10 @@ It doubles as a self-contained handoff you can give to an external advisor
 gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
 
-*Last updated: Phase 2 — World Model built & hardened (in review, PR #7),
-verified on real hardware (RTX 4070). Owner's chosen build order: finish Phase 2
-→ real-time voice agent → computer control → apply the new design system.*
+*Last updated: Phase 2 (World Model) **merged & verified 7/7** on the RTX 4070.
+Now building the **voice agent — Increment 1: local neural English voice**
+(Kokoro), in review (PR #8). Owner's build order: voice → computer control →
+apply the new design system.*
 
 ---
 
@@ -124,8 +125,11 @@ tests/   test_memory.py        PROGRESS.md
 - **Single active conversation thread** (multi-conversation not built).
 - **Retrieval is a linear scan** over SQLite (fine at current scale; no vector DB yet).
 - **Observability is minimal** (`/api/metrics`); no dashboard.
-- **Voice** is limited to browser OS voices + push-to-talk; the real-time local
-  voice agent (continuous listen, barge-in, Piper/Kokoro) is the next build.
+- **Voice** — a *local neural English voice* (Kokoro) now exists server-side
+  (`app/tts.py`, `POST /api/speak`), but it isn't wired into the chat UI yet
+  (still browser TTS there), there's no local STT (faster-whisper) yet, and the
+  real-time loop (continuous listen, barge-in) and Croatian (MMS-TTS) are still
+  to come.
 
 ## 5. Roadmap
 
@@ -135,15 +139,14 @@ tests/   test_memory.py        PROGRESS.md
   → reflect → learn) · Development Directive + verification framework · Qwen3
   defaults · thinking disabled.
 - 🔜 **Next (owner's chosen order):**
-  1. **Finish Phase 2** — merge the World Model PR once `verify_reflection` is
-     confirmed green on the owner's PC.
-  2. **Real-time voice agent** — a first-class, designed-in pillar: local
-     VAD → STT → conversation engine → TTS, continuous listening, barge-in,
-     expressive local voice, <1s latency (Silero + faster-whisper + Piper/Kokoro).
-  3. **Computer control** — a *local "Cowork"*: see the screen, drive
+  1. **Real-time voice agent** (in progress) — Increment 1 (local neural English
+     voice, Kokoro) is in review (PR #8). Then: wire it into the chat UI, local
+     STT (faster-whisper), the real-time loop (continuous listen + barge-in via
+     Silero VAD, <1s latency), and Croatian (Meta MMS-TTS).
+  2. **Computer control** — a *local "Cowork"*: see the screen, drive
      mouse/keyboard, act in real apps, with hard safety rails. Rides on the
      **Tool System + planner**, so that foundation lands here.
-  4. **Apply the Design System v1.0** to the live frontend (violet, floating
+  3. **Apply the Design System v1.0** to the live frontend (violet, floating
      cards, responsive desktop/tablet/mobile — previewed as an artifact).
 - 🗓️ **Then:** intent router + thought budget · **Experience Engine** (workflows,
   not just facts) · knowledge-graph connections · **Insight Engine** (Second Brain)
