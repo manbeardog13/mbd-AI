@@ -22,7 +22,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import db, memory
+from . import db, memory, world_model
 from .config import load_config, set_override
 from .llm import check_ollama, embed_text, stream_chat
 from .prompt import build_system_prompt
@@ -131,7 +131,9 @@ async def chat(payload: ChatIn) -> StreamingResponse:
     # Recall the memories most relevant to this message (off the event loop).
     retrieved = await asyncio.to_thread(memory.retrieve, cfg, text)
     memories = [m["content"] for m in retrieved]
-    system_prompt = build_system_prompt(cfg, memories)
+    # Nero's live picture of what Toni's working on, for continuity.
+    world = world_model.render(db.get_world(), cfg.owner_name)
+    system_prompt = build_system_prompt(cfg, memories, world=world)
     history_msgs = db.get_messages(conv_id, limit=cfg.history_limit)
 
     messages = [{"role": "system", "content": system_prompt}, *history_msgs]
@@ -156,8 +158,10 @@ async def chat(payload: ChatIn) -> StreamingResponse:
             reply = "".join(collected).strip()
             if reply:
                 db.add_message(conv_id, "assistant", reply)
-                # Reflect in the background — Nero decides what to remember.
+                # In the background: decide what to remember, and update the
+                # live picture of what Toni's working on.
                 _spawn(asyncio.to_thread(memory.reflect, cfg, text, reply))
+                _spawn(asyncio.to_thread(world_model.update, cfg, text, reply))
 
     return StreamingResponse(generate(), media_type="text/plain; charset=utf-8")
 
@@ -180,10 +184,16 @@ def create_memory(payload: MemoryIn) -> dict:
     return {"id": mem_id, "content": content}
 
 
+@app.get("/api/world")
+def world_state() -> dict:
+    """Nero's live picture of what Toni is working on (for the Home dashboard)."""
+    return {"world": db.get_world()}
+
+
 @app.get("/api/metrics")
 def metrics() -> dict:
-    """Lightweight observability into the memory subsystem."""
-    return {"memory": memory.METRICS}
+    """Lightweight observability into the memory + world-model subsystems."""
+    return {"memory": memory.METRICS, "world": world_model.METRICS}
 
 
 @app.delete("/api/memories/{memory_id}")

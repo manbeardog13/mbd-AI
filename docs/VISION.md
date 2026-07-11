@@ -188,25 +188,35 @@ own PR so we stay in control.
 |---|---|---|---|
 | Identity file: persona + goals + principles | ✅ done | ★★★ | Low |
 | Confidence-based answering | ✅ done | ★★☆ | Low |
-| **Layered memory: types, confidence, decay, timestamps, entities** | **Building** | ★★★ | Med |
-| **Automatic memory via reflection** (she decides what to keep) | **Building** | ★★★ | Med |
-| Semantic retrieval via `nomic-embed` (graceful fallback) | Building | ★★★ | Med |
+| Layered memory (types · confidence · decay · entities) | ✅ done | ★★★ | Med |
+| Automatic memory via reflection | ✅ done | ★★★ | Med |
+| Semantic retrieval via `nomic-embed` (graceful fallback) | ✅ done | ★★★ | Med |
+| **World model / continuity** (resume knowing where you left off) | **Building** | ★★★ | Med |
+| Confidence *by source* (explicit / observed / inferred / guessed) | Next | ★★★ | Low |
 | Intelligent silence / live "thinking…" status | Next | ★★☆ | Low |
-| Knowledge graph — memories connect (entities + relations) | Soon | ★★★ | Med |
-| World model / continuous world state (continuity) | Soon | ★★★ | Med |
-| Full cognitive-loop wiring | Soon | ★★★ | Med |
-| **Insight Engine / "Second Brain"** — patterns → proactive advice | Soon ★ | ★★★ | Med-High |
-| Temporal + experience memory · Life Journal | Soon | ★★★ | Med |
-| Executive functions (planner, prioritizer, scheduler) + tool planner | Soon | ★★★ | Med-High |
-| Skills as living plugins | Soon | ★★★ | Med |
-| Observability dashboard + trust layer (per-answer metadata) | Soon | ★★☆ | Med |
-| Local model ecosystem (+Whisper, Piper, vision/OCR, reasoning model) | Incremental | ★★★ | Med |
-| Desktop senses + attention model + background intelligence | Later | ★★★ | High |
-| Multi-agent architecture (planner/research/code/reflection roles) | Later | ★★☆ | Med |
-| Predictive assistance + curiosity engine | Later | ★★★ | High |
-| Personal digital twin · autonomous self-improvement | Later | ★★☆ | High |
-| Internal search over everything · decision assistant | Later | ★★★ | High |
-| Internal state variables · slow personality drift | Later | ★☆☆ | Low-Med |
+| Tool system + planner (executive functions) | Soon | ★★★ | Med-High |
+| Local voice pipeline (Piper/Kokoro) — interruptible, barge-in | Soon | ★★★ | Med-High |
+| **Concept Engine + Identity Graph** ("understand", not just "remember") | Soon ★ | ★★★ | Med-High |
+| Initiative Engine (scored proactivity: importance/novelty/urgency/cost) | Soon | ★★★ | Med |
+| Insight Engine + **weekly self-improvement report** | Soon ★ | ★★★ | Med-High |
+| Memory compression (100 convos → themes → lessons → personality model) | Soon | ★★★ | Med |
+| Dream Cycle 🌙 (idle overnight consolidation) | Soon | ★★★ | Med |
+| Relationship / knowledge graph | Soon | ★★★ | Med |
+| Observability dashboard + World-Model Viewer (dev mode) + trust layer | Soon | ★★☆ | Med |
+| Desktop-companion UI (Home dashboard · Memory Explorer · living background) | Soon | ★★★ | High |
+| Internal monologue (hidden planning before answering) | Soon | ★★☆ | Low |
+| Desktop senses + attention + background intelligence | Later | ★★★ | High |
+| Multi-agent specialization · predictive assistance · digital twin | Later | ★★☆ | High |
+
+★ = highest-leverage differentiators (per the second-opinion review).
+
+**From the second-opinion review, adopted:** the *"understand > remember"* framing
+(**Concept Engine** + **Identity Graph**), **confidence-by-source**, memory
+compression, the **Dream Cycle**, **initiative scoring**, the weekly
+**self-improvement report**, and a **desktop-companion UI** (Home dashboard,
+Memory Explorer, World-Model Viewer). **Deliberately not adopted:** cloud voice
+"during development" — it would break the local-first / privacy pillars. Voice is
+prioritized sooner but stays **100% local** (Piper/Kokoro, not ElevenLabs/OpenAI).
 
 ---
 

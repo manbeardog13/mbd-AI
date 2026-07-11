@@ -78,7 +78,7 @@ def _confidence_clause() -> str:
     )
 
 
-def build_system_prompt(cfg: Config, memories: list[str]) -> str:
+def build_system_prompt(cfg: Config, memories: list[str], world: str = "") -> str:
     parts: list[str] = [
         f"Your name is {cfg.ai_name}, and you are female — think and refer to "
         f"yourself with she/her. You are a personal AI and you belong to "
@@ -98,6 +98,9 @@ def build_system_prompt(cfg: Config, memories: list[str]) -> str:
             "That privacy is a promise; treat what you're told with care."
         ),
     ]
+
+    if world.strip():
+        parts.append(world)
 
     if memories:
         facts = "\n".join(f"- {m}" for m in memories)

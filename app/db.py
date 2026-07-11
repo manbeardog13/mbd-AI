@@ -73,6 +73,12 @@ def init_db() -> None:
             last_reinforced TEXT NOT NULL
         );
 
+        CREATE TABLE IF NOT EXISTS world_state (
+            key        TEXT PRIMARY KEY,
+            value      TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+
         CREATE INDEX IF NOT EXISTS idx_messages_conversation
             ON messages(conversation_id, id);
         """
@@ -268,5 +274,45 @@ def all_memories(include_embeddings: bool = True) -> list[dict]:
 def delete_memory(memory_id: int) -> None:
     conn = _connect()
     conn.execute("DELETE FROM memories WHERE id = ?", (memory_id,))
+    conn.commit()
+    conn.close()
+
+
+# --------------------------------------------------------------------------
+# World state (Nero's live picture of what her person is working on)
+# --------------------------------------------------------------------------
+
+def get_world() -> dict:
+    """Return the whole world state as {key: value}, in insertion/key order."""
+    conn = _connect()
+    rows = conn.execute(
+        "SELECT key, value FROM world_state ORDER BY key ASC"
+    ).fetchall()
+    conn.close()
+    return {r["key"]: r["value"] for r in rows}
+
+
+def upsert_world(updates: dict) -> None:
+    """Merge updates into the world state. A blank/None value clears that key."""
+    if not updates:
+        return
+    now = _now()
+    conn = _connect()
+    for key, value in updates.items():
+        key = str(key).strip()
+        if not key:
+            continue
+        text = "" if value is None else str(value).strip()
+        if not text:
+            conn.execute("DELETE FROM world_state WHERE key = ?", (key,))
+        else:
+            conn.execute(
+                """
+                INSERT INTO world_state (key, value, updated_at) VALUES (?, ?, ?)
+                ON CONFLICT(key) DO UPDATE SET value = excluded.value,
+                                               updated_at = excluded.updated_at
+                """,
+                (key, text, now),
+            )
     conn.commit()
     conn.close()

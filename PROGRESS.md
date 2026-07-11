@@ -8,8 +8,12 @@ For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
 ---
 
 ## 🔨 Building now
-- **Intelligent silence** — live "thinking… / searching memory…" status (small).
-- Next subsystem: **World model / continuity** (Phase 2).
+- **Phase 2 — World Model / continuity** 🧪 — a live, structured picture of what
+  Toni's working on (project · task · working context · blockers · next steps ·
+  recent focus). Nero updates it in the background after each exchange and reads
+  it at the start of every reply, so she resumes *knowing where you left off*.
+  Ships with unit tests, an offline self-test (`verify_world_model.py`),
+  `/api/world` + `/api/metrics`, and a `world_model_enabled` config switch.
 
 ## 🧪 Built, in review — [PR #2](https://github.com/manbeardog13/mbd-AI/pull/2)
 - **Memory core** ✅ — layered/typed memory (semantic · episodic · preference ·
@@ -29,8 +33,9 @@ For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
 - Hardened by an adversarial multi-lens review (**6 issues fixed** before merge)
 
 ## ⏭️ Next
-- Finish + self-verify the memory core; **intelligent silence** ("thinking…" status)
-- **World model / continuity** and the full cognitive loop (Phase 2)
+- **Tool System** (Phase 3) — give Nero real actions: read/write files, run
+  commands, search the web, all local and permissioned
+- **Intelligent silence** — live "thinking… / searching memory…" status (small)
 
 ## 🗓️ Planned (see VISION.md for full sequencing)
 - Insight Engine (Second Brain) · tools + planner · skills plugins · observability

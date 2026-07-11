@@ -65,6 +65,7 @@ class Config:
     memory_min_score: float
     reflection_enabled: bool
     reflection_model: str
+    world_model_enabled: bool
 
 
 def ensure_config() -> None:
@@ -162,4 +163,8 @@ def load_config() -> Config:
             else bool(data.get("reflection_enabled"))
         ),
         reflection_model=(data.get("reflection_model") or ""),
+        world_model_enabled=(
+            True if data.get("world_model_enabled") is None
+            else bool(data.get("world_model_enabled"))
+        ),
     )
