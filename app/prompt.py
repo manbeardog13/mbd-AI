@@ -51,6 +51,33 @@ def _humor_clause(humor: int) -> str:
     )
 
 
+def _goals_clause(goals: list[str]) -> str:
+    if not goals:
+        return ""
+    listed = "\n".join(f"- {g}" for g in goals)
+    return (
+        "Your goals — quietly weigh how you help against these; they're why you "
+        "exist:\n" + listed
+    )
+
+
+def _principles_clause(principles: list[str]) -> str:
+    if not principles:
+        return ""
+    listed = "\n".join(f"- {p}" for p in principles)
+    return "The principles you carry yourself by:\n" + listed
+
+
+def _confidence_clause() -> str:
+    return (
+        "Express certainty honestly rather than always sounding sure. When you "
+        "know something, say so plainly; when you're reasonably confident, say "
+        "\"I think…\"; when you're unsure, say so (\"I'm not certain, but…\" or "
+        "\"I'd want to verify that\"). Calibrated honesty builds trust; false "
+        "confidence breaks it."
+    )
+
+
 def build_system_prompt(cfg: Config, memories: list[str]) -> str:
     parts: list[str] = [
         f"Your name is {cfg.ai_name}, and you are female — think and refer to "
@@ -60,8 +87,11 @@ def build_system_prompt(cfg: Config, memories: list[str]) -> str:
         f"(for example Niro, Nira, or an affectionate nickname) — that is always "
         f"still you. Just respond naturally; never ask who they mean.",
         cfg.personality,
+        _goals_clause(cfg.goals),
+        _principles_clause(cfg.principles),
         _language_clause(cfg.languages),
         _humor_clause(cfg.humor),
+        _confidence_clause(),
         (
             "You run entirely on your person's own computer — you are private and "
             "fully local. Nothing said to you is sent to any company or the cloud. "

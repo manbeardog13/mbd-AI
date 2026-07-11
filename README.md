@@ -92,7 +92,8 @@ mbd-AI/
 │   ├── llm.py             # streams from your local Ollama model
 │   ├── prompt.py          # builds Nero's identity, languages & humor
 │   └── static/            # the web app (HTML/CSS/JS)
-└── docs/                  # setup, models, voice/Siri, remote access, always-on
+├── verify/                # self-check scripts — `python verify/verify_everything.py`
+└── docs/                  # setup, models, voice/Siri, remote access, DIRECTIVE, VISION
 ```
 
 ## Where this is going (the roadmap)
@@ -101,7 +102,8 @@ mbd-AI/
 > companion** (layered memory, identity, reflection, world model, continuity) —
 > is mapped in **[docs/VISION.md](docs/VISION.md)**. A living snapshot of the
 > current state (and open questions) lives in
-> **[docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md)**.
+> **[docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md)**. The governing philosophy —
+> local-first, verification-first — is in **[docs/DIRECTIVE.md](docs/DIRECTIVE.md)**.
 
 
 - [x] **Voice** — talk to it and hear it back (in-app + Siri Shortcut)
