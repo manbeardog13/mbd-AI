@@ -131,8 +131,15 @@ async def chat(payload: ChatIn) -> StreamingResponse:
     # Recall the memories most relevant to this message (off the event loop).
     retrieved = await asyncio.to_thread(memory.retrieve, cfg, text)
     memories = [m["content"] for m in retrieved]
-    # Nero's live picture of what Toni's working on, for continuity.
-    world = world_model.render(db.get_world(), cfg.owner_name)
+    # Nero's live picture of what Toni's working on, for continuity. Best-effort
+    # and off the event loop: continuity is optional, so a world-read hiccup
+    # (e.g. the DB briefly locked) must degrade to "no block", never 500 the chat.
+    try:
+        world = await asyncio.to_thread(
+            lambda: world_model.render(db.get_world(), cfg.owner_name)
+        )
+    except Exception:  # noqa: BLE001 - never break the reply over continuity
+        world = ""
     system_prompt = build_system_prompt(cfg, memories, world=world)
     history_msgs = db.get_messages(conv_id, limit=cfg.history_limit)
 
@@ -188,6 +195,20 @@ def create_memory(payload: MemoryIn) -> dict:
 def world_state() -> dict:
     """Nero's live picture of what Toni is working on (for the Home dashboard)."""
     return {"world": db.get_world()}
+
+
+@app.delete("/api/world")
+def clear_world_state() -> dict:
+    """Wipe Nero's live picture — a clean-slate reset (owner remediation)."""
+    db.clear_world()
+    return {"ok": True}
+
+
+@app.delete("/api/world/{key}")
+def clear_world_field(key: str) -> dict:
+    """Clear a single field from Nero's live picture."""
+    db.delete_world_key(key)
+    return {"ok": True}
 
 
 @app.get("/api/metrics")

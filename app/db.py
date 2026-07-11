@@ -316,3 +316,19 @@ def upsert_world(updates: dict) -> None:
             )
     conn.commit()
     conn.close()
+
+
+def delete_world_key(key: str) -> None:
+    """Remove a single field from the world state."""
+    conn = _connect()
+    conn.execute("DELETE FROM world_state WHERE key = ?", (str(key).strip(),))
+    conn.commit()
+    conn.close()
+
+
+def clear_world() -> None:
+    """Wipe the whole world state — a clean-slate reset for the owner."""
+    conn = _connect()
+    conn.execute("DELETE FROM world_state")
+    conn.commit()
+    conn.close()

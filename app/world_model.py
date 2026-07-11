@@ -15,15 +15,24 @@ from __future__ import annotations
 import json
 import logging
 import re
+import threading
 
 from . import db
 from .config import Config
 from .llm import complete_chat
-from .memory import strip_think
+from .memory import _first_balanced_json, strip_think
 
 log = logging.getLogger("nero.world")
 
 METRICS: dict[str, float] = {"updates": 0, "fields_changed": 0}
+# Serializes the in-process metric counters across concurrent background
+# updates (the world_state writes themselves are serialized by SQLite).
+_lock = threading.RLock()
+
+
+def _bump(key: str, n: float = 1) -> None:
+    with _lock:
+        METRICS[key] = METRICS.get(key, 0) + n
 
 # The fields Nero tracks, in the order they read best.
 KEY_LABELS = {
@@ -70,34 +79,21 @@ def _extract_json_object(text: str) -> dict | None:
     except json.JSONDecodeError:
         pass
 
-    start = text.find("{")
-    if start == -1:
-        return None
-    depth = 0
-    in_str = False
-    esc = False
-    for i in range(start, len(text)):
-        ch = text[i]
-        if in_str:
-            if esc:
-                esc = False
-            elif ch == "\\":
-                esc = True
-            elif ch == '"':
-                in_str = False
-        elif ch == '"':
-            in_str = True
-        elif ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0:
-                try:
-                    value = json.loads(text[start:i + 1])
-                    return value if isinstance(value, dict) else None
-                except json.JSONDecodeError:
-                    return None
-    return None
+    value = _first_balanced_json(text, "{", "}")
+    return value if isinstance(value, dict) else None
+
+
+def _clean_value(value) -> str:
+    """Normalize a field value to a single short line.
+
+    Collapses all internal whitespace/newlines to single spaces (so an embedded
+    newline can't break render()'s "- Label: value" contract or inject an
+    unlabelled line into the system prompt) and caps the length. A structured
+    value is rendered as readable JSON rather than a Python repr.
+    """
+    if isinstance(value, (dict, list)):
+        value = json.dumps(value, ensure_ascii=False)
+    return " ".join(str(value).split())[:200]
 
 
 def parse_world_updates(raw: str) -> dict:
@@ -113,7 +109,7 @@ def parse_world_updates(raw: str) -> dict:
         if value is None:
             updates[key] = ""  # explicit clear
         else:
-            updates[key] = str(value).strip()[:200]
+            updates[key] = _clean_value(value)
     return updates
 
 
@@ -158,8 +154,8 @@ def update(cfg: Config, user_text: str, assistant_text: str) -> dict:
         updates = parse_world_updates(raw)
         if updates:
             db.upsert_world(updates)
-            METRICS["updates"] += 1
-            METRICS["fields_changed"] += len(updates)
+            _bump("updates", 1)
+            _bump("fields_changed", len(updates))
             summary["updated"] = len(updates)
             log.info("world update -> %s", list(updates.keys()))
     except Exception as exc:  # noqa: BLE001 - never break chat

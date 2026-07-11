@@ -63,6 +63,61 @@ def test_parse_ignores_non_dict_json():
     assert world_model.parse_world_updates('["a","b"]') == {}
 
 
+def test_parse_recovers_after_leading_brace_prose():
+    # A small model may echo a brace-containing example before the real object;
+    # the parser must skip past it, not abort on the first balanced span.
+    updates = world_model.parse_world_updates(
+        'Here is the update {see below}: {"current_project":"Nero"} done.'
+    )
+    assert updates == {"current_project": "Nero"}
+
+
+def test_parse_recovers_after_unbalanced_brace():
+    # A stray unclosed brace (e.g. an emoticon) before the JSON must not swallow it.
+    updates = world_model.parse_world_updates('Sure :{ {"current_task":"ship"}')
+    assert updates == {"current_task": "ship"}
+
+
+def test_parse_drops_unterminated_think_guess():
+    # A think block truncated by the token budget must not leak its draft JSON
+    # into the authoritative world state.
+    updates = world_model.parse_world_updates(
+        '<think>maybe {"current_project": "wrong guess"}'
+    )
+    assert updates == {}
+
+
+def test_parse_structured_value_is_readable_not_repr():
+    # A dict/list value must render as JSON, never a Python repr with single quotes.
+    updates = world_model.parse_world_updates(
+        '{"working_context":{"file":"wm.py","line":100}}'
+    )
+    val = updates["working_context"]
+    assert "'" not in val and '"file"' in val
+
+
+def test_parse_collapses_multiline_value():
+    # An embedded newline must be collapsed so it can't inject an unlabelled line
+    # into the system prompt.
+    updates = world_model.parse_world_updates(
+        '{"next_steps":"1. finish parser\\n2. write tests"}'
+    )
+    assert "\n" not in updates["next_steps"]
+    assert updates["next_steps"] == "1. finish parser 2. write tests"
+
+
+def test_render_is_one_line_per_field():
+    # Even if a value once held newlines, the rendered block stays one line/field.
+    updates = world_model.parse_world_updates(
+        '{"blockers":"a\\nb\\nc","current_task":"x"}'
+    )
+    rendered = world_model.render(updates, "Toni")
+    body = rendered.split(":\n", 1)[1] if ":\n" in rendered else rendered
+    # Two field bullets → exactly two lines, no stray continuation lines.
+    assert len([ln for ln in body.splitlines() if ln.startswith("- ")]) == 2
+    assert "\nb\n" not in rendered
+
+
 def test_render_empty_is_blank():
     assert world_model.render({}, "Toni") == ""
     # A state with only empty/blank values is also blank.
