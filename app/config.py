@@ -155,6 +155,9 @@ def load_config() -> Config:
         memory_top_k=_num(data.get("memory_top_k"), 6, int),
         memory_half_life_days=_num(data.get("memory_half_life_days"), 30.0, float),
         memory_min_score=_num(data.get("memory_min_score"), 0.05, float),
-        reflection_enabled=bool(data.get("reflection_enabled", True)),
+        reflection_enabled=(
+            True if data.get("reflection_enabled") is None
+            else bool(data.get("reflection_enabled"))
+        ),
         reflection_model=(data.get("reflection_model") or ""),
     )

@@ -44,6 +44,50 @@ def test_keyword_overlap():
     assert memory._keyword_overlap("", "anything") == 0.0
 
 
+def test_parse_trailing_brackets():
+    # A valid array followed by bracketed prose must still parse (greedy-regex bug).
+    tricky = '[{"content":"Toni plays guitar","type":"semantic"}]\nNote: [nothing else durable]'
+    out = memory.parse_memories(tricky)
+    assert len(out) == 1 and out[0]["content"] == "Toni plays guitar"
+
+
+def test_score_scale_is_unified():
+    cfg = type("C", (), {"memory_half_life_days": 30.0})()
+    now = datetime.now(timezone.utc).isoformat()
+    embedded_relevant = {"confidence": 0.7, "importance": 0.5, "last_reinforced": now,
+                         "content": "prefers Python", "embedding": [0, 1, 0]}
+    nonembedded_irrelevant = {"confidence": 0.7, "importance": 0.5, "last_reinforced": now,
+                              "content": "weather was nice", "embedding": None}
+    q = [0, 1, 0]  # query resembles the embedded memory
+    # An embedded, relevant memory must outrank a non-embedded irrelevant one.
+    assert memory.score_memory(embedded_relevant, cfg, "language", q) > \
+        memory.score_memory(nonembedded_irrelevant, cfg, "language", q)
+
+
+def test_dimension_mismatch_falls_back():
+    cfg = type("C", (), {"memory_half_life_days": 30.0})()
+    now = datetime.now(timezone.utc).isoformat()
+    # Stored embedding is 2-dim (old model), query is 4-dim (new model): must not
+    # crash and must fall back to lexical relevance (> 0 because "hiking" overlaps).
+    mem = {"confidence": 0.8, "importance": 0.5, "last_reinforced": now,
+           "content": "enjoys hiking on weekends", "embedding": [1, 0]}
+    score = memory.score_memory(mem, cfg, "what hiking does Toni enjoy", [0.1, 0.2, 0.3, 0.4])
+    assert score > 0
+
+
+def test_reflection_enabled_blank_defaults_true():
+    import tempfile
+    from app import config as cfgmod
+    tmp = Path(tempfile.mkdtemp()) / "config.yaml"
+    tmp.write_text("reflection_enabled:\nmodel: qwen2.5:14b\n", encoding="utf-8")
+    old = cfgmod.CONFIG_PATH
+    cfgmod.CONFIG_PATH = tmp
+    try:
+        assert cfgmod.load_config().reflection_enabled is True
+    finally:
+        cfgmod.CONFIG_PATH = old
+
+
 def _run() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for fn in tests:

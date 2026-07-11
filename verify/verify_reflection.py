@@ -16,25 +16,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app import db, memory  # noqa: E402
 from app.config import load_config  # noqa: E402
 
-HOST = "http://127.0.0.1:11434"
 
-
-def server_up() -> bool:
+def server_up(host: str) -> bool:
     try:
-        with urllib.request.urlopen(HOST + "/api/tags", timeout=4) as r:
+        with urllib.request.urlopen(host.rstrip("/") + "/api/tags", timeout=4) as r:
             return r.status == 200
     except Exception:
         return False
 
 
 def main() -> int:
-    if not server_up():
+    cfg = load_config()
+    if not server_up(cfg.ollama_host):
         print("  . Ollama not reachable — skipping (see verify_ollama).")
         return 2
 
     db.DB_PATH = Path(tempfile.mkdtemp()) / "verify_reflection.db"
     db.init_db()
-    cfg = load_config()
 
     result = memory.reflect(
         cfg,

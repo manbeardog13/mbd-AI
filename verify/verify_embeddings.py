@@ -15,23 +15,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.config import load_config  # noqa: E402
 from app.llm import embed_text  # noqa: E402
 
-HOST = "http://127.0.0.1:11434"
 
-
-def server_up() -> bool:
+def server_up(host: str) -> bool:
     try:
-        with urllib.request.urlopen(HOST + "/api/tags", timeout=4) as r:
+        with urllib.request.urlopen(host.rstrip("/") + "/api/tags", timeout=4) as r:
             return r.status == 200
     except Exception:
         return False
 
 
 def main() -> int:
-    if not server_up():
+    cfg = load_config()
+    if not server_up(cfg.ollama_host):
         print("  . Ollama not reachable — skipping (see verify_ollama).")
         return 2
 
-    cfg = load_config()
     vec = embed_text(cfg, "Toni is building a local AI called Nero.")
     if not vec:
         print(f"  XX embeddings returned nothing.")

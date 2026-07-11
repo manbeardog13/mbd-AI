@@ -20,6 +20,7 @@ import json
 import logging
 import math
 import re
+import threading
 import time
 from datetime import datetime, timezone
 
@@ -29,7 +30,11 @@ from .llm import complete_chat, embed_text
 
 log = logging.getLogger("nero.memory")
 
-# Simple in-process metrics (surfaced later by the observability dashboard).
+# Serializes memory writes + metric updates across background reflection threads
+# (reflection runs in a worker thread per reply). Reentrant so helpers can nest.
+_lock = threading.RLock()
+
+# Simple in-process metrics (surfaced by /api/metrics and the future dashboard).
 METRICS: dict[str, float] = {
     "retrievals": 0,
     "last_retrieval_ms": 0.0,
@@ -39,6 +44,12 @@ METRICS: dict[str, float] = {
     "memories_reinforced": 0,
 }
 
+
+def _bump(key: str, n: float = 1) -> None:
+    with _lock:
+        METRICS[key] = METRICS.get(key, 0) + n
+
+
 _SIMILAR_THRESHOLD = 0.90  # cosine ≥ this ⇒ treat as the same memory (reinforce)
 
 
@@ -46,9 +57,11 @@ _SIMILAR_THRESHOLD = 0.90  # cosine ≥ this ⇒ treat as the same memory (reinf
 
 def _parse_ts(ts: str) -> datetime:
     try:
-        return datetime.fromisoformat(ts)
+        dt = datetime.fromisoformat(ts)
     except (TypeError, ValueError):
         return datetime.now(timezone.utc)
+    # Always return an aware datetime so arithmetic with now(utc) never raises.
+    return dt if dt.tzinfo is not None else dt.replace(tzinfo=timezone.utc)
 
 
 def decay_factor(last_reinforced: str, half_life_days: float) -> float:
@@ -84,15 +97,30 @@ def _keyword_overlap(query: str, content: str) -> float:
 
 # ---- retrieval --------------------------------------------------------
 
+def _relevance(mem: dict, query: str, query_emb: list[float] | None) -> float:
+    """Relevance of a memory to the query, in [0, 1], on ONE comparable scale.
+
+    Uses semantic similarity only when the stored embedding is actually
+    comparable to the query embedding (same model ⇒ same dimension); otherwise —
+    no query embedding, no stored embedding, or a dimension mismatch after an
+    embed-model change — it falls back to lexical overlap. This keeps embedded
+    and non-embedded memories rankable against each other.
+    """
+    emb = mem.get("embedding")
+    if query_emb and emb and len(query_emb) == len(emb):
+        return max(0.0, cosine(query_emb, emb))
+    return _keyword_overlap(query, mem["content"])
+
+
 def score_memory(mem: dict, cfg: Config, query: str, query_emb: list[float] | None) -> float:
-    """Rank score for one memory. Confidence × decay, boosted by relevance."""
+    """Rank score for one memory: (confidence × decay × importance) × relevance.
+
+    A floor on the relevance term keeps a strongly-held memory from vanishing
+    when nothing matches, while still ranking it below genuinely relevant ones.
+    """
     base = mem["confidence"] * decay_factor(mem["last_reinforced"], cfg.memory_half_life_days)
     base *= 0.5 + 0.5 * mem.get("importance", 0.5)
-    if query_emb and mem.get("embedding"):
-        sim = cosine(query_emb, mem["embedding"])
-        return base * (0.35 + 0.65 * max(0.0, sim))
-    # Fallback relevance: lexical overlap.
-    return base * (1.0 + 0.5 * _keyword_overlap(query, mem["content"]))
+    return base * (0.3 + 0.7 * _relevance(mem, query, query_emb))
 
 
 def retrieve(cfg: Config, query: str, k: int | None = None) -> list[dict]:
@@ -111,9 +139,10 @@ def retrieve(cfg: Config, query: str, k: int | None = None) -> list[dict]:
     scored.sort(key=lambda pair: pair[0], reverse=True)
     top = [m for score, m in scored[:k] if score >= cfg.memory_min_score]
 
-    METRICS["retrievals"] += 1
-    METRICS["last_retrieval_ms"] = (time.monotonic() - started) * 1000.0
-    METRICS["last_retrieved"] = len(top)
+    with _lock:
+        METRICS["retrievals"] += 1
+        METRICS["last_retrieval_ms"] = (time.monotonic() - started) * 1000.0
+        METRICS["last_retrieved"] = len(top)
     log.info(
         "retrieve q=%r -> %d/%d memories (embed=%s, %.0fms)",
         query[:48], len(top), len(mems), bool(query_emb), METRICS["last_retrieval_ms"],
@@ -145,17 +174,58 @@ def _reflection_user_prompt(owner: str, user_text: str, assistant_text: str) -> 
     )
 
 
+def _extract_json_array(text: str) -> list | None:
+    """Pull the first JSON array out of a model reply, tolerating fences/prose.
+
+    Robust to trailing bracketed prose (e.g. `[...]. Note: [nothing else]`) by
+    scanning for the first *balanced* `[...]` span rather than greedily matching
+    to the last `]`.
+    """
+    text = text.strip()
+    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.IGNORECASE).strip()
+
+    try:
+        whole = json.loads(text)
+        if isinstance(whole, list):
+            return whole
+    except json.JSONDecodeError:
+        pass
+
+    start = text.find("[")
+    if start == -1:
+        return None
+    depth = 0
+    in_str = False
+    esc = False
+    for i in range(start, len(text)):
+        ch = text[i]
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+        elif ch == '"':
+            in_str = True
+        elif ch == "[":
+            depth += 1
+        elif ch == "]":
+            depth -= 1
+            if depth == 0:
+                try:
+                    value = json.loads(text[start:i + 1])
+                    return value if isinstance(value, list) else None
+                except json.JSONDecodeError:
+                    return None
+    return None
+
+
 def parse_memories(raw: str) -> list[dict]:
     """Parse the model's JSON array of memories, tolerating extra prose/fences."""
     if not raw:
         return []
-    match = re.search(r"\[.*\]", raw, re.DOTALL)
-    if not match:
-        return []
-    try:
-        data = json.loads(match.group(0))
-    except json.JSONDecodeError:
-        return []
+    data = _extract_json_array(raw)
     if not isinstance(data, list):
         return []
 
@@ -190,31 +260,39 @@ def _to_float(value, default: float) -> float:
 
 
 def store_memory(cfg: Config, item: dict) -> str:
-    """Add a reflected memory, or reinforce a near-duplicate. Returns the action."""
+    """Add a reflected memory, or reinforce a near-duplicate. Returns the action.
+
+    The dedup read + write are done under `_lock` so two concurrent reflections
+    can't both pass the duplicate check and insert the same fact twice. The slow
+    embedding call is done *before* taking the lock.
+    """
     emb = embed_text(cfg, item["content"])
-    existing = db.all_memories(include_embeddings=True)
-
-    # Dedup: exact-ish text match, or high embedding similarity.
     norm = item["content"].strip().lower()
-    for m in existing:
-        same_text = m["content"].strip().lower() == norm
-        similar = bool(emb and m.get("embedding")) and cosine(emb, m["embedding"]) >= _SIMILAR_THRESHOLD
-        if same_text or similar:
-            db.reinforce_memory(m["id"])
-            METRICS["memories_reinforced"] += 1
-            return "reinforced"
 
-    db.add_memory(
-        content=item["content"],
-        mtype=item["type"],
-        importance=item["importance"],
-        confidence=item["confidence"],
-        source="reflection",
-        entities=item["entities"],
-        embedding=emb,
-    )
-    METRICS["memories_added"] += 1
-    return "added"
+    with _lock:
+        for m in db.all_memories(include_embeddings=True):
+            same_text = m["content"].strip().lower() == norm
+            stored = m.get("embedding")
+            similar = (
+                bool(emb and stored and len(emb) == len(stored))
+                and cosine(emb, stored) >= _SIMILAR_THRESHOLD
+            )
+            if same_text or similar:
+                db.reinforce_memory(m["id"])
+                METRICS["memories_reinforced"] += 1
+                return "reinforced"
+
+        db.add_memory(
+            content=item["content"],
+            mtype=item["type"],
+            importance=item["importance"],
+            confidence=item["confidence"],
+            source="reflection",
+            entities=item["entities"],
+            embedding=emb,
+        )
+        METRICS["memories_added"] += 1
+        return "added"
 
 
 def reflect(cfg: Config, user_text: str, assistant_text: str) -> dict:
@@ -241,7 +319,7 @@ def reflect(cfg: Config, user_text: str, assistant_text: str) -> dict:
         for item in parse_memories(raw):
             action = store_memory(cfg, item)
             summary[action] = summary.get(action, 0) + 1
-        METRICS["reflections"] += 1
+        _bump("reflections")
         log.info("reflect -> +%d added, %d reinforced", summary["added"], summary["reinforced"])
     except Exception as exc:  # noqa: BLE001 - reflection must never break chat
         log.warning("reflection failed: %s", exc)
