@@ -305,6 +305,10 @@ def reflect(cfg: Config, user_text: str, assistant_text: str) -> dict:
         summary["skipped"] = True
         return summary
     try:
+        reflect_model = cfg.reflection_model or cfg.model
+        # If reflection uses a *separate* model, unload it right after so it
+        # doesn't sit in VRAM alongside the (larger) chat model on a small GPU.
+        keep_alive = "0" if reflect_model != cfg.model else None
         raw = complete_chat(
             cfg,
             [
@@ -313,8 +317,9 @@ def reflect(cfg: Config, user_text: str, assistant_text: str) -> dict:
                     cfg.owner_name, user_text, assistant_text)},
             ],
             temperature=0.0,
-            model=cfg.reflection_model or cfg.model,
+            model=reflect_model,
             num_predict=400,
+            keep_alive=keep_alive,
         )
         for item in parse_memories(raw):
             action = store_memory(cfg, item)

@@ -145,7 +145,7 @@ def load_config() -> Config:
         languages=languages,
         humor=humor,
         voice=(str(overrides.get("voice") or data.get("voice") or "female").strip() or "female"),
-        model=(data.get("model") or "qwen2.5:14b"),
+        model=(data.get("model") or "qwen3:14b"),
         ollama_host=(data.get("ollama_host") or "http://localhost:11434"),
         history_limit=_num(data.get("history_limit"), 20, int),
         temperature=_num(data.get("temperature"), 0.7, float),

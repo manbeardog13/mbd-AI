@@ -64,12 +64,12 @@ voice: "female"
 # ---- The Brain (model) ----
 
 # The Ollama model Nero thinks with. Pull it first with:  ollama pull <name>
-# Default below is tuned for a 10–12 GB NVIDIA GPU. See docs/MODELS.md to
-# match your exact card (bigger = smarter but needs more VRAM):
-#   qwen2.5:7b      ~5 GB VRAM   — fast, capable (for 8 GB cards)
-#   qwen2.5:14b     ~9-10 GB     — noticeably smarter (10-12 GB, the default)
-#   qwen2.5:32b     ~20 GB       — excellent (24 GB+ cards)
-model: "qwen2.5:14b"
+# Default below is tuned for a 12 GB NVIDIA GPU (e.g. RTX 4070). See
+# docs/MODELS.md to match your card (bigger = smarter but needs more VRAM):
+#   qwen3:8b     ~5 GB VRAM   — fast, capable (8 GB cards / max speed)
+#   qwen3:14b    ~9-10 GB     — noticeably smarter (12 GB, the default)
+#   qwen3:32b    ~20 GB       — excellent (24 GB+ cards)
+model: "qwen3:14b"
 
 # Where Ollama is listening. The default below is correct for a normal install.
 ollama_host: "http://localhost:11434"
@@ -97,9 +97,12 @@ memory_min_score: 0.05
 # Reflection: after each exchange, Nero decides what's worth remembering.
 reflection_enabled: true
 
-# Model used for reflection. Leave empty to use the main model above; you can
-# set a smaller/faster model here (e.g. "qwen2.5:7b") to keep it snappy.
-reflection_model: ""
+# Model used for reflection (deciding what to remember, in the background).
+# A small, fast model keeps memory-forming snappy. On a 12 GB GPU, qwen3:4b
+# pairs nicely with a qwen3:14b chat model — and Nero unloads it right after
+# each reflection so it doesn't crowd VRAM. Leave empty ("") to reuse the
+# main model instead (no extra VRAM, slightly slower background reflection).
+reflection_model: "qwen3:4b"
 
 # Creativity of responses. 0.0 = focused and consistent, 1.0 = more creative.
 temperature: 0.7

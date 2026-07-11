@@ -39,7 +39,7 @@ time.
 
 **Stack**
 - **Backend:** Python **FastAPI**; async streaming via `httpx`.
-- **Brain:** **Ollama** running **`qwen2.5:14b`** locally (swappable via config).
+- **Brain:** **Ollama** running **`qwen3:14b`** locally (swappable via config).
 - **Memory store:** **SQLite** (stdlib `sqlite3`).
 - **Frontend:** a single **vanilla HTML/CSS/JS** web app (no framework, no build
   step) — responsive, works on phone + desktop, installable (PWA manifest).
