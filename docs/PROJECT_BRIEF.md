@@ -6,8 +6,8 @@ It doubles as a self-contained handoff you can give to an external advisor
 gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
 
-*Last updated: Phase 1 complete (identity + memory core), running on real
-hardware (RTX 4070). Next: Phase 2 — World Model.*
+*Last updated: Phase 2 — World Model built & hardened (in review, PR #7),
+running on real hardware (RTX 4070). Next: Phase 3 — Tool System.*
 
 ---
 
@@ -72,12 +72,27 @@ first) is in [DIRECTIVE.md](DIRECTIVE.md).
   replies), STT (EN/HR), an iPhone **Siri Shortcut**.
 - **Observability:** `GET /api/metrics` exposes retrieval latency + counts.
 
+**World Model (continuity — Phase 2, new)**
+- A small, structured, always-current picture of what Toni's working on:
+  **current project · task · working context · blockers · next steps · recent
+  focus**, in a SQLite `world_state` key/value table.
+- **Updated in the background** after each exchange (small model, `think=false`,
+  reflection model unloaded after) — the LLM returns only the fields that
+  changed as JSON; parsing is hardened (tolerates prose/fences, drops truncated
+  `<think>` guesses, collapses values to a single safe line).
+- **Read into the system prompt** before every reply, so she resumes *knowing
+  where you left off*. The read is best-effort and off the event loop — a DB
+  hiccup degrades to "no continuity block", never breaks the chat.
+- `GET /api/world` (inspect) · `DELETE /api/world[/{key}]` (owner reset) ·
+  `world` counters in `/api/metrics` · `world_model_enabled` config switch.
+
 **Quality process (per the Directive)**
 - A **verification framework** — `python verify/verify_everything.py` runs
-  `verify_{gpu,ollama,config,memory,embeddings,reflection}.py`; each subsystem
-  ships its own check. Currently **6/6 green on the owner's PC**.
-- Hardened by **three adversarial multi-lens reviews** (foundation, memory,
-  Windows setup) — ~22 real issues caught and fixed before merge.
+  `verify_{gpu,ollama,config,memory,world_model,embeddings,reflection}.py`; each
+  subsystem ships its own check. Offline checks are green in CI; GPU/Ollama
+  checks pass on the owner's PC.
+- Hardened by **four adversarial multi-lens reviews** (foundation, memory,
+  Windows setup, world model) — ~29 real issues caught and fixed before merge.
 
 **Repo layout**
 ```
@@ -89,7 +104,6 @@ tests/   test_memory.py        PROGRESS.md
 
 ## 4. Known gaps / not built yet
 
-- **No world model / continuity** — she re-infers context each turn (next up).
 - **Knowledge graph** — memories store `entities`, but they aren't yet *connected*
   into a graph.
 - **No Insight Engine** — she remembers, but doesn't yet synthesize patterns.
@@ -103,20 +117,25 @@ tests/   test_memory.py        PROGRESS.md
 ## 5. Roadmap
 
 - ✅ **Done:** v0.1 foundation · Phase 1 (identity: goals/principles/confidence +
-  the full memory subsystem) · Development Directive + verification framework ·
-  Qwen3 defaults · thinking disabled.
-- 🔜 **Next — Phase 2:** **World Model** (continuity) + wiring the full cognitive
-  loop (perceive → retrieve → update world model → plan → act → reflect → learn).
-- 🗓️ **Then:** knowledge-graph connections · **Insight Engine** (Second Brain) ·
-  tools + planner · skills plugins · observability dashboard.
-- 🗓️ **Later (opt-in, local):** desktop sensing + proactivity + attention · a
-  local neural voice (Piper) · multi-agent · digital twin.
+  the full memory subsystem) · **Phase 2 (World Model / continuity)** · the
+  cognitive loop is now wired (perceive → retrieve → update world model → reply
+  → reflect → learn) · Development Directive + verification framework · Qwen3
+  defaults · thinking disabled.
+- 🔜 **Next — Phase 3:** **Tool System + planner** — give her real actions
+  (read/write files, run commands, search) so she can *do*, not just converse.
+- 🗓️ **Then:** intent router + thought budget · **Experience Engine** (workflows,
+  not just facts) · knowledge-graph connections · **Insight Engine** (Second
+  Brain) · a local neural voice (Piper) · observability dashboard.
+- 🗓️ **Later (opt-in, local):** desktop sensing + proactivity + attention ·
+  browser intelligence · multi-agent · digital twin.
 
 ## 6. Open questions where outside advice is most valuable
 
-1. **World model** — best representation + a *cheap* way to keep it continuously
-   updated locally (structured JSON updated by an LLM step?).
-2. **Continuity mechanics** — session summaries, a "since we last spoke" digest?
+1. **World model tuning** — now built as a 6-field key/value picture, updated by
+   a background LLM step returning changed-fields JSON. Is that the right shape,
+   or should it carry structure (nested tasks, timestamps, confidence per field)?
+2. **Continuity mechanics** — beyond the live world model: session summaries, a
+   "since we last spoke" digest, decay of stale world fields?
 3. **Knowledge graph** — how to connect memories (entities/relations) so it's
    genuinely useful; when to graduate from a linear scan to a vector DB.
 4. **Insight Engine** — how often to run pattern-analysis, and how to surface
