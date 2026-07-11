@@ -8,14 +8,17 @@ For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
 ---
 
 ## 🔨 Building now
-- **Real-time voice agent — Increment 1: local neural voice** 🔨 — Nero speaks
-  with a real, **local** English voice (Kokoro; nothing leaves the PC). New
-  `app/tts.py` (engine-abstracted), `POST /api/speak` + `GET /api/voice`, a
-  `verify_tts.py` that saves a playable sample, and optional
-  `requirements-voice.txt`. Croatian (Meta MMS-TTS) and the real-time loop
-  (continuous listen · barge-in via faster-whisper + Silero VAD) come next.
+- **Voice agent — Increment 2: neural voice in the chat UI** 🔨 — the browser
+  now plays Nero's **local neural voice** for her replies (via `POST /api/speak`),
+  falling back to the browser voice when it's unavailable or the reply is
+  Croatian (until MMS-TTS lands). Includes barge-in (a new message or the mic
+  cuts her off mid-sentence). Next: local **STT** (faster-whisper), the
+  real-time loop (continuous listen), and Croatian.
 
 ## ✅ Shipped (on `main`)
+- **Voice agent — Increment 1: local neural English voice** ✅ — Nero speaks with
+  a real, local Kokoro voice (via ONNX Runtime; no torch; Python 3.13). `app/tts.py`,
+  `POST /api/speak` + `GET /api/voice`, `verify_tts.py`. Verified 8/8 on the RTX 4070.
 - **Phase 2 — World Model / continuity** ✅ — a live, structured picture of what
   Toni's working on, updated in the background and read into every reply, so she
   resumes *knowing where you left off*. Verified 7/7 end-to-end on the RTX 4070.

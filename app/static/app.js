@@ -159,6 +159,7 @@ async function loadMemories() {
 
 async function sendMessage(text) {
   if (busy || !text.trim()) return;
+  stopSpeaking();   // if Nero's still talking, a new message cuts her off
   busy = true;
   els.send.disabled = true;
 
@@ -252,10 +253,24 @@ function chooseVoice(langCode) {
   return [...pool].sort((a, b) => femaleScore(b.name) - femaleScore(a.name))[0] || null;
 }
 
-function speak(text) {
+// Nero's own local neural voice (Kokoro) when available, else the browser voice.
+let neuralVoice = false;   // set from GET /api/voice on boot
+let currentAudio = null;   // the playing neural clip, so we can stop it (barge-in)
+
+// Stop whatever Nero is currently saying — neural clip and/or browser speech.
+function stopSpeaking() {
+  if (currentAudio) {
+    currentAudio.pause();   // fires 'pause' → resolves any awaiting speak()
+    currentAudio = null;
+  }
+  if (ttsSupported) window.speechSynthesis.cancel();
+}
+
+// Speak via the browser's built-in voices — the fallback, and (for now) the
+// path for Croatian, until Nero's local Croatian voice lands.
+function speakBrowser(text) {
   if (!ttsSupported || !text.trim()) return Promise.resolve();
   return new Promise((resolve) => {
-    window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = detectLang(text);
     const voice = chooseVoice(utter.lang);
@@ -266,6 +281,42 @@ function speak(text) {
     utter.onerror = resolve;
     window.speechSynthesis.speak(utter);
   });
+}
+
+// Speak `text`, preferring Nero's local neural voice. It's English-only today,
+// so Croatian falls back to the browser voice. Resolves when playback ENDS (or
+// is interrupted), so hands-free re-listening doesn't start over her own voice.
+async function speak(text) {
+  if (!text.trim()) return;
+  stopSpeaking();
+  if (neuralVoice && detectLang(text) === "en-US") {
+    try {
+      const res = await fetch("/api/speak", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (res.ok && res.status !== 204) {
+        const url = URL.createObjectURL(await res.blob());
+        const audio = new Audio(url);
+        currentAudio = audio;
+        await new Promise((resolve) => {
+          const done = () => {
+            URL.revokeObjectURL(url);
+            if (currentAudio === audio) currentAudio = null;
+            resolve();
+          };
+          audio.onended = done;
+          audio.onerror = done;
+          audio.onpause = done;   // barge-in (stopSpeaking) resolves too
+          audio.play().catch(done);
+        });
+        return;
+      }
+      // 204 = voice not ready → fall through to the browser voice
+    } catch (_) { /* network/synthesis issue → browser voice */ }
+  }
+  await speakBrowser(text);
 }
 
 // Fill the voice picker with the installed voices, best female first.
@@ -328,7 +379,7 @@ if (!sttSupported) {
 
 function startListening() {
   if (!sttSupported || listening || busy) return;
-  if (ttsSupported) window.speechSynthesis.cancel(); // don't hear ourselves
+  stopSpeaking(); // don't hear ourselves (neural clip or browser speech)
   try {
     els.input.value = "";
     recognition.lang = els.micLang.value || "en-US"; // English or Croatian
@@ -406,18 +457,36 @@ function loadVoicePrefs() {
   els.speakToggle.checked = localStorage.getItem("speak") === "1";
   els.handsfreeToggle.checked = localStorage.getItem("handsfree") === "1";
   els.micLang.value = localStorage.getItem("micLang") || "en-US";
-  if (!ttsSupported) {
-    els.speakToggle.parentElement.style.display = "none";
-    els.ttsVoice.parentElement.style.display = "none";
-  } else {
+  if (ttsSupported) {
     populateVoicePicker();
     // Voices often load asynchronously; refresh the list when they arrive.
     window.speechSynthesis.onvoiceschanged = populateVoicePicker;
+  } else {
+    // No browser voices to pick from (the neural voice needs no picker).
+    els.ttsVoice.parentElement.style.display = "none";
   }
+  updateSpeakVisibility();
   if (!sttSupported) {
     els.handsfreeToggle.parentElement.style.display = "none";
     els.micLang.parentElement.style.display = "none";
   }
+}
+
+// Nero can speak if the browser has voices OR her local neural voice is ready.
+function updateSpeakVisibility() {
+  els.speakToggle.parentElement.style.display =
+    (ttsSupported || neuralVoice) ? "" : "none";
+}
+
+// Ask the server whether Nero's local neural voice is available.
+async function detectNeuralVoice() {
+  try {
+    const v = await (await fetch("/api/voice")).json();
+    neuralVoice = !!(v.enabled && v.available);
+  } catch (_) {
+    neuralVoice = false;
+  }
+  updateSpeakVisibility();
 }
 els.speakToggle.addEventListener("change", () =>
   localStorage.setItem("speak", els.speakToggle.checked ? "1" : "0"));
@@ -427,7 +496,8 @@ els.micLang.addEventListener("change", () =>
   localStorage.setItem("micLang", els.micLang.value));
 els.ttsVoice.addEventListener("change", () => {
   localStorage.setItem("ttsVoice", els.ttsVoice.value);
-  if (els.speakToggle.checked) speak("Hi, this is how I sound."); // instant preview
+  // This picker chooses the *browser* fallback voice, so preview that one.
+  if (els.speakToggle.checked) { stopSpeaking(); speakBrowser("Hi, this is how I sound."); }
 });
 
 // ---- Humor dial (live, TARS-style) ----------------------------------
@@ -465,6 +535,7 @@ els.humor.addEventListener("input", () => {
 
 (async function init() {
   loadVoicePrefs();
+  detectNeuralVoice();   // flips on Nero's local voice once the server answers
   await loadConfig();
   showEmptyState();
   await Promise.all([loadStatus(), loadHistory(), loadMemories(), loadSettings()]);
