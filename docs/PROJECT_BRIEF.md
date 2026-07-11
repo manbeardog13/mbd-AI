@@ -10,8 +10,10 @@ welcome — what to cut as readily as what to add.*
 **Increment 1** (local neural English voice, Kokoro) merged & verified 8/8, both
 on the RTX 4070. Now building **voice Increment 2** — the neural voice + hands-free
 in the chat UI (PR #9). Voice *input* confirmed on phone/tablet over HTTPS
-(Tailscale); spoken *output* now routes through Web Audio (for iOS reliability)
-and is being validated on iPhone. Owner's build order: voice → computer control
+(Tailscale); spoken *output* confirmed working on iPhone (Web Audio playback),
+with emoji stripped from speech and sentence-by-sentence synthesis for lower
+latency. Awaiting owner sign-off on pacing before merging PR #9; then local STT
+(faster-whisper). Owner's build order: voice → computer control
 → apply the new design system.*
 
 ---
