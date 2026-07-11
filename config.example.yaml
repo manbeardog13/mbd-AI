@@ -117,6 +117,24 @@ temperature: 0.7
 # output. Set true only if you want to watch her reason step by step.
 thinking: false
 
+# ---- Voice (local neural text-to-speech) ----
+# Nero can speak with a real, local neural voice — nothing is sent to the cloud.
+# This needs the voice dependencies:  pip install -r requirements-voice.txt
+# (Windows: also install espeak-ng.) If they're not installed, Nero simply
+# falls back to your browser's built-in voice, so this is safe to leave on.
+tts_enabled: true
+
+# Engine. Today: "kokoro" (premium English, fast & light). Croatian (Meta
+# MMS-TTS) and an expressive engine (Chatterbox) are coming next.
+tts_engine: "kokoro"
+
+# Which voice. Kokoro ships many; American-female options include af_heart
+# (warm, the default), af_bella, af_nicole, af_sarah. See the Kokoro voice list.
+tts_voice: "af_heart"
+
+# Speaking rate (1.0 = natural; <1 slower, >1 faster).
+tts_speed: 1.0
+
 # ---- Server ----
 
 # 0.0.0.0 lets your other devices (via Tailscale) reach the AI.

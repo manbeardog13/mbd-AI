@@ -18,11 +18,11 @@ import asyncio
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import db, memory, world_model
+from . import db, memory, tts, world_model
 from .config import load_config, set_override
 from .llm import check_ollama, embed_text, stream_chat
 from .prompt import build_system_prompt
@@ -54,6 +54,10 @@ class ChatIn(BaseModel):
 
 class MemoryIn(BaseModel):
     content: str
+
+
+class SpeakIn(BaseModel):
+    text: str
 
 
 class SettingsIn(BaseModel):
@@ -213,8 +217,39 @@ def clear_world_field(key: str) -> dict:
 
 @app.get("/api/metrics")
 def metrics() -> dict:
-    """Lightweight observability into the memory + world-model subsystems."""
-    return {"memory": memory.METRICS, "world": world_model.METRICS}
+    """Lightweight observability into the memory + world-model + voice subsystems."""
+    return {"memory": memory.METRICS, "world": world_model.METRICS, "voice": tts.METRICS}
+
+
+# ---- Voice (local neural text-to-speech) ----
+
+@app.get("/api/voice")
+def voice_status() -> dict:
+    """Whether Nero's local neural voice is available (for the UI to decide)."""
+    cfg = load_config()
+    return {
+        "enabled": cfg.tts_enabled,
+        "engine": cfg.tts_engine,
+        "voice": cfg.tts_voice,
+        "available": tts.available(cfg),
+    }
+
+
+@app.post("/api/speak")
+async def speak(payload: SpeakIn) -> Response:
+    """Synthesize `text` in Nero's local voice.
+
+    Returns audio/wav on success, or 204 No Content when the neural voice isn't
+    installed/enabled — the browser then falls back to its own voice.
+    """
+    text = payload.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Nothing to speak.")
+    cfg = load_config()
+    audio = await asyncio.to_thread(tts.synthesize, cfg, text)
+    if not audio:
+        return Response(status_code=204)
+    return Response(content=audio, media_type="audio/wav")
 
 
 @app.delete("/api/memories/{memory_id}")

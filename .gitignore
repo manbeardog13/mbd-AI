@@ -17,6 +17,9 @@ data/
 # --- Environment / secrets ---
 .env
 
+# --- Generated voice sample (from verify_tts.py) ---
+verify/nero_voice_sample.wav
+
 # --- Claude Code (shared .claude/settings.json is committed; personal overrides are not) ---
 .claude/settings.local.json
 

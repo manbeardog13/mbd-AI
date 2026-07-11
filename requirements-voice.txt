@@ -1,0 +1,13 @@
+# Nero's local neural voice (optional) — Increment 1: English via Kokoro.
+#
+# Install with:   pip install -r requirements-voice.txt
+#
+# Windows note: Kokoro phonemizes text with espeak-ng for out-of-vocabulary
+# words. Install the espeak-ng release once so pronunciation is solid:
+#   https://github.com/espeak-ng/espeak-ng/releases  (grab the .msi)
+#
+# The base app runs fine WITHOUT these — Nero just uses your browser's built-in
+# voice until they're installed. Kokoro is fast even on CPU; a GPU is optional.
+# First run downloads the Kokoro model (~330 MB) from Hugging Face.
+
+kokoro>=0.9.4          # fast, local, Apache-2.0 neural TTS (pulls torch, numpy)
