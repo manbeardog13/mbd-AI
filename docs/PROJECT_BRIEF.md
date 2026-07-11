@@ -6,10 +6,11 @@ It doubles as a self-contained handoff you can give to an external advisor
 gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
 
-*Last updated: Phase 2 (World Model) **merged & verified 7/7** on the RTX 4070.
-Now building the **voice agent — Increment 1: local neural English voice**
-(Kokoro), in review (PR #8). Owner's build order: voice → computer control →
-apply the new design system.*
+*Last updated: Phase 2 (World Model) merged & verified 7/7, and voice
+**Increment 1** (local neural English voice, Kokoro) merged & verified 8/8, both
+on the RTX 4070. Now building **voice Increment 2** — the neural voice + hands-free
+in the chat UI, working on phone/tablet (PR #9). Owner's build order: voice →
+computer control → apply the new design system.*
 
 ---
 
@@ -70,8 +71,12 @@ first) is in [DIRECTIVE.md](DIRECTIVE.md).
 - **Reflection:** after each exchange, a background pass (small model, `think=false`)
   extracts durable facts, **dedupes** against existing memories (text + embedding),
   and reinforces or adds. Writes are serialized (lock) to avoid duplicate races.
-- **Voice:** browser TTS (prefers a female voice; speaks Croatian for Croatian
-  replies), STT (EN/HR), an iPhone **Siri Shortcut**.
+- **Voice:** a **local neural English voice** (Kokoro via ONNX Runtime) speaks
+  her replies in the app, falling back to the browser voice for Croatian or when
+  unavailable; barge-in (a new message/mic cuts her off); mobile audio unlock so
+  replies play on phone/tablet. Input via browser STT (EN/HR) — needs an HTTPS
+  origin off-localhost (Tailscale `serve`), so the mic works on phone/tablet;
+  iPhone can also use the native **Siri Shortcut**.
 - **Observability:** `GET /api/metrics` exposes retrieval latency + counts.
 
 **World Model (continuity — Phase 2, new)**
@@ -125,11 +130,11 @@ tests/   test_memory.py        PROGRESS.md
 - **Single active conversation thread** (multi-conversation not built).
 - **Retrieval is a linear scan** over SQLite (fine at current scale; no vector DB yet).
 - **Observability is minimal** (`/api/metrics`); no dashboard.
-- **Voice** — a *local neural English voice* (Kokoro) now exists server-side
-  (`app/tts.py`, `POST /api/speak`), but it isn't wired into the chat UI yet
-  (still browser TTS there), there's no local STT (faster-whisper) yet, and the
-  real-time loop (continuous listen, barge-in) and Croatian (MMS-TTS) are still
-  to come.
+- **Voice** — the *local neural English voice* (Kokoro) now speaks her replies in
+  the chat UI, on desktop and phone/tablet. Still to come: **local STT**
+  (faster-whisper) to replace the browser's cloud speech recognition, the
+  **real-time loop** (continuous listen, voice-driven barge-in, <1s latency), and
+  **Croatian** TTS (Meta MMS-TTS).
 
 ## 5. Roadmap
 
