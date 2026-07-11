@@ -140,9 +140,10 @@ tests/   test_memory.py        PROGRESS.md
   defaults · thinking disabled.
 - 🔜 **Next (owner's chosen order):**
   1. **Real-time voice agent** (in progress) — Increment 1 (local neural English
-     voice, Kokoro) is in review (PR #8). Then: wire it into the chat UI, local
-     STT (faster-whisper), the real-time loop (continuous listen + barge-in via
-     Silero VAD, <1s latency), and Croatian (Meta MMS-TTS).
+     voice, Kokoro via ONNX Runtime — no PyTorch, Python-3.13-friendly) is in
+     review (PR #8). Then: wire it into the chat UI, local STT (faster-whisper),
+     the real-time loop (continuous listen + barge-in via Silero VAD, <1s
+     latency), and Croatian (Meta MMS-TTS).
   2. **Computer control** — a *local "Cowork"*: see the screen, drive
      mouse/keyboard, act in real apps, with hard safety rails. Rides on the
      **Tool System + planner**, so that foundation lands here.
