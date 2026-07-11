@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0f1115" />
+  <title>Your Personal AI</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar / memory panel -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-head">
+        <h2 id="ai-name">…</h2>
+        <span id="status-dot" class="status-dot" title="Checking connection…"></span>
+      </div>
+      <p id="status-text" class="status-text">Connecting to your local brain…</p>
+
+      <button id="new-chat" class="btn">＋ New conversation</button>
+
+      <div class="memory-section">
+        <h3>What it remembers about you</h3>
+        <form id="memory-form">
+          <input id="memory-input" type="text" placeholder="e.g. I'm building a local AI" autocomplete="off" />
+          <button type="submit" class="btn small">Add</button>
+        </form>
+        <ul id="memory-list" class="memory-list"></ul>
+      </div>
+
+      <p class="footer-note">Runs 100% on your machine. Private by design.</p>
+    </aside>
+
+    <!-- Chat area -->
+    <main class="chat">
+      <button id="menu-toggle" class="menu-toggle" aria-label="Toggle panel">☰</button>
+      <div id="messages" class="messages"></div>
+
+      <form id="chat-form" class="composer">
+        <textarea id="input" rows="1" placeholder="Say something…" autocomplete="off"></textarea>
+        <button id="send" type="submit" class="send" aria-label="Send">➤</button>
+      </form>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
