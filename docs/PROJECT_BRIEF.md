@@ -9,8 +9,10 @@ welcome — what to cut as readily as what to add.*
 *Last updated: Phase 2 (World Model) merged & verified 7/7, and voice
 **Increment 1** (local neural English voice, Kokoro) merged & verified 8/8, both
 on the RTX 4070. Now building **voice Increment 2** — the neural voice + hands-free
-in the chat UI, working on phone/tablet (PR #9). Owner's build order: voice →
-computer control → apply the new design system.*
+in the chat UI (PR #9). Voice *input* confirmed on phone/tablet over HTTPS
+(Tailscale); spoken *output* on mobile just added (audio-unlock) and being
+validated. Owner's build order: voice → computer control → apply the new
+design system.*
 
 ---
 
