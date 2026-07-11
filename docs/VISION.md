@@ -35,6 +35,41 @@ is always this:
 
 ---
 
+## The request pipeline — routing, speed, and a thought budget
+
+The cognitive loop is *what* Nero does; this is *how fast* she does it. Before the
+loop spends effort, a lightweight front-end decides how much effort the request
+even deserves — so trivial things feel instant and hard things get real thought.
+
+- **Intent router (the brainstem).** Classify each message in milliseconds —
+  *conversation · memory · coding · vision · local-PC · internet · automation ·
+  deep-research · emergency* — so Nero never web-searches for something she
+  already knows, or spins up tools she doesn't need.
+- **Confidence gate.** *Do I already know this well enough to answer now?* If yes,
+  answer immediately. If not, decide the cheapest thing that closes the gap —
+  memory, the local machine, the internet, or a quick question back to you.
+- **Thought budget.** Not every question deserves the same compute. `5 + 8` should
+  feel instant; *"refactor my app"* earns tens of seconds with progress updates;
+  *"design an MMO"* earns minutes. Nero scales depth to the task instead of
+  over- or under-thinking uniformly.
+- **Parallel retrieval.** When she does need to look things up, fan out —
+  memory, local files, and (later) several web sources *at once* — then merge,
+  instead of a slow search→read→search chain.
+- **Dynamic tools with fallback chains.** A capability is a *chain*, not a single
+  API: try the best source, fall back to the next on failure, and only ask you as
+  the last resort. Every tool degrades gracefully.
+- **Source trust ranking.** Web results carry a trust score (official docs and
+  primary sources over random blogs) so higher-quality sources win automatically.
+- **Browser intelligence.** For sites that fight scraping, drive a real headless
+  browser — scroll, expand, screenshot, read with a vision model — rather than
+  parsing brittle HTML.
+
+All of this stays **local-first**: routing and budgeting run on-device, and the
+default path never leaves your machine (see the note under the roadmap on the one
+place — optional cloud model routing — where that tension is handled explicitly).
+
+---
+
 ## Memory has layers
 
 Humans don't remember everything or nothing. Nero's memory is tiered:
@@ -195,6 +230,9 @@ own PR so we stay in control.
 | Confidence *by source* (explicit / observed / inferred / guessed) | Next | ★★★ | Low |
 | Intelligent silence / live "thinking…" status | Next | ★★☆ | Low |
 | Tool system + planner (executive functions) | Soon | ★★★ | Med-High |
+| Intent router + confidence gate + **thought budget** (scale compute to task) | Soon | ★★★ | Med |
+| Parallel multi-source retrieval + source-trust ranking + fallback chains | Soon | ★★☆ | Med |
+| **Experience Engine** (remembers *how you work*: workflows, not just facts) | Soon ★ | ★★★ | Med-High |
 | Local voice pipeline (Piper/Kokoro) — interruptible, barge-in | Soon | ★★★ | Med-High |
 | **Concept Engine + Identity Graph** ("understand", not just "remember") | Soon ★ | ★★★ | Med-High |
 | Initiative Engine (scored proactivity: importance/novelty/urgency/cost) | Soon | ★★★ | Med |
@@ -205,18 +243,30 @@ own PR so we stay in control.
 | Observability dashboard + World-Model Viewer (dev mode) + trust layer | Soon | ★★☆ | Med |
 | Desktop-companion UI (Home dashboard · Memory Explorer · living background) | Soon | ★★★ | High |
 | Internal monologue (hidden planning before answering) | Soon | ★★☆ | Low |
+| Browser intelligence (drive a real browser + read with a vision model) | Later | ★★☆ | High |
+| Autonomous background tasks (idle indexing · embedding refresh · model preload) | Later | ★★☆ | Med |
 | Desktop senses + attention + background intelligence | Later | ★★★ | High |
 | Multi-agent specialization · predictive assistance · digital twin | Later | ★★☆ | High |
 
-★ = highest-leverage differentiators (per the second-opinion review).
+★ = highest-leverage differentiators (per the second-opinion reviews).
 
-**From the second-opinion review, adopted:** the *"understand > remember"* framing
+**From the second-opinion reviews, adopted:** the *"understand > remember"* framing
 (**Concept Engine** + **Identity Graph**), **confidence-by-source**, memory
 compression, the **Dream Cycle**, **initiative scoring**, the weekly
-**self-improvement report**, and a **desktop-companion UI** (Home dashboard,
-Memory Explorer, World-Model Viewer). **Deliberately not adopted:** cloud voice
-"during development" — it would break the local-first / privacy pillars. Voice is
-prioritized sooner but stays **100% local** (Piper/Kokoro, not ElevenLabs/OpenAI).
+**self-improvement report**, a **desktop-companion UI** (Home dashboard, Memory
+Explorer, World-Model Viewer), and — from the "operating system for intelligence"
+review — the **intent router**, **thought budget**, **parallel retrieval with
+source-trust ranking**, **browser intelligence**, and the **Experience Engine**
+(the standout: memory of *how you work*).
+
+**The one real tension — cloud model routing.** That review suggests routing some
+work to cloud models (coding→Claude, heavy reasoning→GPT, images→Flux). That
+directly conflicts with Nero's #1–2 pillars: **local-first and private, nothing
+leaves the machine.** So the default stays 100% local and offline-capable. If a
+hybrid "escape hatch" is ever added, it will be **strictly opt-in, off by
+default, per-request, and visibly announced** — never silent, never the default
+path. The same reasoning is why cloud voice was declined: voice stays **100%
+local** (Piper/Kokoro, not ElevenLabs/OpenAI).
 
 ---
 
@@ -234,6 +284,16 @@ only storing memories, Nero periodically asks *what patterns am I seeing? what
 recurring problems does Toni have? what can I automate? what should I recommend
 before he asks?* — and surfaces the answer at the right moment. That's the leap
 from **recorder → advisor**.
+
+Its sibling is the **Experience Engine** — memory of *how you work*, not just
+*what's true*. Beyond facts, Nero stores **successful workflows**: the prompts,
+tools, order of steps, and stylistic choices that worked last time. After you've
+had her redesign a UI a few times, "improve this interface" shouldn't start from
+scratch — she assembles your preferred design language, the approaches that
+landed before, and your conventions into a first draft before you ask. Over
+months that's the difference between an assistant that remembers information and
+one that genuinely feels like *yours*. (The typed memory store already has an
+`experience` type and records outcomes — this is where that seed grows up.)
 
 **Discipline (why this is "horizon," not "now"):** almost all of the 2.0 layer
 depends on two things we don't have yet — a solid **memory/knowledge core** and a
