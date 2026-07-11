@@ -72,6 +72,21 @@ def _clamp(value: int, low: int, high: int) -> int:
     return max(low, min(high, value))
 
 
+def _num(value, default, cast):
+    """Coerce a config value to a number, falling back to default.
+
+    Guards against a key being present but blank in config.yaml (parsed as
+    None) or holding a non-numeric value — either would otherwise crash the
+    whole backend, since load_config() runs on every request.
+    """
+    if value is None:
+        return default
+    try:
+        return cast(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def load_config() -> Config:
     """Read config.yaml (plus any live overrides). Called on each message."""
     ensure_config()
@@ -83,19 +98,22 @@ def load_config() -> Config:
     if isinstance(languages, str):
         languages = [languages]
 
-    humor = int(overrides.get("humor", data.get("humor", 75)))
+    # Every field below is written to tolerate a present-but-blank key in
+    # config.yaml (which YAML parses as None). `or` handles strings; `_num`
+    # handles numbers (so a valid 0.0 temperature is NOT turned into a default).
+    humor = _clamp(_num(overrides.get("humor", data.get("humor")), 75, int), 0, 100)
 
     return Config(
-        ai_name=data.get("ai_name", "Nero"),
-        owner_name=data.get("owner_name", "friend"),
-        personality=data.get("personality", "You are a helpful personal AI.").strip(),
+        ai_name=(data.get("ai_name") or "Nero"),
+        owner_name=(data.get("owner_name") or "friend"),
+        personality=(data.get("personality") or "You are a helpful personal AI.").strip(),
         languages=[str(l).strip() for l in languages if str(l).strip()],
-        humor=_clamp(humor, 0, 100),
-        voice=str(overrides.get("voice", data.get("voice", "female"))).strip() or "female",
-        model=data.get("model", "qwen2.5:14b"),
-        ollama_host=data.get("ollama_host", "http://localhost:11434"),
-        history_limit=int(data.get("history_limit", 20)),
-        temperature=float(data.get("temperature", 0.7)),
-        host=data.get("host", "0.0.0.0"),
-        port=int(data.get("port", 8080)),
+        humor=humor,
+        voice=(str(overrides.get("voice") or data.get("voice") or "female").strip() or "female"),
+        model=(data.get("model") or "qwen2.5:14b"),
+        ollama_host=(data.get("ollama_host") or "http://localhost:11434"),
+        history_limit=_num(data.get("history_limit"), 20, int),
+        temperature=_num(data.get("temperature"), 0.7, float),
+        host=(data.get("host") or "0.0.0.0"),
+        port=_num(data.get("port"), 8080, int),
     )

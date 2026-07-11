@@ -64,9 +64,13 @@ async def check_ollama(host: str, model: str) -> tuple[bool, str]:
             f"Start it with `ollama serve` (or open the Ollama app). [{exc}]"
         )
 
-    # Ollama tags look like "llama3.1:8b"; match exactly or by base name.
-    base_name = model.split(":")[0]
-    if not any(name == model or name.split(":")[0] == base_name for name in installed):
+    # Match the exact tag (allowing Ollama's implicit ":latest"), not just the
+    # family — otherwise a sibling tag like qwen2.5:7b would make us claim
+    # qwen2.5:14b is ready when chat would actually fail.
+    wanted = {model}
+    if ":" not in model:
+        wanted.add(f"{model}:latest")
+    if not any(name in wanted for name in installed):
         return False, (
             f"Ollama is running, but the model '{model}' isn't installed yet. "
             f"Pull it with:  ollama pull {model}"

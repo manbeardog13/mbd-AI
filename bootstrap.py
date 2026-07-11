@@ -105,14 +105,30 @@ def ollama_running() -> bool:
 
 
 def model_installed(model: str) -> bool:
+    """True only if the *exact* model tag is installed.
+
+    We match the NAME column exactly (allowing Ollama's implicit ':latest'),
+    not just the family name — otherwise having qwen2.5:7b would wrongly look
+    like qwen2.5:14b is present, and bootstrap would skip the download while
+    every chat then fails at runtime.
+    """
     try:
         out = subprocess.run(
             ["ollama", "list"], capture_output=True, text=True, timeout=15
         )
-        base = model.split(":")[0]
-        return model in out.stdout or base in out.stdout
+        if out.returncode != 0:
+            return False
     except Exception:
         return False
+
+    wanted = {model}
+    if ":" not in model:
+        wanted.add(f"{model}:latest")
+    for line in out.stdout.splitlines()[1:]:  # skip the header row
+        parts = line.split()
+        if parts and parts[0] in wanted:
+            return True
+    return False
 
 
 def ollama_install_hint() -> str:

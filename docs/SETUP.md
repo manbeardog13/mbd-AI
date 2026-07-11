@@ -87,7 +87,7 @@ You'll see something like:
 
 ```
   ── Nero ──
-  Brain:  llama3.1:8b  (via Ollama at http://localhost:11434)
+  Brain:  qwen2.5:14b  (via Ollama at http://localhost:11434)
   Open:   http://localhost:8080
 ```
 

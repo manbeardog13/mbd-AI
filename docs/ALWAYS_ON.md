@@ -12,21 +12,28 @@ Pick the section for your operating system.
 
 The simplest reliable approach is **Task Scheduler**.
 
-1. Create a small start script next to `run.py` called `start.bat`:
+1. Create a **headless** launcher next to `run.py` called `nero-service.bat`
+   with exactly this content:
 
    ```bat
    @echo off
    cd /d "%~dp0"
-   call .venv\Scripts\activate.bat
-   python run.py
+   ".venv\Scripts\python.exe" run.py
    ```
 
+   > Use a *separate* file for this — **don't** point the scheduler at the
+   > shipped `start.bat`. That one ends with `pause` (great for double-clicking,
+   > but under Task Scheduler it would hang forever waiting for a keypress, so
+   > the "restart on failure" trigger would never fire). This headless script
+   > calls the venv's Python directly, so it also doesn't depend on `python`
+   > being on PATH.
+
 2. Open **Task Scheduler** → *Create Task…*
-   - **General:** name it `mbd-AI`. Tick *"Run whether user is logged on or not"*.
+   - **General:** name it `Nero`. Tick *"Run whether user is logged on or not"*.
    - **Triggers:** *New… → Begin the task: At startup*.
-   - **Actions:** *New… → Start a program* → browse to your `start.bat`.
+   - **Actions:** *New… → Start a program* → browse to your `nero-service.bat`.
    - **Settings:** tick *"If the task fails, restart every 1 minute"*.
-3. Save. Your AI now starts with Windows and stays up.
+3. Save. Nero now starts with Windows and stays up.
 
 > Make sure **Ollama** also starts on boot — its installer sets this up by
 > default (check the system tray).
