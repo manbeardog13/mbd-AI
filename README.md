@@ -97,6 +97,11 @@ mbd-AI/
 
 ## Where this is going (the roadmap)
 
+> The full architecture — turning Nero from a chatbot into a **cognitive
+> companion** (layered memory, identity, reflection, world model, continuity) —
+> is mapped in **[docs/VISION.md](docs/VISION.md)**.
+
+
 - [x] **Voice** — talk to it and hear it back (in-app + Siri Shortcut)
 - [x] **Bilingual** (English + Croatian) and a live **humor dial**
 - [ ] **Studio-quality local voice** — a fully-offline neural voice (Piper) for a smoother, "glassier" Nero
