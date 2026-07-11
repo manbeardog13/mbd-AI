@@ -66,6 +66,12 @@ class Config:
     reflection_enabled: bool
     reflection_model: str
     world_model_enabled: bool
+    # Voice (local neural text-to-speech)
+    tts_enabled: bool
+    tts_engine: str
+    tts_voice: str
+    tts_speed: float
+    tts_model_dir: str
 
 
 def ensure_config() -> None:
@@ -167,4 +173,12 @@ def load_config() -> Config:
             True if data.get("world_model_enabled") is None
             else bool(data.get("world_model_enabled"))
         ),
+        tts_enabled=(
+            True if data.get("tts_enabled") is None
+            else bool(data.get("tts_enabled"))
+        ),
+        tts_engine=(data.get("tts_engine") or "kokoro"),
+        tts_voice=(data.get("tts_voice") or "af_heart"),
+        tts_speed=_num(data.get("tts_speed"), 1.0, float),
+        tts_model_dir=(data.get("tts_model_dir") or "models"),
     )

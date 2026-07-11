@@ -8,37 +8,40 @@ For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
 ---
 
 ## 🔨 Building now
-- **Phase 2 — World Model / continuity** 🧪 — a live, structured picture of what
-  Toni's working on (project · task · working context · blockers · next steps ·
-  recent focus). Nero updates it in the background after each exchange and reads
-  it at the start of every reply, so she resumes *knowing where you left off*.
-  Ships with unit tests, an offline self-test (`verify_world_model.py`),
-  `/api/world` + `/api/metrics`, and a `world_model_enabled` config switch.
+- **Real-time voice agent — Increment 1: local neural voice** 🔨 — Nero speaks
+  with a real, **local** English voice (Kokoro; nothing leaves the PC). New
+  `app/tts.py` (engine-abstracted), `POST /api/speak` + `GET /api/voice`, a
+  `verify_tts.py` that saves a playable sample, and optional
+  `requirements-voice.txt`. Croatian (Meta MMS-TTS) and the real-time loop
+  (continuous listen · barge-in via faster-whisper + Silero VAD) come next.
 
-## 🧪 Built, in review — [PR #2](https://github.com/manbeardog13/mbd-AI/pull/2)
+## ✅ Shipped (on `main`)
+- **Phase 2 — World Model / continuity** ✅ — a live, structured picture of what
+  Toni's working on, updated in the background and read into every reply, so she
+  resumes *knowing where you left off*. Verified 7/7 end-to-end on the RTX 4070.
 - **Memory core** ✅ — layered/typed memory (semantic · episodic · preference ·
   experience) with confidence · importance · **decay** · timestamps · entities;
   `nomic-embed` semantic **retrieval** with graceful fallback; **reflection**
-  (she decides what to remember, dedupes/reinforces); `/api/metrics`. Ships with
-  unit tests, an offline self-test, and `verify_memory/embeddings/reflection.py`.
+  (she decides what to remember, dedupes/reinforces); `/api/metrics`. Reflection
+  + world updates use Ollama **structured output** so small models emit JSON.
 - **Development Directive** (`docs/DIRECTIVE.md`) + **verification framework**
-  (`verify/verify_everything.py`, `verify_gpu/ollama/config`)
+  (`verify/verify_everything.py` — 7 subsystem checks)
 - **Phase 1 — Identity:** goals, principles, confidence-based answering
-- Vision expanded (knowledge graph, Insight Engine, cognitive-OS horizon)
-
-## ✅ Shipped (on `main`)
 - **v0.1 foundation** — local chat via Ollama, streaming, **voice** (talk/listen +
   Siri Shortcut), **bilingual EN/HR**, **TARS humor dial**, memory-facts,
   female persona "Nero", one-command setup, Tailscale remote access, PWA
-- Hardened by an adversarial multi-lens review (**6 issues fixed** before merge)
+- Hardened by **four adversarial multi-lens reviews** (~29 issues fixed pre-merge)
 
-## ⏭️ Next
-- **Tool System** (Phase 3) — give Nero real actions: read/write files, run
-  commands, search the web, all local and permissioned
-- **Intelligent silence** — live "thinking… / searching memory…" status (small)
+## ⏭️ Next (Toni's chosen order)
+1. Finish the **voice agent** (Increment 1 building now → Croatian → real-time
+   loop with continuous listen + barge-in)
+2. **Computer control** — a local "Cowork": see the screen, drive mouse/keyboard
+   (rides on the Tool System + planner)
+3. **Apply the Design System v1.0** to the live frontend
 
 ## 🗓️ Planned (see VISION.md for full sequencing)
-- Insight Engine (Second Brain) · tools + planner · skills plugins · observability
+- Experience Engine · Insight Engine (Second Brain) · intent router + thought
+  budget · knowledge graph · observability dashboard
 - (later, opt-in, local-only) desktop senses + proactivity · multi-agent · digital twin
 
 ---
@@ -47,7 +50,7 @@ For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
 
 | Where | What you see |
 |-------|--------------|
-| **[PR #2](https://github.com/manbeardog13/mbd-AI/pull/2)** | Live work-in-progress — every commit + diff as I build |
+| **[Open pull requests](https://github.com/manbeardog13/mbd-AI/pulls)** | Live work-in-progress — every commit + diff as I build |
 | **[Commits on main](https://github.com/manbeardog13/mbd-AI/commits/main)** | Completed, merged history |
 | **This chat** | My step-by-step reports and decisions |
 | `python verify/verify_everything.py` | Nero's health on **your** PC (source of truth) |

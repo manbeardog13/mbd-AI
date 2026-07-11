@@ -300,7 +300,7 @@ own PR so we stay in control.
 | Intelligent silence / live "thinking…" status | Next | ★★☆ | Low |
 | Tool system + planner (executive functions) | Soon | ★★★ | Med-High |
 | **Computer control** — local "Cowork": see screen, drive mouse/keyboard, act | Soon ★ | ★★★ | High |
-| **Real-time voice agent** — continuous listen · barge-in · local STT/TTS · <1s | Soon ★ | ★★★ | High |
+| **Real-time voice agent** — continuous listen · barge-in · local STT/TTS · <1s | Building ★ | ★★★ | High |
 | Intent router + confidence gate + **thought budget** (scale compute to task) | Soon | ★★★ | Med |
 | Parallel multi-source retrieval + source-trust ranking + fallback chains | Soon | ★★☆ | Med |
 | **Experience Engine** (remembers *how you work*: workflows, not just facts) | Soon ★ | ★★★ | Med-High |
