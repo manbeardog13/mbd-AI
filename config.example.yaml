@@ -77,6 +77,30 @@ ollama_host: "http://localhost:11434"
 # How many recent messages to give the model as context each turn.
 history_limit: 20
 
+# ---- Memory ----
+# Nero remembers durable facts about you and recalls the relevant ones each turn.
+
+# The local embedding model used for semantic recall. Pull it once:
+#   ollama pull nomic-embed-text
+# If it's missing, recall gracefully falls back to confidence + recency.
+embed_model: "nomic-embed-text"
+
+# How many remembered facts to bring into mind per message.
+memory_top_k: 6
+
+# Days for a memory's strength to halve if never reinforced (older = fades).
+memory_half_life_days: 30
+
+# Minimum score for a memory to be recalled at all (filters weak/stale ones).
+memory_min_score: 0.05
+
+# Reflection: after each exchange, Nero decides what's worth remembering.
+reflection_enabled: true
+
+# Model used for reflection. Leave empty to use the main model above; you can
+# set a smaller/faster model here (e.g. "qwen2.5:7b") to keep it snappy.
+reflection_model: ""
+
 # Creativity of responses. 0.0 = focused and consistent, 1.0 = more creative.
 temperature: 0.7
 

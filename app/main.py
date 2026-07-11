@@ -14,6 +14,7 @@ Serves the chat web app and exposes a small API the browser talks to:
 """
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -21,10 +22,19 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import db
+from . import db, memory
 from .config import load_config, set_override
-from .llm import check_ollama, stream_chat
+from .llm import check_ollama, embed_text, stream_chat
 from .prompt import build_system_prompt
+
+# Keep references to fire-and-forget reflection tasks so they aren't GC'd.
+_bg_tasks: set[asyncio.Task] = set()
+
+
+def _spawn(coro) -> None:
+    task = asyncio.create_task(coro)
+    _bg_tasks.add(task)
+    task.add_done_callback(_bg_tasks.discard)
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -113,7 +123,9 @@ async def chat(payload: ChatIn) -> StreamingResponse:
     conv_id = db.get_or_create_active_conversation()
     db.add_message(conv_id, "user", text)
 
-    memories = [m["content"] for m in db.get_memories()]
+    # Recall the memories most relevant to this message (off the event loop).
+    retrieved = await asyncio.to_thread(memory.retrieve, cfg, text)
+    memories = [m["content"] for m in retrieved]
     system_prompt = build_system_prompt(cfg, memories)
     history_msgs = db.get_messages(conv_id, limit=cfg.history_limit)
 
@@ -138,6 +150,8 @@ async def chat(payload: ChatIn) -> StreamingResponse:
             reply = "".join(collected).strip()
             if reply:
                 db.add_message(conv_id, "assistant", reply)
+                # Reflect in the background — Nero decides what to remember.
+                _spawn(asyncio.to_thread(memory.reflect, cfg, text, reply))
 
     return StreamingResponse(generate(), media_type="text/plain; charset=utf-8")
 
@@ -154,8 +168,16 @@ def create_memory(payload: MemoryIn) -> dict:
     content = payload.content.strip()
     if not content:
         raise HTTPException(status_code=400, detail="Memory is empty.")
-    mem_id = db.add_memory(content)
+    cfg = load_config()
+    embedding = embed_text(cfg, content)  # best-effort; None if embedder is down
+    mem_id = db.add_memory(content, source="user", embedding=embedding)
     return {"id": mem_id, "content": content}
+
+
+@app.get("/api/metrics")
+def metrics() -> dict:
+    """Lightweight observability into the memory subsystem."""
+    return {"memory": memory.METRICS}
 
 
 @app.delete("/api/memories/{memory_id}")

@@ -57,6 +57,13 @@ class Config:
     temperature: float
     host: str
     port: int
+    # Memory subsystem
+    embed_model: str
+    memory_top_k: int
+    memory_half_life_days: float
+    memory_min_score: float
+    reflection_enabled: bool
+    reflection_model: str
 
 
 def ensure_config() -> None:
@@ -144,4 +151,10 @@ def load_config() -> Config:
         temperature=_num(data.get("temperature"), 0.7, float),
         host=(data.get("host") or "0.0.0.0"),
         port=_num(data.get("port"), 8080, int),
+        embed_model=(data.get("embed_model") or "nomic-embed-text"),
+        memory_top_k=_num(data.get("memory_top_k"), 6, int),
+        memory_half_life_days=_num(data.get("memory_half_life_days"), 30.0, float),
+        memory_min_score=_num(data.get("memory_min_score"), 0.05, float),
+        reflection_enabled=bool(data.get("reflection_enabled", True)),
+        reflection_model=(data.get("reflection_model") or ""),
     )

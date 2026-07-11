@@ -8,12 +8,15 @@ For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
 ---
 
 ## 🔨 Building now
-- **Memory core** (Phase 1, memory half) — layered memory (type · confidence ·
-  importance · decay · timestamps · entities), `nomic-embed` retrieval with a
-  graceful fallback, and reflection (she decides what to remember). Lands in PR #2
-  with `verify_memory.py`, `verify_embeddings.py`, tests + a benchmark.
+- **Intelligent silence** — live "thinking… / searching memory…" status (small).
+- Next subsystem: **World model / continuity** (Phase 2).
 
 ## 🧪 Built, in review — [PR #2](https://github.com/manbeardog13/mbd-AI/pull/2)
+- **Memory core** ✅ — layered/typed memory (semantic · episodic · preference ·
+  experience) with confidence · importance · **decay** · timestamps · entities;
+  `nomic-embed` semantic **retrieval** with graceful fallback; **reflection**
+  (she decides what to remember, dedupes/reinforces); `/api/metrics`. Ships with
+  unit tests, an offline self-test, and `verify_memory/embeddings/reflection.py`.
 - **Development Directive** (`docs/DIRECTIVE.md`) + **verification framework**
   (`verify/verify_everything.py`, `verify_gpu/ollama/config`)
 - **Phase 1 — Identity:** goals, principles, confidence-based answering

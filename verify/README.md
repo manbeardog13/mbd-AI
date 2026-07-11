@@ -34,15 +34,20 @@ skips are fine.
 
 ## Current checks
 
-| Script | What it verifies |
-|--------|------------------|
-| `verify_config.py` | `config.yaml` loads cleanly (name, model, humor, goals, principles) |
-| `verify_gpu.py` | NVIDIA GPU present + VRAM (skips on CPU-only machines) |
-| `verify_ollama.py` | Ollama installed, running, and Nero's model pulled |
+| Script | What it verifies | Needs Ollama? |
+|--------|------------------|:---:|
+| `verify_config.py` | `config.yaml` loads cleanly (name, model, humor, goals, principles) | no |
+| `verify_gpu.py` | NVIDIA GPU present + VRAM (skips on CPU-only machines) | no |
+| `verify_ollama.py` | Ollama installed, running, and Nero's model pulled | — |
+| `verify_memory.py` | Memory storage, decay, ranking, dedup, parsing (offline self-test) | no |
+| `verify_embeddings.py` | Local embeddings (`nomic-embed-text`) return vectors | yes |
+| `verify_reflection.py` | Nero extracts a memory from a sample exchange | yes |
+
+The `no`/offline checks pass on any machine (including CI); the `yes` checks
+skip when Ollama isn't running and pass on your PC once it is.
 
 ## Coming as each subsystem lands
 
-`verify_embeddings.py` · `verify_memory.py` · `verify_reflection.py` ·
 `verify_voice.py` · `verify_vector_db.py` · `verify_context.py` ·
 `verify_tools.py` · `verify_scheduler.py` · `verify_performance.py`
 

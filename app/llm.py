@@ -7,9 +7,12 @@ UI can show the reply as it's being written, just like chatting with me.
 from __future__ import annotations
 
 import json
-from typing import AsyncGenerator
+from typing import TYPE_CHECKING, AsyncGenerator
 
 import httpx
+
+if TYPE_CHECKING:
+    from .config import Config
 
 
 async def stream_chat(
@@ -77,3 +80,51 @@ async def check_ollama(host: str, model: str) -> tuple[bool, str]:
         )
 
     return True, "Connected and ready."
+
+
+# --------------------------------------------------------------------------
+# Synchronous helpers for the memory subsystem (embeddings + reflection).
+# These return a safe empty value on any failure, so callers degrade
+# gracefully instead of crashing when the model or embedder is unavailable.
+# --------------------------------------------------------------------------
+
+def embed_text(cfg: "Config", text: str) -> list[float] | None:
+    """Embed text with the local embedding model. Returns None if unavailable."""
+    if not text or not text.strip():
+        return None
+    url = f"{cfg.ollama_host.rstrip('/')}/api/embeddings"
+    try:
+        with httpx.Client(timeout=30) as client:
+            r = client.post(url, json={"model": cfg.embed_model, "prompt": text})
+            r.raise_for_status()
+            emb = r.json().get("embedding")
+            return emb if emb else None
+    except Exception:
+        return None
+
+
+def complete_chat(
+    cfg: "Config",
+    messages: list[dict],
+    temperature: float = 0.0,
+    model: str | None = None,
+    num_predict: int | None = None,
+) -> str:
+    """Non-streaming completion for reflection/utility calls. '' on failure."""
+    options: dict = {"temperature": temperature}
+    if num_predict is not None:
+        options["num_predict"] = num_predict
+    payload = {
+        "model": model or cfg.model,
+        "messages": messages,
+        "stream": False,
+        "options": options,
+    }
+    url = f"{cfg.ollama_host.rstrip('/')}/api/chat"
+    try:
+        with httpx.Client(timeout=120) as client:
+            r = client.post(url, json=payload)
+            r.raise_for_status()
+            return r.json().get("message", {}).get("content", "") or ""
+    except Exception:
+        return ""
