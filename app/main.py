@@ -77,7 +77,12 @@ def get_config_info() -> dict:
 @app.get("/api/settings")
 def get_settings() -> dict:
     cfg = load_config()
-    return {"humor": cfg.humor, "languages": cfg.languages, "voice": cfg.voice}
+    return {
+        "humor": cfg.humor,
+        "languages": cfg.languages,
+        "voice": cfg.voice,
+        "thinking": cfg.thinking,
+    }
 
 
 @app.post("/api/settings")
@@ -135,7 +140,8 @@ async def chat(payload: ChatIn) -> StreamingResponse:
         collected: list[str] = []
         try:
             async for chunk in stream_chat(
-                cfg.ollama_host, cfg.model, messages, cfg.temperature
+                cfg.ollama_host, cfg.model, messages, cfg.temperature,
+                think=cfg.thinking,
             ):
                 collected.append(chunk)
                 yield chunk

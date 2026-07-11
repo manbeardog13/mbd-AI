@@ -44,6 +44,15 @@ def test_keyword_overlap():
     assert memory._keyword_overlap("", "anything") == 0.0
 
 
+def test_strip_think_then_parse():
+    # A <think> block (even with brackets inside) must be removed before parsing,
+    # so reflection still recovers the real JSON array.
+    raw = '<think>Let me consider [option A] vs [option B]…</think>\n[{"content":"Toni codes in Rust","type":"semantic"}]'
+    assert memory.strip_think(raw).startswith("[")
+    out = memory.parse_memories(raw)
+    assert len(out) == 1 and out[0]["content"] == "Toni codes in Rust"
+
+
 def test_parse_trailing_brackets():
     # A valid array followed by bracketed prose must still parse (greedy-regex bug).
     tricky = '[{"content":"Toni plays guitar","type":"semantic"}]\nNote: [nothing else durable]'

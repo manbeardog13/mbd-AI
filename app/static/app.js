@@ -29,6 +29,17 @@ const els = {
 let aiName = "Your AI";
 let ownerName = "friend";
 let busy = false;
+let thinkingEnabled = false;
+
+// Hide <think>…</think> reasoning from the reply unless thinking is on.
+// Also hides an unclosed <think> mid-stream so tags never flash on screen.
+function cleanReply(text) {
+  if (thinkingEnabled) return text;
+  return text
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/<think>[\s\S]*$/i, "")
+    .replace(/^\s+/, "");
+}
 
 // ---- Small helpers ----------------------------------------------------
 
@@ -81,7 +92,7 @@ function addMessage(role, text) {
   clearEmptyState();
   const div = document.createElement("div");
   div.className = "msg " + (role === "user" ? "user" : "ai");
-  div.innerHTML = role === "user" ? escapeHtml(text) : renderMarkdown(text);
+  div.innerHTML = role === "user" ? escapeHtml(text) : renderMarkdown(cleanReply(text));
   els.messages.appendChild(div);
   scrollToBottom();
   return div;
@@ -173,12 +184,12 @@ async function sendMessage(text) {
       const { value, done } = await reader.read();
       if (done) break;
       full += decoder.decode(value, { stream: true });
-      aiDiv.innerHTML = renderMarkdown(full);
+      aiDiv.innerHTML = renderMarkdown(cleanReply(full));
       scrollToBottom();
     }
   } catch (err) {
     full += `\n\n[Connection error: ${err}]`;
-    aiDiv.innerHTML = renderMarkdown(full);
+    aiDiv.innerHTML = renderMarkdown(cleanReply(full));
   } finally {
     aiDiv.classList.remove("thinking");
     busy = false;
@@ -333,8 +344,9 @@ function stopListening() {
 
 // After a reply finishes: optionally speak it, then optionally re-listen.
 async function onReplyComplete(fullText) {
-  const shouldSpeak = els.speakToggle.checked && fullText.trim();
-  if (shouldSpeak) await speak(toSpeakable(fullText));
+  const cleaned = cleanReply(fullText);
+  const shouldSpeak = els.speakToggle.checked && cleaned.trim();
+  if (shouldSpeak) await speak(toSpeakable(cleaned));
   if (els.handsfreeToggle.checked && sttSupported) startListening();
 }
 
@@ -431,6 +443,7 @@ async function loadSettings() {
   try {
     const s = await (await fetch("/api/settings")).json();
     if (typeof s.humor === "number") reflectHumor(s.humor);
+    thinkingEnabled = !!s.thinking;
   } catch (_) { /* keep default */ }
 }
 
