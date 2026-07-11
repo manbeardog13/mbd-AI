@@ -20,16 +20,16 @@ Ollama runs the language model on your GPU and handles all the heavy lifting.
 Your GPU's VRAM decides how big a model you can run. Bigger = smarter but heavier.
 
 ```bash
-ollama pull qwen2.5:14b     # Nero's default brain, great on a 10–12 GB GPU
+ollama pull qwen3:14b     # Nero's default brain, great on a 10–12 GB GPU
 ```
 
 Pick the right size for your card (full guide in **[MODELS.md](MODELS.md)**):
 
 | Model             | Approx VRAM | Notes                                  |
 |-------------------|-------------|----------------------------------------|
-| `qwen2.5:7b`      | ~5 GB       | Fast, capable (8 GB cards)             |
-| `qwen2.5:14b`     | ~9–10 GB    | Noticeably smarter (**the default**)   |
-| `qwen2.5:32b`     | ~20 GB      | Excellent, if you have 24 GB+          |
+| `qwen3:8b`      | ~5 GB       | Fast, capable (8 GB cards)             |
+| `qwen3:14b`     | ~9–10 GB    | Noticeably smarter (**the default**)   |
+| `qwen3:32b`     | ~20 GB      | Excellent, if you have 24 GB+          |
 
 > Not sure how much VRAM you have? On Windows, open Task Manager → Performance →
 > GPU. Or run `nvidia-smi` in a terminal.
@@ -37,7 +37,7 @@ Pick the right size for your card (full guide in **[MODELS.md](MODELS.md)**):
 Test the model directly (optional):
 
 ```bash
-ollama run qwen2.5:14b "Say hello in one sentence."
+ollama run qwen3:14b "Say hello in one sentence."
 ```
 
 ---
@@ -87,7 +87,7 @@ You'll see something like:
 
 ```
   ── Nero ──
-  Brain:  qwen2.5:14b  (via Ollama at http://localhost:11434)
+  Brain:  qwen3:14b  (via Ollama at http://localhost:11434)
   Open:   http://localhost:8080
 ```
 

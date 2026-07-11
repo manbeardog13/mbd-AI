@@ -68,24 +68,41 @@ def banner() -> None:
 
 # ---- helpers ----------------------------------------------------------
 
-def read_model() -> str:
-    """Read the model name from config without needing PyYAML (not yet installed)."""
+def read_config_str(key: str, default: str) -> str:
+    """Read a top-level string setting from config without needing PyYAML."""
+    prefix = key + ":"
     for name in ("config.yaml", "config.example.yaml"):
         p = ROOT / name
         if not p.exists():
             continue
         for line in p.read_text(encoding="utf-8").splitlines():
             s = line.strip()
-            if s.startswith("#") or not s.startswith("model:"):
+            if s.startswith("#") or not s.startswith(prefix):
                 continue
             value = s.split(":", 1)[1].strip()
             # If the value isn't quoted, drop any trailing inline comment.
             if value and value[0] not in "\"'":
                 value = value.split("#", 1)[0].strip()
-            value = value.strip().strip('"').strip("'")
-            if value:
-                return value
-    return "qwen2.5:14b"
+            return value.strip().strip('"').strip("'")
+    return default
+
+
+def read_model() -> str:
+    return read_config_str("model", "qwen3:14b") or "qwen3:14b"
+
+
+def required_models() -> list[str]:
+    """Every model Nero needs pulled: chat + embedder + (optional) reflection."""
+    models = [
+        read_model(),
+        read_config_str("embed_model", "nomic-embed-text") or "nomic-embed-text",
+        read_config_str("reflection_model", ""),  # empty ⇒ reuses the chat model
+    ]
+    seen: list[str] = []
+    for m in models:
+        if m and m not in seen:
+            seen.append(m)
+    return seen
 
 
 def run(cmd: list[str], **kwargs) -> int:
@@ -108,8 +125,8 @@ def model_installed(model: str) -> bool:
     """True only if the *exact* model tag is installed.
 
     We match the NAME column exactly (allowing Ollama's implicit ':latest'),
-    not just the family name — otherwise having qwen2.5:7b would wrongly look
-    like qwen2.5:14b is present, and bootstrap would skip the download while
+    not just the family name — otherwise having qwen3:8b would wrongly look
+    like qwen3:14b is present, and bootstrap would skip the download while
     every chat then fails at runtime.
     """
     try:
@@ -213,20 +230,20 @@ def ensure_ollama() -> None:
         )
 
 
-def ensure_model() -> None:
-    model = read_model()
-    step(f"Checking Nero's brain: {model}")
-    if model_installed(model):
-        ok("Model already downloaded")
-        return
-    print(f"    Downloading {model} (a few GB — one time only)...")
-    if run(["ollama", "pull", model]) != 0:
-        die(
-            f"Couldn't download '{model}'.\n"
-            "    Make sure Ollama is running, then re-run this script.\n"
-            "    (You can also pick a smaller model in config.yaml — see docs/MODELS.md)"
-        )
-    ok("Model ready")
+def ensure_models() -> None:
+    for model in required_models():
+        step(f"Checking model: {model}")
+        if model_installed(model):
+            ok("Already downloaded")
+            continue
+        print(f"    Downloading {model} (one time only)...")
+        if run(["ollama", "pull", model]) != 0:
+            die(
+                f"Couldn't download '{model}'.\n"
+                "    Make sure Ollama is running, then re-run this script.\n"
+                "    (You can pick different models in config.yaml — see docs/MODELS.md)"
+            )
+        ok("Ready")
 
 
 def launch() -> None:
@@ -244,7 +261,7 @@ def main() -> None:
     check_python()
     setup_venv()
     ensure_ollama()
-    ensure_model()
+    ensure_models()
 
     if setup_only:
         step("Setup complete")

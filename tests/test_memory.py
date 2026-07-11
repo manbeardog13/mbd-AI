@@ -79,7 +79,7 @@ def test_reflection_enabled_blank_defaults_true():
     import tempfile
     from app import config as cfgmod
     tmp = Path(tempfile.mkdtemp()) / "config.yaml"
-    tmp.write_text("reflection_enabled:\nmodel: qwen2.5:14b\n", encoding="utf-8")
+    tmp.write_text("reflection_enabled:\nmodel: qwen3:14b\n", encoding="utf-8")
     old = cfgmod.CONFIG_PATH
     cfgmod.CONFIG_PATH = tmp
     try:

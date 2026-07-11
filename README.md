@@ -62,7 +62,7 @@ clear fix-it steps if anything's missing. Then open **http://localhost:8080**.
 <summary>Prefer to set it up by hand?</summary>
 
 ```bash
-ollama pull qwen2.5:14b     # see docs/MODELS.md to match your GPU
+ollama pull qwen3:14b     # see docs/MODELS.md to match your GPU
 python -m venv .venv
 # Windows:  .venv\Scripts\activate     macOS/Linux:  source .venv/bin/activate
 pip install -r requirements.txt

@@ -68,8 +68,8 @@ async def check_ollama(host: str, model: str) -> tuple[bool, str]:
         )
 
     # Match the exact tag (allowing Ollama's implicit ":latest"), not just the
-    # family — otherwise a sibling tag like qwen2.5:7b would make us claim
-    # qwen2.5:14b is ready when chat would actually fail.
+    # family — otherwise a sibling tag like qwen3:8b would make us claim
+    # qwen3:14b is ready when chat would actually fail.
     wanted = {model}
     if ":" not in model:
         wanted.add(f"{model}:latest")
@@ -109,8 +109,14 @@ def complete_chat(
     temperature: float = 0.0,
     model: str | None = None,
     num_predict: int | None = None,
+    keep_alive: str | None = None,
 ) -> str:
-    """Non-streaming completion for reflection/utility calls. '' on failure."""
+    """Non-streaming completion for reflection/utility calls. '' on failure.
+
+    `keep_alive` controls how long Ollama keeps the model in VRAM after the
+    call (e.g. "0" to unload immediately — handy for a secondary reflection
+    model so it doesn't crowd the main chat model on a small GPU).
+    """
     options: dict = {"temperature": temperature}
     if num_predict is not None:
         options["num_predict"] = num_predict
@@ -120,6 +126,8 @@ def complete_chat(
         "stream": False,
         "options": options,
     }
+    if keep_alive is not None:
+        payload["keep_alive"] = keep_alive
     url = f"{cfg.ollama_host.rstrip('/')}/api/chat"
     try:
         with httpx.Client(timeout=120) as client:
