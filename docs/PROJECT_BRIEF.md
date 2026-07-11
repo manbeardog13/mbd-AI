@@ -141,9 +141,11 @@ tests/   test_memory.py        PROGRESS.md
 - 🔜 **Next (owner's chosen order):**
   1. **Real-time voice agent** (in progress). ✅ Increment 1 — local neural
      English voice (Kokoro via ONNX Runtime, no PyTorch, Python 3.13), verified
-     8/8. 🔨 Increment 2 — that voice now plays in the chat UI (`/api/speak`,
-     with browser fallback + barge-in). Next: local STT (faster-whisper), the
-     real-time loop (continuous listen, <1s latency), and Croatian (Meta MMS-TTS).
+     8/8. 🔨 Increment 2 (in review, PR #9) — that voice now plays in the chat UI
+     (`/api/speak`), with graceful fallback to the browser voice for Croatian or
+     when unavailable (incl. iOS autoplay), plus barge-in. Next: local STT
+     (faster-whisper), the real-time loop (continuous listen, <1s latency), and
+     Croatian (Meta MMS-TTS).
   2. **Computer control** — a *local "Cowork"*: see the screen, drive
      mouse/keyboard, act in real apps, with hard safety rails. Rides on the
      **Tool System + planner**, so that foundation lands here.
