@@ -40,6 +40,7 @@ skips are fine.
 | `verify_gpu.py` | NVIDIA GPU present + VRAM (skips on CPU-only machines) | no |
 | `verify_ollama.py` | Ollama installed, running, and Nero's model pulled | — |
 | `verify_memory.py` | Memory storage, decay, ranking, dedup, parsing (offline self-test) | no |
+| `verify_world_model.py` | World state upsert/merge/clear, parsing, rendering (offline self-test) | no |
 | `verify_embeddings.py` | Local embeddings (`nomic-embed-text`) return vectors | yes |
 | `verify_reflection.py` | Nero extracts a memory from a sample exchange | yes |
 

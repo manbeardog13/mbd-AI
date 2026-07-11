@@ -60,6 +60,21 @@ def test_parse_trailing_brackets():
     assert len(out) == 1 and out[0]["content"] == "Toni plays guitar"
 
 
+def test_parse_leading_bracket_prose():
+    # Bracketed prose *before* the real array must be skipped, not abort parsing.
+    tricky = 'For example [ignore this]. Real: [{"content":"Toni skis","type":"semantic"}]'
+    out = memory.parse_memories(tricky)
+    assert len(out) == 1 and out[0]["content"] == "Toni skis"
+
+
+def test_strip_think_unterminated_is_dropped():
+    # A truncated (unclosed) <think> block must be removed entirely, so its
+    # half-formed draft can't be mistaken for the answer.
+    raw = '<think>Let me draft [{"content":"tentative","type":"semantic"}] but wait'
+    assert memory.strip_think(raw) == ""
+    assert memory.parse_memories(raw) == []
+
+
 def test_score_scale_is_unified():
     cfg = type("C", (), {"memory_half_life_days": 30.0})()
     now = datetime.now(timezone.utc).isoformat()

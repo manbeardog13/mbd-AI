@@ -117,12 +117,18 @@ def complete_chat(
     num_predict: int | None = None,
     keep_alive: str | None = None,
     think: bool | None = None,
+    response_format: dict | str | None = None,
 ) -> str:
     """Non-streaming completion for reflection/utility calls. '' on failure.
 
     `keep_alive` controls how long Ollama keeps the model in VRAM after the
     call (e.g. "0" to unload immediately — handy for a secondary reflection
     model so it doesn't crowd the main chat model on a small GPU).
+
+    `response_format` is Ollama's structured-output constraint: pass a JSON
+    schema (or the string "json") to force the model to emit only matching
+    JSON. Essential for small reasoning models that otherwise "think out loud"
+    in prose and never reach the JSON — the grammar makes that impossible.
     """
     options: dict = {"temperature": temperature}
     if num_predict is not None:
@@ -137,6 +143,8 @@ def complete_chat(
         payload["keep_alive"] = keep_alive
     if think is not None:
         payload["think"] = think
+    if response_format is not None:
+        payload["format"] = response_format
     url = f"{cfg.ollama_host.rstrip('/')}/api/chat"
     try:
         with httpx.Client(timeout=120) as client:

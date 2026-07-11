@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+"""Self-test for the World Model: storage upsert/merge/clear, parsing, rendering.
+
+The logic checks run fully offline (temp DB, no Ollama) on any machine. If
+Ollama is reachable, a final *live* check exercises the real model end-to-end —
+it feeds a sample exchange through world_model.update() and confirms the world
+state actually gets populated. That live path is what catches a model rambling
+in prose instead of emitting the JSON object (offline parse tests can't). Exit
+0 = pass.
+"""
+from __future__ import annotations
+
+import sys
+import tempfile
+import urllib.request
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from app import db, world_model  # noqa: E402
+from app.config import load_config  # noqa: E402
+
+FAILS: list[str] = []
+
+
+def check(name: str, ok: bool) -> None:
+    print(f"  {'OK' if ok else 'XX'} {name}")
+    if not ok:
+        FAILS.append(name)
+
+
+def server_up(host: str) -> bool:
+    try:
+        with urllib.request.urlopen(host.rstrip("/") + "/api/tags", timeout=4) as r:
+            return r.status == 200
+    except Exception:
+        return False
+
+
+def live_check() -> None:
+    """End-to-end: does a real model call actually populate the world state?"""
+    cfg = load_config()
+    if not cfg.world_model_enabled:
+        print("  . live update skipped — world_model_enabled is false.")
+        return
+    if not server_up(cfg.ollama_host):
+        print("  . live update skipped — Ollama not reachable (see verify_ollama).")
+        return
+    db.clear_world()
+    world_model.update(
+        cfg,
+        "Let's start Phase 3 — I want to build the tool system so Nero can act.",
+        "Great — I'll scaffold the tool system and planner next.",
+    )
+    state = db.get_world()
+    check(f"live update populated the world state ({len(state)} field(s))", bool(state))
+    if state:
+        print(f"     -> {state}")
+    else:
+        model = cfg.reflection_model or cfg.model
+        print(f"     HINT: {model} returned no usable JSON. If your Ollama is old, it may")
+        print("     ignore structured-output `format` — update Ollama so schemas are honored.")
+
+
+def main() -> int:
+    db.DB_PATH = Path(tempfile.mkdtemp()) / "verify_world.db"
+    db.init_db()
+
+    check("render of empty state is ''", world_model.render({}, "Toni") == "")
+
+    db.upsert_world({"current_project": "Nero", "current_task": "world model"})
+    state = db.get_world()
+    check("upsert stores fields",
+          state.get("current_project") == "Nero" and state.get("current_task") == "world model")
+
+    db.upsert_world({"current_task": "reviewing", "blockers": "VRAM"})
+    state = db.get_world()
+    check("merge updates existing + adds new",
+          state["current_task"] == "reviewing" and state["blockers"] == "VRAM"
+          and state["current_project"] == "Nero")
+
+    db.upsert_world({"blockers": ""})
+    check("blank value clears a field", "blockers" not in db.get_world())
+
+    rendered = world_model.render(db.get_world(), "Toni")
+    check("render includes labels + owner",
+          "Current project: Nero" in rendered and "Toni" in rendered)
+
+    updates = world_model.parse_world_updates(
+        '```json\n{"current_task":"ship phase 2","unknown_key":"x","next_steps":"review"}\n```'
+    )
+    check("parse keeps known keys, drops unknown",
+          updates.get("current_task") == "ship phase 2"
+          and updates.get("next_steps") == "review"
+          and "unknown_key" not in updates)
+
+    survived = world_model.parse_world_updates(
+        '<think>reasoning with {a:1}</think> Here it is: {"current_project":"Nero"} done.'
+    )
+    check("parse survives <think> + trailing prose", survived.get("current_project") == "Nero")
+
+    check("parse junk -> {}", world_model.parse_world_updates("no json here") == {})
+
+    # Live end-to-end check (only when Ollama is up). This is the one that would
+    # have caught the model rambling in prose instead of emitting JSON.
+    live_check()
+
+    print()
+    if FAILS:
+        print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
+        return 1
+    print("  World Model logic verified.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -97,6 +97,11 @@ memory_min_score: 0.05
 # Reflection: after each exchange, Nero decides what's worth remembering.
 reflection_enabled: true
 
+# World model: Nero keeps a live picture of what you're working on (current
+# project, task, blockers, next steps) and updates it in the background, so she
+# resumes conversations knowing where you left off. Uses the reflection model.
+world_model_enabled: true
+
 # Model used for reflection (deciding what to remember, in the background).
 # A small, fast model keeps memory-forming snappy. On a 12 GB GPU, qwen3:4b
 # pairs nicely with a qwen3:14b chat model — and Nero unloads it right after

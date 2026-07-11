@@ -152,6 +152,32 @@ def retrieve(cfg: Config, query: str, k: int | None = None) -> list[dict]:
 
 # ---- reflection (automatic memory capture) ----------------------------
 
+# Token budget for a reflection pass. Generous on purpose so a schema-constrained
+# reply always has room to finish even with several facts + entities.
+REFLECTION_NUM_PREDICT = 1024
+
+# Structured-output schema (Ollama `format`). This is what actually stops a small
+# reasoning model from rambling in prose: the grammar only permits a JSON array
+# of memory objects, so the model *must* emit the facts directly. `content` and
+# `type` are required; the rest are optional (parse_memories fills defaults).
+REFLECTION_FORMAT = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "content": {"type": "string"},
+            "type": {
+                "type": "string",
+                "enum": ["semantic", "preference", "episodic", "experience", "procedural"],
+            },
+            "importance": {"type": "number"},
+            "confidence": {"type": "number"},
+            "entities": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["content", "type"],
+    },
+}
+
 _REFLECTION_SYSTEM = (
     "You extract durable, useful facts to remember about a person (the user) from a "
     "short slice of their conversation with their AI. Only capture things that will "
@@ -175,16 +201,62 @@ def _reflection_user_prompt(owner: str, user_text: str, assistant_text: str) -> 
 
 
 def strip_think(text: str) -> str:
-    """Remove <think>…</think> reasoning blocks a model might emit."""
-    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE).strip()
+    """Remove <think>…</think> reasoning blocks a model might emit.
+
+    Also drops an *unterminated* trailing ``<think>`` — a reasoning block cut off
+    by a tight token budget never gets its closing tag, and its half-formed
+    contents (often a draft JSON guess) would otherwise leak into parsing and be
+    mistaken for the real answer.
+    """
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r"<think>.*$", "", text, flags=re.DOTALL | re.IGNORECASE)
+    return text.strip()
+
+
+def _first_balanced_json(text: str, open_ch: str, close_ch: str):
+    """Return the first balanced ``open_ch…close_ch`` span that parses as JSON.
+
+    Scans candidate start positions left-to-right. If a balanced span fails to
+    parse — or never balances (e.g. a stray emoticon brace) — it advances to the
+    next candidate instead of giving up, so real JSON that follows
+    bracket-containing prose (``example {like this}: {"real": 1}``) is still
+    recovered. Returns the parsed value, or ``None`` if no candidate parses.
+    """
+    start = text.find(open_ch)
+    while start != -1:
+        depth = 0
+        in_str = False
+        esc = False
+        for i in range(start, len(text)):
+            ch = text[i]
+            if in_str:
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == '"':
+                    in_str = False
+            elif ch == '"':
+                in_str = True
+            elif ch == open_ch:
+                depth += 1
+            elif ch == close_ch:
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return json.loads(text[start:i + 1])
+                    except json.JSONDecodeError:
+                        break  # malformed span — try the next candidate start
+        start = text.find(open_ch, start + 1)
+    return None
 
 
 def _extract_json_array(text: str) -> list | None:
     """Pull the first JSON array out of a model reply, tolerating fences/prose.
 
-    Robust to trailing bracketed prose (e.g. `[...]. Note: [nothing else]`) by
-    scanning for the first *balanced* `[...]` span rather than greedily matching
-    to the last `]`.
+    Robust to bracketed prose on either side of the real payload (e.g.
+    `example [ignore]. [{...}]` or `[...]. Note: [nothing else]`) by scanning
+    for the first *balanced* `[...]` span that actually parses.
     """
     text = text.strip()
     text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.IGNORECASE).strip()
@@ -196,34 +268,8 @@ def _extract_json_array(text: str) -> list | None:
     except json.JSONDecodeError:
         pass
 
-    start = text.find("[")
-    if start == -1:
-        return None
-    depth = 0
-    in_str = False
-    esc = False
-    for i in range(start, len(text)):
-        ch = text[i]
-        if in_str:
-            if esc:
-                esc = False
-            elif ch == "\\":
-                esc = True
-            elif ch == '"':
-                in_str = False
-        elif ch == '"':
-            in_str = True
-        elif ch == "[":
-            depth += 1
-        elif ch == "]":
-            depth -= 1
-            if depth == 0:
-                try:
-                    value = json.loads(text[start:i + 1])
-                    return value if isinstance(value, list) else None
-                except json.JSONDecodeError:
-                    return None
-    return None
+    value = _first_balanced_json(text, "[", "]")
+    return value if isinstance(value, list) else None
 
 
 def parse_memories(raw: str) -> list[dict]:
@@ -323,9 +369,10 @@ def reflect(cfg: Config, user_text: str, assistant_text: str) -> dict:
             ],
             temperature=0.0,
             model=reflect_model,
-            num_predict=600,
+            num_predict=REFLECTION_NUM_PREDICT,
             keep_alive=keep_alive,
             think=False,  # reflection must emit clean JSON, not reasoning
+            response_format=REFLECTION_FORMAT,  # grammar-forces the JSON array
         )
         for item in parse_memories(raw):
             action = store_memory(cfg, item)
