@@ -8,11 +8,14 @@ welcome — what to cut as readily as what to add.*
 
 *Last updated: Phase 2 (World Model) merged & verified 7/7, and voice
 **Increment 1** (local neural English voice, Kokoro) merged & verified 8/8, both
-on the RTX 4070. Now building **voice Increment 2** — the neural voice + hands-free
-in the chat UI (PR #9). Voice *input* confirmed on phone/tablet over HTTPS
-(Tailscale); spoken *output* confirmed working on iPhone (Web Audio playback),
-with emoji stripped from speech and sentence-by-sentence synthesis for lower
-latency. Awaiting owner sign-off on pacing before merging PR #9; then local STT
+on the RTX 4070. **PR #9** (open) now bundles: neural voice wired into the chat UI
+(sentence-by-sentence, emoji stripped, iOS Web Audio playback confirmed) + a full
+**UI redesign** to the NERO Design System v1.0 (light, violet, floating, calm) +
+a **ChatGPT-style two-button composer** (voice recording · conversation mode) + a
+hands-free **conversation-mode** screen (animated orb) + an obsessive **polish
+pass** (layered ambient shadows, glass, engineered motion, trimmed "visual-
+silence" copy). Rendered-verified desktop + iPhone (no overflow / JS errors).
+Awaiting owner sign-off before merge; then local STT
 (faster-whisper). Owner's build order: voice → computer control
 → apply the new design system.*
 
