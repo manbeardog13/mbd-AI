@@ -24,6 +24,14 @@ const els = {
   ttsVoice: document.getElementById("tts-voice"),
   humor: document.getElementById("humor"),
   humorVal: document.getElementById("humor-val"),
+  convoMode: document.getElementById("convo-mode"),
+  settingsClose: document.getElementById("settings-close"),
+  scrim: document.getElementById("scrim"),
+  convoOverlay: document.getElementById("convo-overlay"),
+  orb: document.getElementById("orb"),
+  convoStatus: document.getElementById("convo-status"),
+  convoTranscript: document.getElementById("convo-transcript"),
+  convoClose: document.getElementById("convo-close"),
 };
 
 let aiName = "Your AI";
@@ -171,6 +179,7 @@ async function sendMessage(text) {
   addMessage("user", text);
   els.input.value = "";
   autoGrow();
+  updateComposerButtons();
 
   const aiDiv = addMessage("ai", "");
   aiDiv.classList.add("thinking");
@@ -436,9 +445,13 @@ const sttSupported = !!SpeechRecognition && window.isSecureContext;
 let recognition = null;
 let listening = false;
 
+let convoActive = false;      // are we in hands-free conversation mode?
+let lastTranscript = "";      // most recent speech, for convo mode to send
+
 if (!sttSupported) {
-  // Hide the mic if we can't use it here, so it's never a dead button.
+  // No speech recognition here — hide the voice buttons so they're never dead.
   els.mic.style.display = "none";
+  els.convoMode.style.display = "none";
 } else {
   recognition = new SpeechRecognition();
   recognition.lang = "en-US";
@@ -450,20 +463,42 @@ if (!sttSupported) {
     for (let i = 0; i < event.results.length; i++) {
       transcript += event.results[i][0].transcript;
     }
-    els.input.value = transcript;
-    autoGrow();
+    lastTranscript = transcript;
+    if (convoActive) {
+      els.convoTranscript.textContent = transcript;
+    } else {
+      els.input.value = transcript;
+      autoGrow();
+      updateComposerButtons();
+    }
   };
 
   recognition.onend = () => {
     listening = false;
     els.mic.classList.remove("listening");
-    const text = els.input.value.trim();
-    if (text) sendMessage(text);
+    if (convoActive) {
+      const text = lastTranscript.trim();
+      lastTranscript = "";
+      if (text) {
+        els.convoStatus.textContent = "Thinking…";
+        setOrb("thinking");
+        sendMessage(text);
+      } else if (convoActive) {
+        startListening();   // heard nothing — keep the ear open
+      }
+    } else {
+      const text = els.input.value.trim();
+      if (text) sendMessage(text);
+    }
   };
 
   recognition.onerror = () => {
     listening = false;
     els.mic.classList.remove("listening");
+    if (convoActive) {
+      els.convoStatus.textContent = "Tap the orb to talk";
+      setOrb("");
+    }
   };
 }
 
@@ -483,11 +518,24 @@ function stopListening() {
   if (recognition && listening) recognition.stop();
 }
 
-// After a reply finishes: optionally speak it, then optionally re-listen.
+// After a reply finishes: speak it, then (hands-free / convo) listen again.
 async function onReplyComplete(fullText) {
-  const cleaned = cleanReply(fullText);
-  const shouldSpeak = els.speakToggle.checked && cleaned.trim();
-  if (shouldSpeak) await speak(toSpeakable(cleaned));
+  const speakable = toSpeakable(cleanReply(fullText));
+
+  if (convoActive) {
+    els.convoStatus.textContent = "";
+    setOrb("speaking");
+    await speak(speakable);
+    if (!convoActive) return;            // user ended it mid-reply
+    els.convoTranscript.textContent = "";
+    els.convoStatus.textContent = "Listening…";
+    setOrb("listening");
+    startListening();
+    return;
+  }
+
+  const shouldSpeak = els.speakToggle.checked && speakable;
+  if (shouldSpeak) await speak(speakable);
   if (els.handsfreeToggle.checked && sttSupported) startListening();
 }
 
@@ -503,7 +551,15 @@ els.form.addEventListener("submit", (e) => {
   sendMessage(els.input.value);
 });
 
-els.input.addEventListener("input", autoGrow);
+els.input.addEventListener("input", () => { autoGrow(); updateComposerButtons(); });
+
+// Show Send when there's text to send; otherwise the conversation-mode button
+// (ChatGPT-style: left = voice recording, right = send / conversation mode).
+function updateComposerButtons() {
+  const hasText = els.input.value.trim().length > 0;
+  els.send.hidden = !hasText;
+  els.convoMode.hidden = hasText;
+}
 
 // Enter to send, Shift+Enter for a new line.
 els.input.addEventListener("keydown", (e) => {
@@ -522,7 +578,48 @@ els.newChat.addEventListener("click", async () => {
   await fetch("/api/new", { method: "POST" });
   els.messages.innerHTML = "";
   showEmptyState();
-  els.sidebar.classList.remove("open");
+  closeSettings();
+});
+
+// ---- Settings slide-over ----------------------------------------------
+function openSettings() { els.sidebar.classList.add("open"); els.scrim.hidden = false; }
+function closeSettings() { els.sidebar.classList.remove("open"); els.scrim.hidden = true; }
+els.settingsClose.addEventListener("click", closeSettings);
+els.scrim.addEventListener("click", closeSettings);
+
+// ---- Conversational (hands-free voice) mode ---------------------------
+function setOrb(state) {
+  els.orb.className = "orb" + (state ? " " + state : "");
+}
+
+function enterConvo() {
+  if (!sttSupported) return;
+  convoActive = true;
+  els.convoOverlay.hidden = false;
+  els.convoTranscript.textContent = "";
+  els.convoStatus.textContent = "Listening…";
+  setOrb("listening");
+  startListening();
+}
+
+function exitConvo() {
+  convoActive = false;
+  stopSpeaking();
+  stopListening();
+  els.convoOverlay.hidden = true;
+  setOrb("");
+}
+
+els.convoMode.addEventListener("click", enterConvo);
+els.convoClose.addEventListener("click", exitConvo);
+// Tap the orb to (re)start listening if she's idle.
+els.orb.addEventListener("click", () => {
+  if (convoActive && !listening && !busy) {
+    els.convoStatus.textContent = "Listening…";
+    els.convoTranscript.textContent = "";
+    setOrb("listening");
+    startListening();
+  }
 });
 
 els.memoryForm.addEventListener("submit", async (e) => {
@@ -538,9 +635,7 @@ els.memoryForm.addEventListener("submit", async (e) => {
   loadMemories();
 });
 
-els.menuToggle.addEventListener("click", () => {
-  els.sidebar.classList.toggle("open");
-});
+els.menuToggle.addEventListener("click", openSettings);
 
 // Remember voice preferences between visits.
 function loadVoicePrefs() {
@@ -625,6 +720,7 @@ els.humor.addEventListener("input", () => {
 
 (async function init() {
   loadVoicePrefs();
+  updateComposerButtons();
   detectNeuralVoice();   // flips on Nero's local voice once the server answers
   await loadConfig();
   showEmptyState();

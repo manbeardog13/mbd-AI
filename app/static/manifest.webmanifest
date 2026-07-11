@@ -1,12 +1,12 @@
 {
-  "name": "mbd-AI — Your Personal AI",
-  "short_name": "mbd-AI",
+  "name": "Nero",
+  "short_name": "Nero",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f1115",
-  "theme_color": "#0f1115",
+  "background_color": "#F7F7F5",
+  "theme_color": "#F7F7F5",
   "icons": [
     {
       "src": "/static/icon.svg",
