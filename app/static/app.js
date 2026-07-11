@@ -96,8 +96,7 @@ function showEmptyState() {
   els.messages.innerHTML = `
     <div class="empty">
       <h1>Hey${greetName} 👋</h1>
-      <p>I'm ${escapeHtml(aiName)} — your own AI, running entirely on your machine.
-      Type or tap the mic to talk.</p>
+      <p>What's on your mind?</p>
     </div>`;
 }
 

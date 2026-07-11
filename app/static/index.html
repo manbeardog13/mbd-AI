@@ -63,7 +63,7 @@
             </button>
           </div>
         </div>
-        <p id="status-text" class="status-text">Connecting to your local brain…</p>
+        <p id="status-text" class="status-text">Connecting…</p>
       </form>
     </main>
 
@@ -80,25 +80,25 @@
       <section class="panel">
         <h3>Humor <span id="humor-val" class="humor-val">75%</span></h3>
         <input type="range" id="humor" min="0" max="100" step="5" value="75" />
-        <p class="hint">TARS-style dial. 0 is all business, 100 is full comedian.</p>
+        <p class="hint">0 serious · 100 comedian</p>
       </section>
 
       <section class="panel">
         <h3>Voice</h3>
         <label class="toggle">
           <input type="checkbox" id="speak-toggle" />
-          <span>Speak replies aloud</span>
+          <span>Speak replies</span>
         </label>
         <label class="toggle">
           <input type="checkbox" id="handsfree-toggle" />
-          <span>Hands-free (auto-listen after each reply)</span>
+          <span>Hands-free</span>
         </label>
         <div class="field">
-          <label for="tts-voice">Her voice</label>
+          <label for="tts-voice">Voice</label>
           <select id="tts-voice"></select>
         </div>
         <div class="field">
-          <label for="mic-lang">Voice input language</label>
+          <label for="mic-lang">Language</label>
           <select id="mic-lang">
             <option value="en-US">English</option>
             <option value="hr-HR">Hrvatski</option>
@@ -107,15 +107,15 @@
       </section>
 
       <section class="panel">
-        <h3>What she remembers about you</h3>
+        <h3>Memories</h3>
         <form id="memory-form">
-          <input id="memory-input" type="text" placeholder="e.g. I'm building a local AI" autocomplete="off" />
+          <input id="memory-input" type="text" placeholder="Add something to remember…" autocomplete="off" />
           <button type="submit" class="btn small">Add</button>
         </form>
         <ul id="memory-list" class="memory-list"></ul>
       </section>
 
-      <p class="footer-note">Runs 100% on your machine. Private by design.</p>
+      <p class="footer-note">Private. On your machine.</p>
     </aside>
 
     <!-- Conversational mode -->
