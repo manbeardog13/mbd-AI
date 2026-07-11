@@ -62,7 +62,15 @@ last_reinforced: 2026-07-11
 - **Automatic capture:** after important turns, Nero decides *herself* what's
   worth remembering (via reflection) — you shouldn't have to add facts by hand.
 - **Retrieval:** start simple (inject the most relevant/confident memories),
-  then add semantic (embedding) search as the store grows.
+  then semantic search via a local embedding model (**`nomic-embed`** through
+  Ollama). If embeddings aren't available yet, fall back to confidence + recency
+  so it always works.
+- **Memories connect, not just accumulate.** Each memory carries the entities it
+  mentions and a timestamp, so the flat store is already the seed of a
+  **knowledge graph** (Toni → works on → ASC → written in → React) and a
+  **timeline**. Some memories record *outcomes* ("animation lib X was too slow →
+  avoid"), turning memory into experience. This shape is what later lets an
+  **Insight Engine** find patterns across months.
 
 ---
 
@@ -176,34 +184,72 @@ tools, queued tasks, current context, CPU/GPU/RAM, token usage. Debugging a
 Value/effort are my engineering estimates. We build in phases; each phase is its
 own PR so we stay in control.
 
-| # (from the brief) | Capability | Phase | Value | Effort |
-|---|---|---|---|---|
-| 4, 7, 16 | **Identity file: persona + goals + principles** | **Next** | ★★★ | Low |
-| 1, 11 | **Layered memory: types, confidence, decay** | **Next** | ★★★ | Med |
-| 3 (reflect) | **Automatic memory via reflection** (she decides what to keep) | **Next** | ★★★ | Med |
-| 12 | Confidence-based answering | Next | ★★☆ | Low |
-| 10 | Intelligent silence / live status | Next | ★★☆ | Low |
-| 15 | **World model** (continuity) | Soon | ★★★ | Med |
-| 3 (full loop) | The full cognitive loop wiring | Soon | ★★★ | Med |
-| 8 | Tool planner (once tools exist) | Soon | ★★★ | Med-High |
-| 18 | Skills plugin system | Soon | ★★★ | Med |
-| 17 | Observability dashboard | Soon | ★★☆ | Med |
-| 6, 5, 14 | Desktop senses + proactivity + attention | Later | ★★★ | High |
-| 2 | Internal state variables (curiosity/urgency…) | Later | ★☆☆ | Low |
-| 13 | Slow personality drift | Later | ★★☆ | Med |
-
-**Deliberately deferred / treated with caution:**
-- *Internal "emotion" variables (#2)* — cheap to add but easily gimmicky; only
-  worth it if they visibly improve responses.
-- *Full desktop sensing & proactivity (#5, #6, #14)* — the biggest "alive"
-  payoff, but also the biggest privacy surface. Opt-in, local-only, and only
-  after the memory/identity core is solid.
+| Capability | Phase | Value | Effort |
+|---|---|---|---|
+| Identity file: persona + goals + principles | ✅ done | ★★★ | Low |
+| Confidence-based answering | ✅ done | ★★☆ | Low |
+| **Layered memory: types, confidence, decay, timestamps, entities** | **Building** | ★★★ | Med |
+| **Automatic memory via reflection** (she decides what to keep) | **Building** | ★★★ | Med |
+| Semantic retrieval via `nomic-embed` (graceful fallback) | Building | ★★★ | Med |
+| Intelligent silence / live "thinking…" status | Next | ★★☆ | Low |
+| Knowledge graph — memories connect (entities + relations) | Soon | ★★★ | Med |
+| World model / continuous world state (continuity) | Soon | ★★★ | Med |
+| Full cognitive-loop wiring | Soon | ★★★ | Med |
+| **Insight Engine / "Second Brain"** — patterns → proactive advice | Soon ★ | ★★★ | Med-High |
+| Temporal + experience memory · Life Journal | Soon | ★★★ | Med |
+| Executive functions (planner, prioritizer, scheduler) + tool planner | Soon | ★★★ | Med-High |
+| Skills as living plugins | Soon | ★★★ | Med |
+| Observability dashboard + trust layer (per-answer metadata) | Soon | ★★☆ | Med |
+| Local model ecosystem (+Whisper, Piper, vision/OCR, reasoning model) | Incremental | ★★★ | Med |
+| Desktop senses + attention model + background intelligence | Later | ★★★ | High |
+| Multi-agent architecture (planner/research/code/reflection roles) | Later | ★★☆ | Med |
+| Predictive assistance + curiosity engine | Later | ★★★ | High |
+| Personal digital twin · autonomous self-improvement | Later | ★★☆ | High |
+| Internal search over everything · decision assistant | Later | ★★★ | High |
+| Internal state variables · slow personality drift | Later | ★☆☆ | Low-Med |
 
 ---
 
-## What's already built (v0.1 foundation)
+## Nero 2.0 — the cognitive-OS horizon
 
-Identity basics (name, personality, humor dial, languages), a first memory layer
-(conversations + a facts store injected into every reply), voice in/out, local
-private inference, and remote access. The vision above is how that foundation
-grows into a companion — one phase at a time.
+The destination is bigger than an assistant: an **autonomous cognitive OS** you
+trust more than your file explorer. That means background intelligence (she
+works on your projects between conversations), predictive assistance (prepares
+what you're about to need), desktop understanding (intent, not just process
+names), a multi-agent inner team, and a **personal digital twin** of how you
+work.
+
+The **crown jewel** is an **Insight Engine** (the "Second Brain"): instead of
+only storing memories, Nero periodically asks *what patterns am I seeing? what
+recurring problems does Toni have? what can I automate? what should I recommend
+before he asks?* — and surfaces the answer at the right moment. That's the leap
+from **recorder → advisor**.
+
+**Discipline (why this is "horizon," not "now"):** almost all of the 2.0 layer
+depends on two things we don't have yet — a solid **memory/knowledge core** and a
+**privacy-safe local sensing layer**. Built too early, it becomes a sprawling,
+half-working system (the very "scope explosion" the advice itself warns about).
+So we build the core so it can *grow into* this, and gate the autonomous/sensing
+layer behind it — opt-in, local-only, observable.
+
+**Deliberately deferred / treated with caution:**
+- *Background daemons, predictive & desktop sensing* — the biggest payoff and the
+  biggest privacy/complexity surface. Only after the core is solid; always
+  opt-in and local.
+- *Internal "emotion"/state variables* — cheap but easily gimmicky; add only if
+  they visibly improve responses.
+
+---
+
+## What's already built
+
+**v0.1 foundation:** identity basics (name, personality, humor dial, languages),
+a first memory layer (conversations + a facts store injected into every reply),
+voice in/out, local private inference, remote access, one-command setup.
+
+**Phase 1 — identity increment:** goals, principles, and confidence-based
+answering are live. The **memory half** (layered memory, `nomic-embed` retrieval,
+reflection) is being built now.
+
+The vision above is how that foundation grows into a companion — one phase at a
+time.
