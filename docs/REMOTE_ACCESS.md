@@ -83,3 +83,10 @@ Now it launches full-screen with its own icon, like any other app.
 
 For this to work when you're away, your PC needs to be **on and running the app**
 — see **[ALWAYS_ON.md](ALWAYS_ON.md)** to keep it running automatically.
+
+## Want voice / "Hey Siri"?
+
+Once you can reach it over Tailscale, see **[VOICE_AND_SIRI.md](VOICE_AND_SIRI.md)**
+to talk to your AI by voice and set up the *"Hey Siri, ask Nova…"* shortcut on
+your iPhone. (Using the microphone from your phone needs HTTPS, which Tailscale
+provides for free — that guide walks you through it.)

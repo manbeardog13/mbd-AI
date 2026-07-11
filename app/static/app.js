@@ -1,6 +1,6 @@
 /* ============================================================
    Your Personal AI — browser logic
-   Talks to the local server, streams replies, manages memories.
+   Chat + streaming, long-term memories, and voice (talk & listen).
    ============================================================ */
 
 const els = {
@@ -8,6 +8,7 @@ const els = {
   form: document.getElementById("chat-form"),
   input: document.getElementById("input"),
   send: document.getElementById("send"),
+  mic: document.getElementById("mic"),
   aiName: document.getElementById("ai-name"),
   statusDot: document.getElementById("status-dot"),
   statusText: document.getElementById("status-text"),
@@ -17,6 +18,8 @@ const els = {
   memoryList: document.getElementById("memory-list"),
   menuToggle: document.getElementById("menu-toggle"),
   sidebar: document.getElementById("sidebar"),
+  speakToggle: document.getElementById("speak-toggle"),
+  handsfreeToggle: document.getElementById("handsfree-toggle"),
 };
 
 let aiName = "Your AI";
@@ -31,14 +34,24 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Very small, safe markdown: escapes everything first, then adds code
-// blocks, inline code, and bold. Enough to make replies readable.
+// Very small, safe markdown: escape first, then add code blocks, inline
+// code, and bold. Enough to make replies readable in the chat.
 function renderMarkdown(text) {
   let html = escapeHtml(text);
   html = html.replace(/```([\s\S]*?)```/g, (_, code) => `<pre><code>${code.replace(/^\n/, "")}</code></pre>`);
   html = html.replace(/`([^`\n]+)`/g, "<code>$1</code>");
   html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   return html;
+}
+
+// Strip markdown so spoken replies sound natural.
+function toSpeakable(text) {
+  return text
+    .replace(/```[\s\S]*?```/g, " (code) ")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/[*_#>]/g, "")
+    .trim();
 }
 
 function scrollToBottom() {
@@ -51,11 +64,12 @@ function clearEmptyState() {
 }
 
 function showEmptyState() {
+  const greetName = ownerName && ownerName !== "friend" ? " " + escapeHtml(ownerName) : "";
   els.messages.innerHTML = `
     <div class="empty">
-      <h1>Hey${ownerName && ownerName !== "friend" ? " " + escapeHtml(ownerName) : ""} 👋</h1>
+      <h1>Hey${greetName} 👋</h1>
       <p>I'm ${escapeHtml(aiName)} — your own AI, running entirely on your machine.
-      Say anything to get started.</p>
+      Type or tap the mic to talk.</p>
     </div>`;
 }
 
@@ -165,9 +179,8 @@ async function sendMessage(text) {
     aiDiv.classList.remove("thinking");
     busy = false;
     els.send.disabled = false;
-    els.input.focus();
-    // Refresh the status dot in case the model just went up/down.
     loadStatus();
+    onReplyComplete(full);
   }
 }
 
@@ -176,6 +189,87 @@ async function deleteMemory(id, li) {
     await fetch(`/api/memories/${id}`, { method: "DELETE" });
     li.remove();
   } catch (_) { /* ignore */ }
+}
+
+// ---- Voice: speaking (text-to-speech) --------------------------------
+// speechSynthesis is widely supported (including iOS Safari) and works
+// over plain HTTP, so replies can be read aloud on any device.
+
+const ttsSupported = "speechSynthesis" in window;
+
+function speak(text) {
+  if (!ttsSupported || !text.trim()) return Promise.resolve();
+  return new Promise((resolve) => {
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1.0;
+    utter.onend = resolve;
+    utter.onerror = resolve;
+    window.speechSynthesis.speak(utter);
+  });
+}
+
+// ---- Voice: listening (speech-to-text) -------------------------------
+// The Web Speech API needs a *secure context* (HTTPS or localhost). Over
+// Tailscale, enable HTTPS with `tailscale serve` (see docs) to use the mic.
+// On iPhone, use the Siri Shortcut instead — it uses native dictation.
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const sttSupported = !!SpeechRecognition && window.isSecureContext;
+let recognition = null;
+let listening = false;
+
+if (!sttSupported) {
+  // Hide the mic if we can't use it here, so it's never a dead button.
+  els.mic.style.display = "none";
+} else {
+  recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = true;
+  recognition.continuous = false;
+
+  recognition.onresult = (event) => {
+    let transcript = "";
+    for (let i = 0; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+    els.input.value = transcript;
+    autoGrow();
+  };
+
+  recognition.onend = () => {
+    listening = false;
+    els.mic.classList.remove("listening");
+    const text = els.input.value.trim();
+    if (text) sendMessage(text);
+  };
+
+  recognition.onerror = () => {
+    listening = false;
+    els.mic.classList.remove("listening");
+  };
+}
+
+function startListening() {
+  if (!sttSupported || listening || busy) return;
+  if (ttsSupported) window.speechSynthesis.cancel(); // don't hear ourselves
+  try {
+    els.input.value = "";
+    recognition.start();
+    listening = true;
+    els.mic.classList.add("listening");
+  } catch (_) { /* already started */ }
+}
+
+function stopListening() {
+  if (recognition && listening) recognition.stop();
+}
+
+// After a reply finishes: optionally speak it, then optionally re-listen.
+async function onReplyComplete(fullText) {
+  const shouldSpeak = els.speakToggle.checked && fullText.trim();
+  if (shouldSpeak) await speak(toSpeakable(fullText));
+  if (els.handsfreeToggle.checked && sttSupported) startListening();
 }
 
 // ---- UI wiring --------------------------------------------------------
@@ -198,6 +292,11 @@ els.input.addEventListener("keydown", (e) => {
     e.preventDefault();
     sendMessage(els.input.value);
   }
+});
+
+els.mic.addEventListener("click", () => {
+  if (listening) stopListening();
+  else startListening();
 });
 
 els.newChat.addEventListener("click", async () => {
@@ -224,13 +323,25 @@ els.menuToggle.addEventListener("click", () => {
   els.sidebar.classList.toggle("open");
 });
 
+// Remember voice preferences between visits.
+function loadVoicePrefs() {
+  els.speakToggle.checked = localStorage.getItem("speak") === "1";
+  els.handsfreeToggle.checked = localStorage.getItem("handsfree") === "1";
+  if (!ttsSupported) els.speakToggle.parentElement.style.display = "none";
+  if (!sttSupported) els.handsfreeToggle.parentElement.style.display = "none";
+}
+els.speakToggle.addEventListener("change", () =>
+  localStorage.setItem("speak", els.speakToggle.checked ? "1" : "0"));
+els.handsfreeToggle.addEventListener("change", () =>
+  localStorage.setItem("handsfree", els.handsfreeToggle.checked ? "1" : "0"));
+
 // ---- Boot -------------------------------------------------------------
 
 (async function init() {
+  loadVoicePrefs();
   await loadConfig();
   showEmptyState();
   await Promise.all([loadStatus(), loadHistory(), loadMemories()]);
   els.input.focus();
-  // Re-check the model connection every 30s.
   setInterval(loadStatus, 30000);
 })();
