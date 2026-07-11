@@ -155,12 +155,81 @@ This is the substrate of continuity — she resumes *knowing* where you left off
 
 People judge "smartness" mostly from conversational flow, not IQ.
 
-- **Voice/flow:** fast responses, natural pacing, brevity. (Studio-quality local
-  neural voice — Piper — is on the roadmap.)
+- **Voice/flow:** fast responses, natural pacing, brevity — see the real-time
+  voice agent below. (Studio-quality local neural voice — Piper/Kokoro.)
 - **Confidence-based answers:** speak certainty honestly — *"I know"* vs *"I
   think…"* vs *"I'd want to verify that."* Trust grows when uncertainty is named.
 - **Intelligent silence:** when she's working for a few seconds, show a live
   status (*searching memory… checking calendar… done*) instead of freezing.
+
+---
+
+## Talking to Nero — the real-time voice agent
+
+Voice is a **first-class input, designed in from the start** — not a button bolted
+on later. The target is a natural spoken conversation like ChatGPT/Claude Voice:
+you say *"Hey Nero,"* she answers, you interrupt, she stops. No push-to-talk.
+
+The pipeline is six swappable stages, **all runnable locally**:
+
+```
+Mic → Voice-Activity Detection → Speech-to-Text → Conversation Engine
+                                                     (memory · world model ·
+                                                      model router · tools)
+                                                        ↓
+Speaker ← Text-to-Speech ← Decision Engine ←────────────┘
+```
+
+- **Continuous listening** — she listens while active and knows when *you're*
+  speaking (local VAD, e.g. Silero); no tapping a mic.
+- **Barge-in / interruption** — the moment you start talking, playback stops. This
+  is the single biggest "feels alive" factor, so it's an architectural
+  requirement, not a nicety.
+- **Expressive TTS** — pauses, emphasis, natural pacing (Piper/Kokoro locally),
+  never flat robot speech. Female voice, Croatian-capable.
+- **Low latency budget** — VAD <100 ms · STT 150–300 ms · first LLM token
+  200–500 ms · TTS starts on the first tokens. Response *begins* within ~1 s.
+- **Ambient voice UI** — not a full-screen chatbot: a calm listening orb + live
+  transcript, subtle and out of the way (fits the Design System's "calm
+  computing").
+- **Session memory + continuity** — "continue where we left off" just works,
+  because the world model + memory already carry the context.
+
+**Local-first line:** VAD, STT, TTS, and the conversation engine all run on the
+4070. The *only* part of the reference designs that would leave the machine is
+routing some turns to cloud models (Claude/GPT) — kept **opt-in, off by default,
+per-request, announced** (see the roadmap note). Everything else is offline.
+
+---
+
+## Computer control — a local "Cowork" for your own PC
+
+Beyond answering, Nero should **act on the machine**: see the screen, move the
+mouse, type, click, and drive real apps — the way an agentic coding/computer-use
+tool does, but **100% local**. You say *"move this panel,"* she knows the asset
+browser you mean, and does it.
+
+```
+screen capture → local vision/UI understanding → plan → mouse/keyboard action → verify
+```
+
+- **Perception:** periodic screenshots read by a local vision model (or the OS
+  accessibility tree, which is cheaper and more reliable than pixels) so she
+  knows *what's on screen and what it means*, not just coordinates.
+- **Actuation:** a `desktop` tool (mouse/keyboard/window control) exposed through
+  the **Tool System + planner** — so this is Phase 3's headline capability, not a
+  separate track.
+- **Safety rails (non-negotiable):** every consequential action is previewed and
+  confirmable, scoped/allow-listed, fully logged, and instantly haltable —
+  because an agent driving the mouse is powerful and must be trustworthy. Runs
+  only with explicit, revocable permission.
+- **Why it fits Nero:** it *strengthens* the privacy pillar — a cloud assistant
+  can't safely watch and drive your desktop; a local one can. This is a
+  differentiator only a local AI can honestly offer.
+
+This depends on the Tool System (executive functions) landing first, and pairs
+directly with the **desktop senses** layer below (screen awareness is the same
+perception feeding both).
 
 ---
 
@@ -230,10 +299,11 @@ own PR so we stay in control.
 | Confidence *by source* (explicit / observed / inferred / guessed) | Next | ★★★ | Low |
 | Intelligent silence / live "thinking…" status | Next | ★★☆ | Low |
 | Tool system + planner (executive functions) | Soon | ★★★ | Med-High |
+| **Computer control** — local "Cowork": see screen, drive mouse/keyboard, act | Soon ★ | ★★★ | High |
+| **Real-time voice agent** — continuous listen · barge-in · local STT/TTS · <1s | Soon ★ | ★★★ | High |
 | Intent router + confidence gate + **thought budget** (scale compute to task) | Soon | ★★★ | Med |
 | Parallel multi-source retrieval + source-trust ranking + fallback chains | Soon | ★★☆ | Med |
 | **Experience Engine** (remembers *how you work*: workflows, not just facts) | Soon ★ | ★★★ | Med-High |
-| Local voice pipeline (Piper/Kokoro) — interruptible, barge-in | Soon | ★★★ | Med-High |
 | **Concept Engine + Identity Graph** ("understand", not just "remember") | Soon ★ | ★★★ | Med-High |
 | Initiative Engine (scored proactivity: importance/novelty/urgency/cost) | Soon | ★★★ | Med |
 | Insight Engine + **weekly self-improvement report** | Soon ★ | ★★★ | Med-High |
