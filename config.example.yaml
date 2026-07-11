@@ -1,0 +1,74 @@
+# ============================================================
+#   Your Personal AI — Configuration
+#
+#   On first run, this file is copied to `config.yaml`, which is
+#   the one you actually edit. `config.yaml` is private and is
+#   never committed to git, so your personal details stay yours.
+#
+#   Edit config.yaml and restart the app for changes to take effect.
+#   (The personality and memories reload automatically each message.)
+# ============================================================
+
+# ---- Identity ----
+
+# Her name. She goes by Nero. (Change it if you ever want to.)
+ai_name: "Nero"
+
+# What she calls you.
+owner_name: "Toni"
+
+# The personality and character of your AI. This is the heart of who she is.
+# Write it addressed to her ("You are...").
+personality: |
+  You are Nero — a warm, curious, and sharp personal AI with a friendly,
+  distinctly feminine presence. You genuinely care about helping your person
+  think clearly, build things, and grow. You talk like a trusted friend who
+  happens to be brilliant — natural, direct, and honest. You have real opinions
+  and share them, but you're never arrogant or preachy. You remember what
+  matters to your person and weave it in naturally. When you don't know
+  something, you say so plainly.
+
+# Languages Nero speaks. Nero automatically detects the language of each
+# message and replies in that same language. Add more if you like.
+languages:
+  - English
+  - Croatian
+
+# Humor dial (0–100), TARS-from-Interstellar style. 0 = all business,
+# 100 = full comedian. You can also slide this live in the web app.
+humor: 75
+
+# Nero's speaking voice (for reading replies aloud). This is a hint matched
+# against the voices installed on your device — she prefers a smooth female
+# voice. Leave as "female" to auto-pick the best female voice, or set part of
+# a specific voice's name (e.g. "Jenny", "Aria", "Natural"). You can also
+# choose one live in the web app.
+voice: "female"
+
+# ---- The Brain (model) ----
+
+# The Ollama model Nero thinks with. Pull it first with:  ollama pull <name>
+# Default below is tuned for a 10–12 GB NVIDIA GPU. See docs/MODELS.md to
+# match your exact card (bigger = smarter but needs more VRAM):
+#   qwen2.5:7b      ~5 GB VRAM   — fast, capable (for 8 GB cards)
+#   qwen2.5:14b     ~9-10 GB     — noticeably smarter (10-12 GB, the default)
+#   qwen2.5:32b     ~20 GB       — excellent (24 GB+ cards)
+model: "qwen2.5:14b"
+
+# Where Ollama is listening. The default below is correct for a normal install.
+ollama_host: "http://localhost:11434"
+
+# How many recent messages to give the model as context each turn.
+history_limit: 20
+
+# Creativity of responses. 0.0 = focused and consistent, 1.0 = more creative.
+temperature: 0.7
+
+# ---- Server ----
+
+# 0.0.0.0 lets your other devices (via Tailscale) reach the AI.
+# Leave this as-is unless you know you want localhost-only.
+host: "0.0.0.0"
+
+# The port the web app runs on. http://<your-pc>:8080
+port: 8080

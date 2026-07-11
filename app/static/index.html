@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1115" />
+
+  <!-- Make it feel like a native app when added to the home screen -->
+  <link rel="manifest" href="/static/manifest.webmanifest" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="mbd-AI" />
+  <link rel="apple-touch-icon" href="/static/icon.svg" />
+
+  <title>Your Personal AI</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="icon" href="/static/icon.svg" />
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar: identity, status, voice settings, memory -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-head">
+        <h2 id="ai-name">…</h2>
+        <span id="status-dot" class="status-dot" title="Checking connection…"></span>
+      </div>
+      <p id="status-text" class="status-text">Connecting to your local brain…</p>
+
+      <button id="new-chat" class="btn">＋ New conversation</button>
+
+      <div class="humor-section">
+        <h3>Humor <span id="humor-val" class="humor-val">75%</span></h3>
+        <input type="range" id="humor" min="0" max="100" step="5" value="75" />
+        <p class="hint">TARS-style dial. Slide it any time — 0 is all business, 100 is full comedian.</p>
+      </div>
+
+      <div class="voice-section">
+        <h3>Voice</h3>
+        <label class="toggle">
+          <input type="checkbox" id="speak-toggle" />
+          <span>Speak replies aloud</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="handsfree-toggle" />
+          <span>Hands-free (auto-listen after each reply)</span>
+        </label>
+        <div class="voice-lang">
+          <label for="tts-voice">Her voice</label>
+          <select id="tts-voice"></select>
+        </div>
+        <div class="voice-lang">
+          <label for="mic-lang">Voice input language</label>
+          <select id="mic-lang">
+            <option value="en-US">English</option>
+            <option value="hr-HR">Hrvatski</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="memory-section">
+        <h3>What it remembers about you</h3>
+        <form id="memory-form">
+          <input id="memory-input" type="text" placeholder="e.g. I'm building a local AI" autocomplete="off" />
+          <button type="submit" class="btn small">Add</button>
+        </form>
+        <ul id="memory-list" class="memory-list"></ul>
+      </div>
+
+      <p class="footer-note">Runs 100% on your machine. Private by design.</p>
+    </aside>
+
+    <!-- Chat area -->
+    <main class="chat">
+      <button id="menu-toggle" class="menu-toggle" aria-label="Toggle panel">☰</button>
+      <div id="messages" class="messages"></div>
+
+      <form id="chat-form" class="composer">
+        <textarea id="input" rows="1" placeholder="Say something…" autocomplete="off"></textarea>
+        <button id="mic" type="button" class="mic" aria-label="Talk" title="Talk">🎤</button>
+        <button id="send" type="submit" class="send" aria-label="Send">➤</button>
+      </form>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

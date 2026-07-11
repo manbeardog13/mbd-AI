@@ -1,0 +1,24 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# --- Your private config (copied from config.example.yaml on first run) ---
+config.yaml
+
+# --- Your private data: conversations and memories ---
+data/
+*.db
+*.sqlite3
+
+# --- Environment / secrets ---
+.env
+
+# --- Editor / OS junk ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
