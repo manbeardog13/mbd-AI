@@ -7,7 +7,8 @@ gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
 
 *Last updated: Phase 2 — World Model built & hardened (in review, PR #7),
-running on real hardware (RTX 4070). Next: Phase 3 — Tool System.*
+verified on real hardware (RTX 4070). Owner's chosen build order: finish Phase 2
+→ real-time voice agent → computer control → apply the new design system.*
 
 ---
 
@@ -93,6 +94,11 @@ first) is in [DIRECTIVE.md](DIRECTIVE.md).
   checks pass on the owner's PC.
 - Hardened by **four adversarial multi-lens reviews** (foundation, memory,
   Windows setup, world model) — ~29 real issues caught and fixed before merge.
+- On the RTX 4070: config, gpu, ollama, memory, embeddings, **world_model** all
+  green. `verify_reflection` was storing 0 memories (a reasoning model exhausting
+  its token budget before emitting JSON) — fixed by raising the reflection budget
+  (`REFLECTION_NUM_PREDICT=1024`) and adding raw-output diagnostics; re-verify on
+  the owner's PC is pending before merge.
 
 **Repo layout**
 ```
@@ -107,12 +113,14 @@ tests/   test_memory.py        PROGRESS.md
 - **Knowledge graph** — memories store `entities`, but they aren't yet *connected*
   into a graph.
 - **No Insight Engine** — she remembers, but doesn't yet synthesize patterns.
-- **No tools / planner / skills** — she can only converse, not act.
+- **No tools / planner / skills** — she can only converse, not act (and so no
+  computer control yet; that rides on the Tool System — item 3 above).
 - **No proactivity / desktop sensing** — purely reactive.
 - **Single active conversation thread** (multi-conversation not built).
 - **Retrieval is a linear scan** over SQLite (fine at current scale; no vector DB yet).
 - **Observability is minimal** (`/api/metrics`); no dashboard.
-- **Voice** is limited to OS voices (a local neural voice, Piper, is planned).
+- **Voice** is limited to browser OS voices + push-to-talk; the real-time local
+  voice agent (continuous listen, barge-in, Piper/Kokoro) is the next build.
 
 ## 5. Roadmap
 
@@ -121,11 +129,20 @@ tests/   test_memory.py        PROGRESS.md
   cognitive loop is now wired (perceive → retrieve → update world model → reply
   → reflect → learn) · Development Directive + verification framework · Qwen3
   defaults · thinking disabled.
-- 🔜 **Next — Phase 3:** **Tool System + planner** — give her real actions
-  (read/write files, run commands, search) so she can *do*, not just converse.
+- 🔜 **Next (owner's chosen order):**
+  1. **Finish Phase 2** — merge the World Model PR once `verify_reflection` is
+     confirmed green on the owner's PC.
+  2. **Real-time voice agent** — a first-class, designed-in pillar: local
+     VAD → STT → conversation engine → TTS, continuous listening, barge-in,
+     expressive local voice, <1s latency (Silero + faster-whisper + Piper/Kokoro).
+  3. **Computer control** — a *local "Cowork"*: see the screen, drive
+     mouse/keyboard, act in real apps, with hard safety rails. Rides on the
+     **Tool System + planner**, so that foundation lands here.
+  4. **Apply the Design System v1.0** to the live frontend (violet, floating
+     cards, responsive desktop/tablet/mobile — previewed as an artifact).
 - 🗓️ **Then:** intent router + thought budget · **Experience Engine** (workflows,
-  not just facts) · knowledge-graph connections · **Insight Engine** (Second
-  Brain) · a local neural voice (Piper) · observability dashboard.
+  not just facts) · knowledge-graph connections · **Insight Engine** (Second Brain)
+  · observability dashboard.
 - 🗓️ **Later (opt-in, local):** desktop sensing + proactivity + attention ·
   browser intelligence · multi-agent · digital twin.
 
