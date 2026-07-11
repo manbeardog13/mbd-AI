@@ -254,8 +254,16 @@ function chooseVoice(langCode) {
 }
 
 // Nero's own local neural voice (Kokoro) when available, else the browser voice.
-let neuralVoice = false;   // set from GET /api/voice on boot
-let currentAudio = null;   // the playing neural clip, so we can stop it (barge-in)
+let neuralVoice = false;    // set from GET /api/voice on boot
+let audioCtx = null;        // Web Audio context — unlocked once by a user tap
+let currentSource = null;   // the playing buffer source, so we can stop it (barge-in)
+
+function getAudioCtx() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  if (!audioCtx) audioCtx = new AC();
+  return audioCtx;
+}
 
 // --- Mobile audio unlock -------------------------------------------------
 // Mobile browsers (especially iOS) refuse to play audio that wasn't started by
@@ -268,12 +276,23 @@ let audioUnlocked = false;
 function unlockAudio() {
   if (audioUnlocked) return;
   audioUnlocked = true;
+  // Unlock the Web Audio context — this is how Nero's neural voice plays, and
+  // it's the reliable path on iOS (unlike a fresh <audio> element each time).
+  try {
+    const ctx = getAudioCtx();
+    if (ctx) {
+      if (ctx.state === "suspended") ctx.resume();
+      const src = ctx.createBufferSource();       // 1-sample silent buffer
+      src.buffer = ctx.createBuffer(1, 1, 22050);
+      src.connect(ctx.destination);
+      src.start(0);
+    }
+  } catch (_) { /* ignore */ }
+  // Also prime the browser's audio + speech (the Croatian / fallback path).
   try {
     const a = new Audio(SILENT_WAV);
     a.volume = 0;
     a.play().then(() => a.pause()).catch(() => {});
-  } catch (_) { /* ignore */ }
-  try {
     if (ttsSupported) {
       const u = new SpeechSynthesisUtterance(" ");
       u.volume = 0;
@@ -286,9 +305,9 @@ function unlockAudio() {
 
 // Stop whatever Nero is currently saying — neural clip and/or browser speech.
 function stopSpeaking() {
-  if (currentAudio) {
-    currentAudio.pause();   // fires 'pause' → resolves any awaiting speak()
-    currentAudio = null;
+  if (currentSource) {
+    try { currentSource.stop(); } catch (_) { /* already stopped */ }
+    currentSource = null;   // 'onended' fires → resolves any awaiting speak()
   }
   if (ttsSupported) window.speechSynthesis.cancel();
 }
@@ -310,6 +329,33 @@ function speakBrowser(text) {
   });
 }
 
+// Play WAV bytes through Web Audio (reliable on iOS once the context is
+// unlocked). Resolves true when it finished (or was stopped), false if it
+// couldn't play at all — so the caller can fall back to the browser voice.
+async function playNeural(bytes) {
+  const ctx = getAudioCtx();
+  if (!ctx) return false;
+  try {
+    if (ctx.state === "suspended") await ctx.resume();
+    const buffer = await ctx.decodeAudioData(bytes.slice(0));
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(ctx.destination);
+    currentSource = src;
+    await new Promise((resolve) => {
+      src.onended = () => {
+        if (currentSource === src) currentSource = null;
+        resolve();
+      };
+      src.start(0);
+    });
+    return true;
+  } catch (_) {
+    currentSource = null;
+    return false;
+  }
+}
+
 // Speak `text`, preferring Nero's local neural voice. It's English-only today,
 // so Croatian falls back to the browser voice. Resolves when playback ENDS (or
 // is interrupted), so hands-free re-listening doesn't start over her own voice.
@@ -324,26 +370,8 @@ async function speak(text) {
         body: JSON.stringify({ text }),
       });
       if (res.ok && res.status !== 204) {
-        const url = URL.createObjectURL(await res.blob());
-        const audio = new Audio(url);
-        currentAudio = audio;
-        const played = await new Promise((resolve) => {
-          let settled = false;
-          const finish = (ok) => {
-            if (settled) return;
-            settled = true;
-            URL.revokeObjectURL(url);
-            if (currentAudio === audio) currentAudio = null;
-            resolve(ok);
-          };
-          audio.onended = () => finish(true);
-          audio.onpause = () => finish(true);    // barge-in: done, no fallback
-          audio.onerror = () => finish(false);
-          // play() can reject (e.g. iOS autoplay policy) — fall back if so.
-          audio.play().catch(() => finish(false));
-        });
-        if (played) return;
-        // couldn't play the clip → fall through to the browser voice
+        if (await playNeural(await res.arrayBuffer())) return;
+        // Web Audio couldn't play it → fall through to the browser voice
       }
       // 204 = voice not ready → fall through to the browser voice
     } catch (_) { /* network/synthesis issue → browser voice */ }
