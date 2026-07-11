@@ -152,6 +152,12 @@ def retrieve(cfg: Config, query: str, k: int | None = None) -> list[dict]:
 
 # ---- reflection (automatic memory capture) ----------------------------
 
+# Token budget for a reflection pass. Generous on purpose: reflection runs on a
+# small model with think=False, but if a given Ollama/model build still slips in
+# some reasoning, a tight budget can get cut off *before* the JSON is emitted —
+# yielding zero memories. Extra headroom costs a little latency, never accuracy.
+REFLECTION_NUM_PREDICT = 1024
+
 _REFLECTION_SYSTEM = (
     "You extract durable, useful facts to remember about a person (the user) from a "
     "short slice of their conversation with their AI. Only capture things that will "
@@ -343,7 +349,7 @@ def reflect(cfg: Config, user_text: str, assistant_text: str) -> dict:
             ],
             temperature=0.0,
             model=reflect_model,
-            num_predict=600,
+            num_predict=REFLECTION_NUM_PREDICT,
             keep_alive=keep_alive,
             think=False,  # reflection must emit clean JSON, not reasoning
         )
