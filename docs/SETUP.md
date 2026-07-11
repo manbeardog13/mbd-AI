@@ -20,16 +20,16 @@ Ollama runs the language model on your GPU and handles all the heavy lifting.
 Your GPU's VRAM decides how big a model you can run. Bigger = smarter but heavier.
 
 ```bash
-ollama pull llama3.1:8b     # great starting point, ~5 GB VRAM
+ollama pull qwen2.5:14b     # Niro's default brain, great on a 10–12 GB GPU
 ```
 
-Other good choices once you're comfortable:
+Pick the right size for your card (full guide in **[MODELS.md](MODELS.md)**):
 
 | Model             | Approx VRAM | Notes                                  |
 |-------------------|-------------|----------------------------------------|
-| `llama3.1:8b`     | ~5 GB       | Fast, capable all-rounder (start here) |
-| `qwen2.5:14b`     | ~9 GB       | Noticeably smarter                     |
-| `qwen2.5:32b`     | ~20 GB      | Excellent, if you have the VRAM        |
+| `qwen2.5:7b`      | ~5 GB       | Fast, capable (8 GB cards)             |
+| `qwen2.5:14b`     | ~9–10 GB    | Noticeably smarter (**the default**)   |
+| `qwen2.5:32b`     | ~20 GB      | Excellent, if you have 24 GB+          |
 
 > Not sure how much VRAM you have? On Windows, open Task Manager → Performance →
 > GPU. Or run `nvidia-smi` in a terminal.
@@ -37,7 +37,7 @@ Other good choices once you're comfortable:
 Test the model directly (optional):
 
 ```bash
-ollama run llama3.1:8b "Say hello in one sentence."
+ollama run qwen2.5:14b "Say hello in one sentence."
 ```
 
 ---

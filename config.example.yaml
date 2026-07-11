@@ -29,12 +29,13 @@ personality: |
 
 # ---- The Brain (model) ----
 
-# The Ollama model your AI thinks with. Pull it first with:  ollama pull <name>
-# Good picks for an NVIDIA GPU (bigger = smarter but needs more VRAM):
-#   llama3.1:8b     ~5 GB VRAM   — great all-rounder, fast
-#   qwen2.5:14b     ~9 GB VRAM   — noticeably smarter
-#   qwen2.5:32b     ~20 GB VRAM  — excellent if you have the VRAM
-model: "llama3.1:8b"
+# The Ollama model Niro thinks with. Pull it first with:  ollama pull <name>
+# Default below is tuned for a 10–12 GB NVIDIA GPU. See docs/MODELS.md to
+# match your exact card (bigger = smarter but needs more VRAM):
+#   qwen2.5:7b      ~5 GB VRAM   — fast, capable (for 8 GB cards)
+#   qwen2.5:14b     ~9-10 GB     — noticeably smarter (10-12 GB, the default)
+#   qwen2.5:32b     ~20 GB       — excellent (24 GB+ cards)
+model: "qwen2.5:14b"
 
 # Where Ollama is listening. The default below is correct for a normal install.
 ollama_host: "http://localhost:11434"

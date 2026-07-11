@@ -43,8 +43,8 @@ Nothing leaves your machine. Tailscale just lets *your own devices* reach it.
 Full walkthrough in **[docs/SETUP.md](docs/SETUP.md)**. The short version:
 
 ```bash
-# 1. Install Ollama from https://ollama.com, then pull a model:
-ollama pull llama3.1:8b
+# 1. Install Ollama from https://ollama.com, then pull Niro's brain:
+ollama pull qwen2.5:14b     # see docs/MODELS.md to match your GPU
 
 # 2. Set up this project:
 python -m venv .venv
