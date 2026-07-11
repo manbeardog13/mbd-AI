@@ -50,6 +50,7 @@ def _diagnose(cfg) -> None:
         num_predict=memory.REFLECTION_NUM_PREDICT,
         keep_alive="0" if model != cfg.model else None,
         think=False,
+        response_format=memory.REFLECTION_FORMAT,
     )
     print(f"  · raw model output ({len(raw)} chars):")
     print("    " + (repr(raw[:800]) if raw else "<empty>"))

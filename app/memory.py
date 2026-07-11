@@ -152,11 +152,31 @@ def retrieve(cfg: Config, query: str, k: int | None = None) -> list[dict]:
 
 # ---- reflection (automatic memory capture) ----------------------------
 
-# Token budget for a reflection pass. Generous on purpose: reflection runs on a
-# small model with think=False, but if a given Ollama/model build still slips in
-# some reasoning, a tight budget can get cut off *before* the JSON is emitted —
-# yielding zero memories. Extra headroom costs a little latency, never accuracy.
+# Token budget for a reflection pass. Generous on purpose so a schema-constrained
+# reply always has room to finish even with several facts + entities.
 REFLECTION_NUM_PREDICT = 1024
+
+# Structured-output schema (Ollama `format`). This is what actually stops a small
+# reasoning model from rambling in prose: the grammar only permits a JSON array
+# of memory objects, so the model *must* emit the facts directly. `content` and
+# `type` are required; the rest are optional (parse_memories fills defaults).
+REFLECTION_FORMAT = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "content": {"type": "string"},
+            "type": {
+                "type": "string",
+                "enum": ["semantic", "preference", "episodic", "experience", "procedural"],
+            },
+            "importance": {"type": "number"},
+            "confidence": {"type": "number"},
+            "entities": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["content", "type"],
+    },
+}
 
 _REFLECTION_SYSTEM = (
     "You extract durable, useful facts to remember about a person (the user) from a "
@@ -352,6 +372,7 @@ def reflect(cfg: Config, user_text: str, assistant_text: str) -> dict:
             num_predict=REFLECTION_NUM_PREDICT,
             keep_alive=keep_alive,
             think=False,  # reflection must emit clean JSON, not reasoning
+            response_format=REFLECTION_FORMAT,  # grammar-forces the JSON array
         )
         for item in parse_memories(raw):
             action = store_memory(cfg, item)

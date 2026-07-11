@@ -45,6 +45,16 @@ KEY_LABELS = {
 }
 STANDARD_KEYS = list(KEY_LABELS.keys())
 
+# Structured-output schema (Ollama `format`). Without this, a small reasoning
+# model reasons in prose and never emits the object — so the world would never
+# update on a real machine. The grammar restricts output to a JSON object of the
+# known string fields (all optional, so "only what changed" — or {} — is valid).
+WORLD_FORMAT = {
+    "type": "object",
+    "properties": {k: {"type": "string"} for k in STANDARD_KEYS},
+    "additionalProperties": False,
+}
+
 _WORLD_SYSTEM = (
     "You maintain a compact, living picture of what a person (the user) is "
     "currently working on, so their AI has continuity across conversations. You "
@@ -150,6 +160,7 @@ def update(cfg: Config, user_text: str, assistant_text: str) -> dict:
             num_predict=300,
             keep_alive=keep_alive,
             think=False,
+            response_format=WORLD_FORMAT,  # grammar-forces the JSON object
         )
         updates = parse_world_updates(raw)
         if updates:
