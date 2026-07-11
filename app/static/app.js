@@ -300,18 +300,23 @@ async function speak(text) {
         const url = URL.createObjectURL(await res.blob());
         const audio = new Audio(url);
         currentAudio = audio;
-        await new Promise((resolve) => {
-          const done = () => {
+        const played = await new Promise((resolve) => {
+          let settled = false;
+          const finish = (ok) => {
+            if (settled) return;
+            settled = true;
             URL.revokeObjectURL(url);
             if (currentAudio === audio) currentAudio = null;
-            resolve();
+            resolve(ok);
           };
-          audio.onended = done;
-          audio.onerror = done;
-          audio.onpause = done;   // barge-in (stopSpeaking) resolves too
-          audio.play().catch(done);
+          audio.onended = () => finish(true);
+          audio.onpause = () => finish(true);    // barge-in: done, no fallback
+          audio.onerror = () => finish(false);
+          // play() can reject (e.g. iOS autoplay policy) — fall back if so.
+          audio.play().catch(() => finish(false));
         });
-        return;
+        if (played) return;
+        // couldn't play the clip → fall through to the browser voice
       }
       // 204 = voice not ready → fall through to the browser voice
     } catch (_) { /* network/synthesis issue → browser voice */ }
