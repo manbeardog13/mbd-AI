@@ -71,6 +71,7 @@ class Config:
     tts_engine: str
     tts_voice: str
     tts_speed: float
+    tts_model_dir: str
 
 
 def ensure_config() -> None:
@@ -179,4 +180,5 @@ def load_config() -> Config:
         tts_engine=(data.get("tts_engine") or "kokoro"),
         tts_voice=(data.get("tts_voice") or "af_heart"),
         tts_speed=_num(data.get("tts_speed"), 1.0, float),
+        tts_model_dir=(data.get("tts_model_dir") or "models"),
     )

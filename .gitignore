@@ -20,6 +20,9 @@ data/
 # --- Generated voice sample (from verify_tts.py) ---
 verify/nero_voice_sample.wav
 
+# --- Downloaded neural-voice model files (large; fetched on first use) ---
+models/
+
 # --- Claude Code (shared .claude/settings.json is committed; personal overrides are not) ---
 .claude/settings.local.json
 

@@ -2,12 +2,15 @@
 #
 # Install with:   pip install -r requirements-voice.txt
 #
-# Windows note: Kokoro phonemizes text with espeak-ng for out-of-vocabulary
-# words. Install the espeak-ng release once so pronunciation is solid:
-#   https://github.com/espeak-ng/espeak-ng/releases  (grab the .msi)
+# Uses Kokoro through ONNX Runtime — fast, light, **no PyTorch**, and works on
+# modern Python (incl. 3.13). The base app runs fine WITHOUT this; Nero just
+# uses your browser's built-in voice until it's installed.
 #
-# The base app runs fine WITHOUT these — Nero just uses your browser's built-in
-# voice until they're installed. Kokoro is fast even on CPU; a GPU is optional.
-# First run downloads the Kokoro model (~330 MB) from Hugging Face.
+# On first use, the Kokoro model (~310 MB) downloads once from the kokoro-onnx
+# release into your `models/` folder. A GPU is optional — it's fast on CPU.
+#
+# If synthesis ever fails on phonemization (rare), install espeak-ng once:
+#   https://github.com/espeak-ng/espeak-ng/releases
 
-kokoro>=0.9.4          # fast, local, Apache-2.0 neural TTS (pulls torch, numpy)
+kokoro-onnx>=0.4.0     # Kokoro TTS via ONNX Runtime (pulls onnxruntime, numpy)
+soundfile>=0.12        # audio I/O helper used by kokoro-onnx

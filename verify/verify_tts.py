@@ -30,17 +30,17 @@ def main() -> int:
     if not tts.available(cfg):
         print(f"  . voice engine '{cfg.tts_engine}' not installed — skipping.")
         print("    Install it once:  pip install -r requirements-voice.txt")
-        print("    (Windows: also install espeak-ng.)")
         return 2
 
     print(f"  · engine={cfg.tts_engine}  voice={cfg.tts_voice}  speed={cfg.tts_speed}")
-    print("  · synthesizing (first run downloads the model, ~330 MB — hang tight)…")
+    print("  · synthesizing (first run downloads the model, ~310 MB — hang tight)…")
     audio = tts.synthesize(cfg, PHRASE)
 
     if not audio:
         print("  XX synthesis returned no audio.")
-        print("     Check the voice deps installed cleanly (torch + kokoro), and that")
-        print("     espeak-ng is on PATH (Windows). See app/tts.py logs for the reason.")
+        print("     Check that kokoro-onnx installed cleanly and the model files")
+        print("     downloaded into models/. If it failed on phonemization, install")
+        print("     espeak-ng once. See the app/tts.py log line above for the reason.")
         return 1
 
     # Validate it's a real, non-empty WAV.
