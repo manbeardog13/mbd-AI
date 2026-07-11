@@ -9,15 +9,18 @@ welcome — what to cut as readily as what to add.*
 *Last updated: Phase 2 (World Model) merged & verified 7/7, and voice
 **Increment 1** (local neural English voice, Kokoro) merged & verified 8/8, both
 on the RTX 4070. **PR #9** (open) now bundles: neural voice wired into the chat UI
-(sentence-by-sentence, emoji stripped, iOS Web Audio playback confirmed) + a full
-**UI redesign** to the NERO Design System v1.0 (light, violet, floating, calm) +
-a **ChatGPT-style two-button composer** (voice recording · conversation mode) + a
-hands-free **conversation-mode** screen (animated orb) + an obsessive **polish
-pass** (layered ambient shadows, glass, engineered motion, trimmed "visual-
-silence" copy). Rendered-verified desktop + iPhone (no overflow / JS errors).
-Awaiting owner sign-off before merge; then local STT
-(faster-whisper). Owner's build order: voice → computer control
-→ apply the new design system.*
+(sentence-by-sentence for low latency, emoji stripped, **iOS playback via Web
+Audio — confirmed speaking on the owner's iPhone**) + a full **UI redesign** to
+the NERO Design System v1.0 (light, violet, floating, calm) + a **ChatGPT-style
+two-button composer** (voice recording · conversation mode) + a hands-free
+**conversation-mode** screen (animated orb) + iPhone **safe-area** fixes.
+Rendered-verified desktop + emulated iPhone (no overflow / JS errors).
+**Remote access confirmed** on iPhone/iPad via **Tailscale HTTPS** (`tailscale
+serve --bg 8080`), which also unlocks the browser mic off-localhost. Added a
+one-click **`update-nero.bat`** (sync + restart) so the owner never types git.
+Awaiting owner sign-off before merge; then **local STT** (faster-whisper).
+Owner's build order: voice → computer control → design system (the last is
+now largely delivered inside PR #9).*
 
 ---
 
@@ -54,7 +57,9 @@ first) is in [DIRECTIVE.md](DIRECTIVE.md).
   - "Thinking" (Qwen3 `<think>` reasoning) is **disabled by default** for direct
     replies and clean reflection output; a `thinking: true` config flag re-enables it.
 - **Storage:** **SQLite** (conversations, messages, memories).
-- **Frontend:** a single **vanilla HTML/CSS/JS** web app (responsive, PWA-installable).
+- **Frontend:** a single **vanilla HTML/CSS/JS** web app (responsive, PWA-installable),
+  redesigned to the **NERO Design System** (light, violet, floating, calm) with a
+  ChatGPT-style two-button voice composer and a hands-free conversation-mode screen.
 - **Access:** local network + Tailscale (device-only; no app login).
 - **Setup:** one-command `bootstrap.py` (venv + deps + pulls all 3 models + launch).
 
@@ -161,8 +166,9 @@ tests/   test_memory.py        PROGRESS.md
   2. **Computer control** — a *local "Cowork"*: see the screen, drive
      mouse/keyboard, act in real apps, with hard safety rails. Rides on the
      **Tool System + planner**, so that foundation lands here.
-  3. **Apply the Design System v1.0** to the live frontend (violet, floating
-     cards, responsive desktop/tablet/mobile — previewed as an artifact).
+  3. ✅ **Design System v1.0 applied** to the live frontend (in PR #9, pulled
+     forward alongside the voice work): light/violet redesign, two-button
+     composer, conversation-mode orb, responsive + iPhone safe-area.
 - 🗓️ **Then:** intent router + thought budget · **Experience Engine** (workflows,
   not just facts) · knowledge-graph connections · **Insight Engine** (Second Brain)
   · observability dashboard.
