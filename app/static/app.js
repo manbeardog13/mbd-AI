@@ -59,13 +59,18 @@ function renderMarkdown(text) {
   return html;
 }
 
-// Strip markdown so spoken replies sound natural.
+// Strip markdown + emoji so spoken replies sound natural (no "smiling face
+// with sparkling eyes" read aloud mid-sentence).
 function toSpeakable(text) {
   return text
     .replace(/```[\s\S]*?```/g, " (code) ")
     .replace(/`([^`]+)`/g, "$1")
     .replace(/\*\*([^*]+)\*\*/g, "$1")
     .replace(/[*_#>]/g, "")
+    // Drop emoji, pictographs, skin-tone/flag modifiers, and their joiners.
+    .replace(/[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u{1F1E6}-\u{1F1FF}\u200D\uFE0F]/gu, "")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/ +([,.;:!?\u2026])/g, "$1")   // tidy the gap a removed emoji leaves
     .trim();
 }
 
@@ -257,6 +262,7 @@ function chooseVoice(langCode) {
 let neuralVoice = false;    // set from GET /api/voice on boot
 let audioCtx = null;        // Web Audio context — unlocked once by a user tap
 let currentSource = null;   // the playing buffer source, so we can stop it (barge-in)
+let speechAbort = false;    // set on barge-in to halt a sentence-by-sentence read
 
 function getAudioCtx() {
   const AC = window.AudioContext || window.webkitAudioContext;
@@ -303,11 +309,13 @@ function unlockAudio() {
 ["pointerdown", "touchend", "keydown"].forEach((ev) =>
   window.addEventListener(ev, unlockAudio, { once: true }));
 
-// Stop whatever Nero is currently saying — neural clip and/or browser speech.
+// Stop whatever Nero is currently saying — neural clip and/or browser speech,
+// and abort any pending sentence-by-sentence read.
 function stopSpeaking() {
+  speechAbort = true;
   if (currentSource) {
     try { currentSource.stop(); } catch (_) { /* already stopped */ }
-    currentSource = null;   // 'onended' fires → resolves any awaiting speak()
+    currentSource = null;   // 'onended' fires → resolves any awaiting playback
   }
   if (ttsSupported) window.speechSynthesis.cancel();
 }
@@ -356,27 +364,49 @@ async function playNeural(bytes) {
   }
 }
 
-// Speak `text`, preferring Nero's local neural voice. It's English-only today,
-// so Croatian falls back to the browser voice. Resolves when playback ENDS (or
-// is interrupted), so hands-free re-listening doesn't start over her own voice.
+// Fetch synthesized audio for one sentence (English → Nero's neural voice), or
+// null to signal the browser-voice fallback (Croatian, or neural unavailable).
+async function fetchSpeech(sentence) {
+  if (!(neuralVoice && detectLang(sentence) === "en-US")) return null;
+  try {
+    const res = await fetch("/api/speak", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: sentence }),
+    });
+    if (res.ok && res.status !== 204) return await res.arrayBuffer();
+  } catch (_) { /* fall back to the browser voice */ }
+  return null;
+}
+
+// Split a reply into sentences. No look-behind (older Safari chokes on it).
+function splitSentences(text) {
+  return (text.match(/[^.!?…\n]+[.!?…]*|\n+/g) || [])
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+// Speak a reply sentence-by-sentence, so audio starts as soon as the FIRST
+// sentence is synthesized instead of after the whole paragraph. Prefetches the
+// next sentence's audio while the current one plays, so it flows without gaps.
+// Resolves when done (or interrupted), so hands-free waits for her to finish.
 async function speak(text) {
-  if (!text.trim()) return;
+  const sentences = splitSentences(text);
+  if (!sentences.length) return;
   stopSpeaking();
-  if (neuralVoice && detectLang(text) === "en-US") {
-    try {
-      const res = await fetch("/api/speak", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      if (res.ok && res.status !== 204) {
-        if (await playNeural(await res.arrayBuffer())) return;
-        // Web Audio couldn't play it → fall through to the browser voice
-      }
-      // 204 = voice not ready → fall through to the browser voice
-    } catch (_) { /* network/synthesis issue → browser voice */ }
+  speechAbort = false;
+  let nextAudio = fetchSpeech(sentences[0]);
+  for (let i = 0; i < sentences.length; i++) {
+    if (speechAbort) break;
+    const audio = await nextAudio;
+    nextAudio = i + 1 < sentences.length ? fetchSpeech(sentences[i + 1]) : null;
+    if (speechAbort) break;
+    if (audio) {
+      await playNeural(audio);
+    } else {
+      await speakBrowser(sentences[i]);
+    }
   }
-  await speakBrowser(text);
 }
 
 // Fill the voice picker with the installed voices, best female first.
