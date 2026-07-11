@@ -20,19 +20,25 @@ async def stream_chat(
     model: str,
     messages: list[dict],
     temperature: float,
+    think: bool | None = None,
 ) -> AsyncGenerator[str, None]:
     """Stream the model's reply as a series of text chunks.
 
     `messages` is the full conversation in OpenAI/Ollama format:
     [{"role": "system"|"user"|"assistant", "content": "..."}, ...]
+
+    `think` toggles a reasoning model's visible chain-of-thought (Qwen3, R1,
+    etc.). None leaves the model's default; False keeps replies direct.
     """
     url = f"{host.rstrip('/')}/api/chat"
-    payload = {
+    payload: dict = {
         "model": model,
         "messages": messages,
         "stream": True,
         "options": {"temperature": temperature},
     }
+    if think is not None:
+        payload["think"] = think
 
     # No timeout: a long thoughtful answer shouldn't get cut off.
     async with httpx.AsyncClient(timeout=None) as client:
@@ -110,6 +116,7 @@ def complete_chat(
     model: str | None = None,
     num_predict: int | None = None,
     keep_alive: str | None = None,
+    think: bool | None = None,
 ) -> str:
     """Non-streaming completion for reflection/utility calls. '' on failure.
 
@@ -128,6 +135,8 @@ def complete_chat(
     }
     if keep_alive is not None:
         payload["keep_alive"] = keep_alive
+    if think is not None:
+        payload["think"] = think
     url = f"{cfg.ollama_host.rstrip('/')}/api/chat"
     try:
         with httpx.Client(timeout=120) as client:

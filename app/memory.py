@@ -174,6 +174,11 @@ def _reflection_user_prompt(owner: str, user_text: str, assistant_text: str) -> 
     )
 
 
+def strip_think(text: str) -> str:
+    """Remove <think>…</think> reasoning blocks a model might emit."""
+    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE).strip()
+
+
 def _extract_json_array(text: str) -> list | None:
     """Pull the first JSON array out of a model reply, tolerating fences/prose.
 
@@ -225,7 +230,7 @@ def parse_memories(raw: str) -> list[dict]:
     """Parse the model's JSON array of memories, tolerating extra prose/fences."""
     if not raw:
         return []
-    data = _extract_json_array(raw)
+    data = _extract_json_array(strip_think(raw))
     if not isinstance(data, list):
         return []
 
@@ -318,8 +323,9 @@ def reflect(cfg: Config, user_text: str, assistant_text: str) -> dict:
             ],
             temperature=0.0,
             model=reflect_model,
-            num_predict=400,
+            num_predict=600,
             keep_alive=keep_alive,
+            think=False,  # reflection must emit clean JSON, not reasoning
         )
         for item in parse_memories(raw):
             action = store_memory(cfg, item)

@@ -55,6 +55,7 @@ class Config:
     ollama_host: str
     history_limit: int
     temperature: float
+    thinking: bool
     host: str
     port: int
     # Memory subsystem
@@ -149,6 +150,7 @@ def load_config() -> Config:
         ollama_host=(data.get("ollama_host") or "http://localhost:11434"),
         history_limit=_num(data.get("history_limit"), 20, int),
         temperature=_num(data.get("temperature"), 0.7, float),
+        thinking=bool(data.get("thinking")),
         host=(data.get("host") or "0.0.0.0"),
         port=_num(data.get("port"), 8080, int),
         embed_model=(data.get("embed_model") or "nomic-embed-text"),
