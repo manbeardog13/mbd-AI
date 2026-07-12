@@ -36,6 +36,56 @@ Brain → Voice Director → Voice Personality → TTS Engine → Audio Output
         (delivery metadata)                  (replaceable)
 ```
 
+## Frozen architecture principles (do not violate)
+
+These are permanent, cross-cutting rules — recorded here so future work cannot
+quietly erode the boundaries the staged build spent twelve stages protecting.
+
+- **The architecture never learns that Croatia exists.** Routing is by *capability*
+  (`language = "hr"`), never by country/culture/name. This keeps the system
+  extensible to dozens of languages with **zero** special cases.
+
+- **No smart fallback.** If a requested language/capability cannot be produced, the
+  system fails **honestly** (`text_only`) — it never silently substitutes another
+  language. Substitution is a future *conversational-layer* decision, never a Voice
+  one. A capability system that substitutes becomes a heuristic system.
+
+- **Rendering profiles never carry engine-specific detail** *(the frozen rule)*:
+  > **A Voice Profile describes how speech should be rendered. It never contains
+  > engine-specific implementation details. Engine bodies translate rendering
+  > profiles into engine-native parameters.**
+
+  This forbids leaks like `profile.speed = kokoro_speed` or
+  `profile.voice = mms_voice_name`. Rendering profiles stay engine-agnostic; only the
+  engine body maps them to native knobs.
+
+- **Three concepts, never merged** — reserve this vocabulary; each can be swapped
+  without touching the others:
+
+  | Concept | Says | Owned by |
+  |---|---|---|
+  | **Identity** | *"I'm Nero Commander."* | the cast (`cast.json`) — data |
+  | **Rendering** | *"I speak quickly with short pauses."* | a Voice Rendering Profile (Stage 13) |
+  | **Engine** | *"Kokoro generated this waveform."* | an engine body (`voice/engines/`) |
+
+  The evolving flow keeps them separate and engine-agnostic until the very last step:
+  ```
+  Intent → DeliveryPlan (semantic) → RenderingProfile (parametric) → Engine (native) → Audio
+  ```
+  The Manager, Capability Graph, Startup, Telemetry, and Health Report know **none**
+  of the rendering detail — only the engine body interprets it.
+
+- **Leave duplication; do not build a common engine base.** Two (or three) engines
+  looking similar is not evidence for inheritance. Future engines have wildly
+  different semantics — **streaming** (XTTS) wants a chunk generator not a monolithic
+  `bytes`; **voice cloning** needs a reference-audio lifecycle the contract has no slot
+  for; **Whisper** is speech-to-*text* (an *input* contract, not a TTSEngine at all).
+  A base drawn around today's synchronous `(bytes, int)` engines would have to be
+  demolished the moment a streaming engine arrives. *Good duplication is cheap; a
+  wrong abstraction is expensive.* Extraction is considered only if a third engine
+  shares a **byte-identical** method **and** no near-term engine is streaming — a
+  condition that may never hold.
+
 ## Model-independent foundation — build order (one stage at a time)
 
 Each stage stops with a verification report before the next begins.
@@ -60,9 +110,16 @@ Each stage stops with a verification report before the next begins.
 | 11 | **Kokoro** (English) | `engines/kokoro.py` | ✅ done (contract adapter; real audio pending on RTX-4070) |
 | 12 | **MMS** (Croatian) | `engines/mms.py` | ✅ this stage — first true multi-engine / bilingual proof (real audio pending on RTX-4070) |
 
-**Still deferred:** XTTS integration, advanced effects, the voice-selection UI, the
-ElevenLabs adapter (stub only, disabled), and Kokoro voice-parameter mapping
-(per-profile voice differentiation) — all additive, after the engine bodies land.
+**Next — Stage 13: Voice Rendering Profile.** The first feature a human will actually
+*hear*: it makes the cast's identities **audible** by giving each persona an
+engine-agnostic *rendering profile* (voice / speed / pitch / energy / pause_style),
+which the engine body — and only the engine body — translates into native parameters.
+Until then, every cast profile renders the same default voice. This is *Rendering* in
+the three-concept model above; it touches no orchestration layer.
+
+**Still deferred (additive, later):** XTTS/streaming integration, advanced effects,
+the voice-selection UI, the ElevenLabs adapter (stub only, disabled), and — once a
+*third* engine genuinely justifies it — the first-class `EngineIdentity` object.
 
 ## Stage 1 — the TTSEngine contract (`local_tts/base.py`)
 
