@@ -36,7 +36,7 @@ def main() -> int:
         print(f"     Fix: ollama pull {cfg.embed_model}")
         return 1
 
-    print(f"  OK embeddings work: {cfg.embed_model} → {len(vec)}-dim vector")
+    print(f"  OK embeddings work: {cfg.embed_model} -> {len(vec)}-dim vector")
     return 0
 
 

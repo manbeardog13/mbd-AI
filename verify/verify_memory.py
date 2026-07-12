@@ -31,9 +31,9 @@ def main() -> int:
     cfg = load_config()
 
     now = datetime.now(timezone.utc)
-    check("decay: fresh ≈ 1.0", abs(memory.decay_factor(now.isoformat(), 30) - 1.0) < 0.01)
+    check("decay: fresh ~= 1.0", abs(memory.decay_factor(now.isoformat(), 30) - 1.0) < 0.01)
     one_hl = (now - timedelta(days=30)).isoformat()
-    check("decay: one half-life ≈ 0.5", abs(memory.decay_factor(one_hl, 30) - 0.5) < 0.05)
+    check("decay: one half-life ~= 0.5", abs(memory.decay_factor(one_hl, 30) - 0.5) < 0.05)
 
     check("cosine: identical = 1", abs(memory.cosine([1, 0, 0], [1, 0, 0]) - 1.0) < 1e-6)
     check("cosine: orthogonal = 0", abs(memory.cosine([1, 0, 0], [0, 1, 0])) < 1e-6)
@@ -41,7 +41,7 @@ def main() -> int:
     raw = 'ok! [{"content":"Toni builds Nero","type":"semantic","importance":0.8,"confidence":0.9,"entities":["Nero"]}]'
     parsed = memory.parse_memories(raw)
     check("parse: extracts 1 memory", len(parsed) == 1 and parsed[0]["content"].startswith("Toni"))
-    check("parse: junk → []", memory.parse_memories("no json here") == [])
+    check("parse: junk -> []", memory.parse_memories("no json here") == [])
 
     # Retrieval ranks the semantically-closest memory first.
     db.add_memory("likes dark mode", mtype="preference", confidence=0.9, embedding=[1, 0, 0])
