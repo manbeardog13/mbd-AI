@@ -19,21 +19,29 @@ escalation, off by default) and the **Principle of Least Intelligence** (use the
 simplest deterministic mechanism that's correct; invoke the LLM only when it
 genuinely adds value).*
 
-*Now in review — **PR #10 (draft): Phase 1 "The Hands," first slice**. The
-primitive that lets Nero **act**, built safety-first: the **agent loop**
-(reason → tool → observe → repeat, bounded, never hangs), the **Capability
-Registry** (the model reasons over capabilities discovered at runtime, not a
-hard-coded list; one guarded dispatch seam every call — built-in now, MCP/Skills
-later — passes through), the **security gate** (every MEDIUM+ action needs
-confirmation, fail-closed; project jail), **Executive Memory** (the working-state
-register — goal/project/branch/task/blocker/next_action; branch & project
-observed from git, not guessed), and the first capability **`git.status`**.
-**32 offline tests + `verify_security/capabilities/executive_memory/agent.py`
-all green** (adversarial battery: 32 unconfirmed dangerous attempts, 0 escapes).
-The one gate left is the PC: the agent's **live** end-to-end run (ask → call
-`git.status` → answer) verifies where Ollama runs; once green there, PR #10
-merges. Next Phase-1 capabilities, one PR each: `fs.read`, `fs.list`, `git.log`,
-then the human-in-the-loop terminal.*
+*Also shipped — **PR #10 merged: Phase 1 "The Hands," first slice**, and it's
+**verified end-to-end on the RTX 4070**. The primitive that lets Nero **act**,
+built safety-first: the **agent loop** (reason → tool → observe → repeat,
+bounded, never hangs), the **Capability Registry** (the model reasons over
+capabilities discovered at runtime, not a hard-coded list; one guarded dispatch
+seam every call — built-in now, MCP/Skills later — passes through), the
+**security gate** (every MEDIUM+ action needs confirmation, fail-closed; project
+jail), **Executive Memory** (the working-state register —
+goal/project/branch/task/blocker/next_action; branch & project observed from git,
+not guessed), and the first capability **`git.status`**. Endpoints: `POST
+/api/agent`, `GET /api/agent/capabilities`, `GET`/`DELETE /api/executive`; agent
++ capability metrics in `/api/metrics`. **Verified on the PC:** a real qwen3:14b
+drove the loop and answered via `git.status` (`verify_agent` live), the
+adversarial battery gated 32 unconfirmed dangerous attempts with **0 escapes**,
+and Executive Memory observed the real git branch — alongside the pre-existing
+GPU / Ollama / memory / world-model / reflection checks. Next Phase-1
+capabilities, one PR each: `fs.read`, `fs.list`, `git.log`, then the
+human-in-the-loop terminal (the confirmation Approve/Deny UX lands with the first
+MEDIUM+ capability).*
+
+*Toni now also runs a **local Claude Code instance** on the PC (repo at
+`D:\mbd AI`) that verifies and drives things directly on the 4070 — the cloud
+session owns planning + merges; the local instance is the hands on the machine.*
 
 ---
 
@@ -150,13 +158,15 @@ tests/   test_*.py             PROGRESS.md
 - **Knowledge graph** — memories store `entities`, but they aren't yet *connected*
   into a graph.
 - **No Insight Engine** — she remembers, but doesn't yet synthesize patterns.
-- **Tools / planner / skills — foundation now in review (PR #10).** The **agent
-  loop + Capability Registry + security gate + Executive Memory** are built, with
-  the first capability (`git.status`); offline-verified, awaiting the live PC
-  run before merge. Still to come this phase: more read-only capabilities
+- **Tools / planner / skills — foundation shipped & verified on the PC (PR #10).**
+  The **agent loop + Capability Registry + security gate + Executive Memory** are
+  live, with the first capability (`git.status`). Verified end-to-end on the 4070:
+  a real qwen3:14b drove the loop via `git.status`, the security battery gated 32
+  unconfirmed dangerous attempts (0 escapes), and Executive Memory observed the
+  real git branch. Still to come this phase: more read-only capabilities
   (`fs.read`, `fs.list`, `git.log`) then the human-in-the-loop terminal; the
-  Approve/Deny confirmation UX lands with the first MEDIUM+ capability (until
-  then MEDIUM+ actions are safely denied). No planner/skills yet (later phases).
+  Approve/Deny confirmation UX lands with the first MEDIUM+ capability (until then
+  MEDIUM+ actions are safely denied). No planner/skills yet (later phases).
   Computer control rides on this foundation.
 - **No proactivity / desktop sensing** — purely reactive.
 - **Single active conversation thread** (multi-conversation not built).
