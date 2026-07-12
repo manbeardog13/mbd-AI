@@ -45,9 +45,9 @@ Each stage stops with a verification report before the next begins.
 | 1 | **TTSEngine Interface** | `local_tts/base.py` | ✅ done |
 | 2 | **Voice Capability Graph** | `local_tts/voice_capability_graph.py` | ✅ done |
 | 3 | **Engine Health (cache)** | `local_tts/engine_health.py` | ✅ done |
-| 4 | **Voice Manager** | `manager/voice_manager.py` | ✅ this stage |
-| 5 | Voice Profiles (`cast.json`) | `profiles/cast.json` | ⏭ next |
-| 6 | Performance Director | `personalities/performance_director.py` | planned |
+| 4 | **Voice Manager** | `manager/voice_manager.py` | ✅ done |
+| 5 | **Voice Profiles** (`cast.json`) | `profiles/cast.json` + `profiles/loader.py` | ✅ this stage |
+| 6 | Performance Director | `personalities/performance_director.py` | ⏭ next |
 | 7 | Event Bus | `manager/events.py` | planned |
 | 8 | Voice Telemetry | `manager/telemetry.py` | planned |
 | 9 | Warm Startup | `manager/startup.py` | planned |
@@ -134,3 +134,43 @@ health outcomes, and emits telemetry. Small surface: `VoiceManager(graph, health
 > intelligence, intent, capability, or permissions.* No other component chooses
 > voices, engines, or fallback paths. Promote to a formal ADR only if the same
 > rule later expands beyond the Voice subsystem.
+
+## Stage 5 — Voice Profiles (`profiles/cast.json` + `profiles/loader.py`)
+
+> **The system knows how to *load* voices. It does not know *what a voice is*.**
+
+Voice identity, personality relationships (fallbacks), language support, and
+routing metadata now live in **data** (`cast.json`), not code. `cast.json` is a
+**declarative manifest** — no logic, no routing, no conditional behavior, no
+hidden defaults that create behavior. `loader.py` is a **thin translation layer**
+that reads it, validates it, and produces the exact inputs the earlier stages
+already consume:
+
+```
+cast.json                       ← declarative identity (data only)
+   │  load_cast(path) → Cast     ← structural validation (no engines needed)
+   │  Cast.populate(graph, {engine_name: TTSEngine})   ← engine-binding validation
+   ▼
+VoiceCapabilityGraph (Stage 2)  +  VoiceManager(emergency_voice, fallback_map) (Stage 4)
+```
+
+Data flows **one way only** — nothing flows back. The loader **may** read JSON,
+validate, and build immutable objects; it **may not** synthesize, select a voice,
+make a fallback decision, manage health, create engines, touch GPU/model state, or
+import any executive system. Stages 1–4 are **unchanged** — Stage 5 only adds a
+data source upstream of them.
+
+**Fail loud, fail safe.** Every malformed manifest becomes a single `CastError`
+naming the *voice*, the *field*, and the *reason* — never a leaked
+`JSONDecodeError` / `FileNotFoundError` / `KeyError`. The loader rejects: bad JSON,
+a missing file, duplicate `voice_id`, an undefined or absent `emergency` voice,
+dangling fallback targets, **self / circular** fallback chains, a missing engine
+binding, and — the Stage 4 finding — **a declared language the bound engine cannot
+actually produce** (which would otherwise make a voice silently vanish at runtime
+via the manager's language gate). An empty-but-valid manifest loads safely with
+zero voices; the *runtime* layers, not the loader, decide whether that is useful.
+
+**Bilingual note.** The foundation binds every voice to the shipped `kokoro`
+engine (English). Croatian (`hr`) voices are added to `cast.json` — a **data**
+change, not a code change — once the `mms_hr` engine ships. That is the whole point
+of moving identity into data.

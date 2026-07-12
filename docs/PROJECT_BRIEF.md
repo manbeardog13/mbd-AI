@@ -51,7 +51,7 @@ Voice Platform** (an output interface only — it never calls dispatch/authorize
 writes no Journal, executes nothing; "the Brain produces a response, the Voice
 presents it"). Voice is built **model-independent foundation first, API-first**
 (the contract before any engine body); GPU/VRAM/latency work belongs to the local
-4070, never cloud assumption. **Voice Stages 1–4 shipped** on their own branch/PR
+4070, never cloud assumption. **Voice Stages 1–5 shipped** on their own branch/PR
 (**PR #14**, draft): (1) the **TTSEngine interface** — `voice/local_tts/base.py`
 (`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
 fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
@@ -75,8 +75,22 @@ become health failures (never crashes); the result's `outcome` distinguishes
 primary/fallback/text_only. It orchestrates, never absorbs — no intelligence,
 intent, memory, security, or synthesis logic; fallback *reasons* are injected data
 (`cast.json`, Stage 5), not inferred. A later `kokoro_engine` will **wrap** the
-shipped `app/tts.py` (strangler-fig), never rewrite it. Stopped for review before
-Stage 5 (Voice Profiles / cast.json).*
+shipped `app/tts.py` (strangler-fig), never rewrite it. (5) **Voice Profiles** —
+`voice/profiles/cast.json` + `loader.py`: voice identity, fallback relationships,
+language support and routing metadata now live in **declarative data**, on the
+principle *"the system knows how to load voices; it does not know what a voice
+is."* `cast.json` is a manifest (no logic/routing/conditionals); `loader.py` is a
+thin translation layer — read JSON, validate, build the immutable `Cast`
+(capabilities + `fallback_map` + `emergency_voice`) that feeds Stage 2 + Stage 4,
+one-way. It creates no engines, makes no decisions, imports nothing executive.
+Every bad manifest is a single loud/safe `CastError` (never a leaked
+`JSONDecodeError`/`FileNotFoundError`); it rejects duplicate ids, dangling or
+self/circular fallbacks, a missing engine binding, and — the Stage 4 finding —
+**a declared language the bound engine can't produce** (caught at load/wire time,
+not as a silent runtime drop). 15 tests + 10 verify checks green; load ≈0.09 ms,
+populate ≈0.013 ms (startup-only); zero regressions across Stages 1–4. Croatian
+voices join the manifest — a data change, not a code change — when `mms_hr` ships.
+Stopped for review before Stage 6 (Performance Director).*
 
 ---
 

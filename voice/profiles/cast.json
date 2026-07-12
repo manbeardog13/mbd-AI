@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "description": "Nero's voice cast — declarative identity only. This manifest is DATA: it declares what each voice is (engine, languages, features, quality) and how voices relate as fallbacks. It contains no logic, no routing, and no conditional behavior. The loader validates it and hands structured objects to the Voice Capability Graph (Stage 2) and the Voice Manager (Stage 4). Croatian (hr) voices are added here — a data change, not a code change — once the mms_hr engine ships; the foundation currently binds every voice to the shipped kokoro engine.",
+  "emergency": "nero_prime",
+  "voices": [
+    {
+      "voice_id": "nero_prime",
+      "engine": "kokoro",
+      "languages": ["en"],
+      "features": ["emotion", "effects", "streaming"],
+      "quality": "premium",
+      "fallbacks": []
+    },
+    {
+      "voice_id": "nero_commander",
+      "engine": "kokoro",
+      "languages": ["en"],
+      "features": ["emotion", "authority"],
+      "quality": "premium",
+      "fallbacks": ["nero_prime"]
+    },
+    {
+      "voice_id": "nero_oracle",
+      "engine": "kokoro",
+      "languages": ["en"],
+      "features": ["emotion", "calm"],
+      "quality": "premium",
+      "fallbacks": ["nero_prime"]
+    },
+    {
+      "voice_id": "nero_aurelia",
+      "engine": "kokoro",
+      "languages": ["en"],
+      "features": ["emotion", "warmth"],
+      "quality": "premium",
+      "fallbacks": ["nero_prime"]
+    },
+    {
+      "voice_id": "nero_shadow",
+      "engine": "kokoro",
+      "languages": ["en"],
+      "features": ["stealth"],
+      "quality": "standard",
+      "fallbacks": ["nero_commander", "nero_prime"]
+    },
+    {
+      "voice_id": "nero_sentinel",
+      "engine": "kokoro",
+      "languages": ["en"],
+      "features": ["alert"],
+      "quality": "standard",
+      "fallbacks": ["nero_prime"]
+    },
+    {
+      "voice_id": "nero_demon",
+      "engine": "kokoro",
+      "languages": ["en"],
+      "features": ["intensity"],
+      "quality": "standard",
+      "fallbacks": ["nero_prime"]
+    },
+    {
+      "voice_id": "nero_luna",
+      "engine": "kokoro",
+      "languages": ["en"],
+      "features": ["warmth", "calm"],
+      "quality": "standard",
+      "fallbacks": ["nero_aurelia", "nero_prime"]
+    },
+    {
+      "voice_id": "nero_valkyrie",
+      "engine": "kokoro",
+      "languages": ["en"],
+      "features": ["authority", "intensity"],
+      "quality": "standard",
+      "fallbacks": ["nero_commander", "nero_prime"]
+    },
+    {
+      "voice_id": "nero_eclipse",
+      "engine": "kokoro",
+      "languages": ["en"],
+      "features": ["neutral"],
+      "quality": "basic",
+      "fallbacks": ["nero_shadow", "nero_prime"]
+    }
+  ]
+}

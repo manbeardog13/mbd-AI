@@ -25,6 +25,9 @@ from voice.local_tts.engine_health import (  # noqa: E402
 from voice.manager.voice_manager import (  # noqa: E402
     OUTCOME_FALLBACK, OUTCOME_PRIMARY, OUTCOME_TEXT_ONLY, VoiceManager,
 )
+from voice.profiles.loader import (  # noqa: E402
+    DEFAULT_CAST_PATH, CastError, load_cast,
+)
 
 FAILS: list[str] = []
 
@@ -140,12 +143,128 @@ def main() -> int:
     check("all engines down -> explicit text_only, never crash",
           r3.ok is False and r3.outcome == OUTCOME_TEXT_ONLY)
 
+    # ---- Stage 5: Voice Profiles (cast.json + loader, declarative identity) ----
+    class _Ok5(BaseTTSEngine):
+        def __init__(self, name, langs=("en",)):
+            super().__init__(); self.name = name; self._languages = tuple(langs)
+        def _available(self): return True
+        def _synthesize(self, request): return (b"wav", 24_000)
+
+    class _Fail5(BaseTTSEngine):
+        def __init__(self, name): super().__init__(); self.name = name; self._languages = ("en",)
+        def _available(self): return True
+        def _synthesize(self, request): return (b"", 0)
+
+    shipped = load_cast(DEFAULT_CAST_PATH)
+    check("shipped cast.json loads and validates (10 voices, emergency exists)",
+          len(shipped.profiles) == 10
+          and shipped.emergency_voice in {p.voice_id for p in shipped.profiles})
+
+    def _tmp_cast(data) -> str:
+        import json as _json
+        import os as _os
+        import tempfile as _tf
+        fd, path = _tf.mkstemp(suffix=".json", prefix="verify_cast_")
+        with _os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(data if isinstance(data, str) else _json.dumps(data))
+        return path
+
+    def _err(data) -> bool:
+        import os as _os
+        path = _tmp_cast(data)
+        try:
+            load_cast(path)
+            return False
+        except CastError:
+            return True
+        except Exception:            # any non-CastError leak is a failure of the contract
+            return False
+        finally:
+            _os.remove(path)
+
+    valid = {"emergency": "nero_prime", "voices": [
+        {"voice_id": "nero_prime", "engine": "e_prime", "languages": ["en"],
+         "fallbacks": ["nero_luna"]},
+        {"voice_id": "nero_luna", "engine": "e_luna", "languages": ["en"]},
+    ]}
+    cast5 = load_cast(_tmp_cast_cleanup := _tmp_cast(valid))
+    import os as _os5
+    _os5.remove(_tmp_cast_cleanup)
+
+    g6 = VoiceCapabilityGraph()
+    cast5.populate(g6, {"e_prime": _Ok5("e_prime"), "e_luna": _Ok5("e_luna")})
+    check("loaded profiles populate the Capability Graph",
+          set(g6.voices()) == {"nero_prime", "nero_luna"} and g6.can_perform("nero_prime"))
+
+    g7 = VoiceCapabilityGraph()
+    cast5.populate(g7, {"e_prime": _Fail5("e_prime"), "e_luna": _Ok5("e_luna")})
+    mgr5 = VoiceManager(g7, EngineHealthCache(), emergency_voice=cast5.emergency_voice,
+                        fallback_map=cast5.fallback_map)
+    rr = mgr5.speak(VoiceRequest(text="hi", voice_id="nero_prime"))
+    check("fallback is driven from cast data (prime fails -> luna delivers)",
+          rr.ok and rr.voice_id == "nero_luna" and rr.outcome == OUTCOME_FALLBACK)
+
+    lang_bad = {"emergency": "nero_prime", "voices": [
+        {"voice_id": "nero_prime", "engine": "kokoro", "languages": ["en"]},
+        {"voice_id": "nero_luna", "engine": "kokoro", "languages": ["hr"]},
+    ]}
+    cast_lang = load_cast(_p := _tmp_cast(lang_bad)); _os5.remove(_p)
+    try:
+        cast_lang.populate(VoiceCapabilityGraph(), {"kokoro": _Ok5("kokoro", ("en",))})
+        lang_caught = False
+    except CastError:
+        lang_caught = True
+    check("language mismatch fails loudly at load/wire time (Stage 4 finding)", lang_caught)
+
+    try:
+        cast5.populate(VoiceCapabilityGraph(), {"e_prime": _Ok5("e_prime")})  # e_luna missing
+        eng_caught = False
+    except CastError:
+        eng_caught = True
+    check("a missing engine binding is a CastError", eng_caught)
+
+    check("malformed JSON -> CastError (never a raw JSONDecodeError)",
+          _err("{ not json "))
+    check("missing manifest file -> CastError (never a raw FileNotFoundError)",
+          _missing_is_cast_error())
+    check("duplicate voice_id -> CastError", _err(
+          {"emergency": "a", "voices": [{"voice_id": "a", "engine": "e"},
+                                        {"voice_id": "a", "engine": "e"}]}))
+    check("circular fallback chain -> CastError", _err(
+          {"emergency": "a", "voices": [{"voice_id": "a", "engine": "e", "fallbacks": ["b"]},
+                                        {"voice_id": "b", "engine": "e", "fallbacks": ["a"]}]}))
+    check("empty cast loads safely (0 voices, no crash)",
+          _empty_cast_ok(_tmp_cast))
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stages 1-4 (contract + Capability Graph + Health Cache + Voice Manager) verified.")
+    print("  Voice Stages 1-5 (contract + Capability Graph + Health Cache + "
+          "Voice Manager + Voice Profiles) verified.")
     return 0
+
+
+def _missing_is_cast_error() -> bool:
+    try:
+        load_cast("/no/such/path/verify_missing_cast.json")
+        return False
+    except CastError:
+        return True
+    except Exception:
+        return False
+
+
+def _empty_cast_ok(tmp_cast) -> bool:
+    import os as _os
+    path = tmp_cast({"voices": []})
+    try:
+        cast = load_cast(path)
+        return cast.profiles == () and cast.emergency_voice == ""
+    except Exception:
+        return False
+    finally:
+        _os.remove(path)
 
 
 if __name__ == "__main__":
