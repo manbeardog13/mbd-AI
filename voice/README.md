@@ -43,9 +43,9 @@ Each stage stops with a verification report before the next begins.
 | # | Component | Contract file | Status |
 |---|-----------|---------------|--------|
 | 1 | **TTSEngine Interface** | `local_tts/base.py` | ✅ done |
-| 2 | **Voice Capability Graph** | `local_tts/voice_capability_graph.py` | ✅ this stage |
-| 3 | Engine Health (cache) | `local_tts/engine_health.py` | ⏭ next |
-| 4 | Voice Manager | `manager/voice_manager.py` | planned |
+| 2 | **Voice Capability Graph** | `local_tts/voice_capability_graph.py` | ✅ done |
+| 3 | **Engine Health (cache)** | `local_tts/engine_health.py` | ✅ this stage |
+| 4 | Voice Manager | `manager/voice_manager.py` | ⏭ next |
 | 5 | Voice Profiles (`cast.json`) | `profiles/cast.json` | planned |
 | 6 | Performance Director | `personalities/performance_director.py` | planned |
 | 7 | Event Bus | `manager/events.py` | planned |
@@ -72,3 +72,38 @@ engine-specific logic**:
 
 All best-effort: synthesis never raises to the caller (a failure returns
 `AudioResult(ok=False, …)` so a higher layer can fall back).
+
+## Stage 3 — the Engine Health Cache (`local_tts/engine_health.py`)
+
+A **lightweight state tracker** answering one question: *"Given an engine's recent
+runtime outcomes, should the Voice Manager attempt this engine now?"* Backoff is a
+**protection mechanism, not intelligence** — predictable, capped, no learning.
+
+- `EngineHealthCache` — `record_success()` / `record_failure(reason)` /
+  `should_attempt()` / `status()` / `get()` / `snapshot()`. Injectable clock
+  (`now=`) for deterministic time behaviour. One record per engine.
+- `EngineHealthRecord` — `engine_name`, `status`, `last_check`, `last_success`,
+  `last_failure`, `failure_reason`, `consecutive_failures`, `retry_after`.
+- Lifecycle: `UNKNOWN → AVAILABLE → FAILING → COOLDOWN → RECOVERING → AVAILABLE`.
+  A failure starts a capped exponential cooldown (`base·2ⁿ⁻¹`); a success clears
+  the failure history.
+
+**Owns:** engine operational state + attempt-gating + telemetry.
+**Does NOT own:** routing (the Voice Manager combines this with the Capability
+Graph), VRAM management (a future VRAM Guard subsystem), any executive concern.
+
+### Decision — Health vs. Capability, and no VRAM here *(documented, not yet an ADR)*
+
+Two separate questions, two separate systems, composed only by the future Voice
+Manager — never by each other:
+
+| System | Question |
+|---|---|
+| **Voice Capability Graph** | *Can this voice **theoretically** perform with the currently available engine configuration?* |
+| **Engine Health Cache** | *Should we **attempt** this engine right now, based on recent runtime history?* |
+| **Voice Manager** *(future)* | Combines both answers and **makes the routing decision.** |
+
+Cooldown/backoff is **time-based protection only** — VRAM awareness belongs to a
+future, separate **VRAM Guard**, not here. This separation is recorded here first;
+if it proves important across multiple future subsystems, promote it to a formal
+ADR then (no ADR overhead yet).

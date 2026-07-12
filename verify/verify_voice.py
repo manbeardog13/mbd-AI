@@ -19,6 +19,9 @@ from voice.local_tts.base import (  # noqa: E402
 from voice.local_tts.voice_capability_graph import (  # noqa: E402
     QualityLevel, VoiceCapability, VoiceCapabilityGraph,
 )
+from voice.local_tts.engine_health import (  # noqa: E402
+    EngineHealthCache, HealthStatus,
+)
 
 FAILS: list[str] = []
 
@@ -80,11 +83,34 @@ def main() -> int:
           {r["voice_id"]: r["available"] for r in graph.snapshot()}
           == {"nero_prime": True, "nero_demon": False})
 
+    # ---- Stage 3: Engine Health Cache (attempt gating, deterministic clock) ----
+    from datetime import datetime, timedelta, timezone
+    t0 = datetime(2026, 7, 12, 12, 0, 0, tzinfo=timezone.utc)
+    hc = EngineHealthCache(base_cooldown_s=5.0, max_cooldown_s=30.0)
+    check("unknown engine is attemptable (UNKNOWN)",
+          hc.should_attempt("kokoro", now=t0) and hc.status("kokoro", now=t0) == HealthStatus.UNKNOWN)
+    hc.record_failure("kokoro", "no audio", now=t0)
+    check("failure -> COOLDOWN, attempts blocked (cached, no re-probe)",
+          hc.status("kokoro", now=t0 + timedelta(seconds=2)) == HealthStatus.COOLDOWN
+          and hc.should_attempt("kokoro", now=t0 + timedelta(seconds=2)) is False)
+    check("cooldown expiry -> RECOVERING, attempt allowed",
+          hc.should_attempt("kokoro", now=t0 + timedelta(seconds=6)) is True
+          and hc.status("kokoro", now=t0 + timedelta(seconds=6)) == HealthStatus.RECOVERING)
+    hc.record_success("kokoro", now=t0 + timedelta(seconds=6))
+    check("recovery clears failure history (AVAILABLE, 0 failures)",
+          hc.status("kokoro", now=t0 + timedelta(seconds=6)) == HealthStatus.AVAILABLE
+          and hc.get("kokoro").consecutive_failures == 0)
+    hc.record_failure("kokoro", now=t0)
+    hc.record_success("mms_hr", now=t0)
+    check("one broken engine does not affect another",
+          hc.should_attempt("kokoro", now=t0 + timedelta(seconds=1)) is False
+          and hc.should_attempt("mms_hr", now=t0 + timedelta(seconds=1)) is True)
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stages 1-2 (TTSEngine contract + Capability Graph) verified.")
+    print("  Voice Stages 1-3 (TTSEngine contract + Capability Graph + Health Cache) verified.")
     return 0
 
 

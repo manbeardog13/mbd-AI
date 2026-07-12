@@ -20,9 +20,15 @@ from .voice_capability_graph import (
     VoiceCapability,
     VoiceCapabilityGraph,
 )
+from .engine_health import (
+    EngineHealthCache,
+    EngineHealthRecord,
+    HealthStatus,
+)
 
 __all__ = [
     "AudioResult", "BaseTTSEngine", "EngineHealth", "EngineStatus",
     "NullEngine", "TTSEngine", "VoiceRequest",
     "QualityLevel", "ResolvedVoice", "VoiceCapability", "VoiceCapabilityGraph",
+    "EngineHealthCache", "EngineHealthRecord", "HealthStatus",
 ]
