@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -87,12 +88,63 @@ def init_db() -> None:
             updated_at TEXT NOT NULL
         );
 
+        -- Action Journal (Nero's chain of custody): an immutable, event-sourced
+        -- record of every action. A base 'action' row plus later 'outcome' /
+        -- 'note' / 'recovery' event rows that reference it by parent_id — the
+        -- current state of an action is its base row overlaid with its events.
+        -- Never UPDATE (append-only); only routine/temporary rows may be deleted
+        -- (by the retention compaction), enforced by the triggers below.
+        CREATE TABLE IF NOT EXISTS action_journal (
+            action_id        TEXT PRIMARY KEY,
+            event_type       TEXT NOT NULL DEFAULT 'action',   -- action | outcome | note | recovery
+            parent_id        TEXT,                             -- NULL for base rows; base id for events
+            created_at       TEXT NOT NULL,
+            conversation_id  INTEGER,
+            actor            TEXT NOT NULL DEFAULT 'nero',
+            capability       TEXT NOT NULL DEFAULT '',
+            risk             TEXT NOT NULL DEFAULT '',
+            approval         TEXT NOT NULL DEFAULT '',
+            status           TEXT NOT NULL DEFAULT '',
+            ok               INTEGER NOT NULL DEFAULT 0,
+            importance       TEXT NOT NULL DEFAULT 'routine',  -- critical|important|routine|temporary
+            milestone        INTEGER NOT NULL DEFAULT 0,       -- Layer-3 permanent (never deleted)
+            human_notes      TEXT NOT NULL DEFAULT '',
+            undo_available   INTEGER NOT NULL DEFAULT 0,
+            duration_ms      INTEGER NOT NULL DEFAULT 0,
+            intent_json      TEXT NOT NULL DEFAULT '{}',       -- user_request, interpretation, planned_outcome
+            exec_json        TEXT NOT NULL DEFAULT '{}',       -- params, targets, checks, output_summary, error
+            recovery_json    TEXT,
+            transitions_json TEXT NOT NULL DEFAULT '[]',
+            schema_version   INTEGER NOT NULL DEFAULT 1,
+            embedding        TEXT
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_journal_time       ON action_journal(created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_journal_capability ON action_journal(capability, created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_journal_importance ON action_journal(importance, created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_journal_conv       ON action_journal(conversation_id, created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_journal_parent     ON action_journal(parent_id);
+        CREATE INDEX IF NOT EXISTS idx_journal_event      ON action_journal(event_type, created_at DESC);
+
+        -- IMMUTABILITY, enforced by the engine and not by convention: the journal
+        -- protects itself. No row is ever updated; only routine/temporary rows may
+        -- be deleted (retention compaction), never critical/important/milestone.
+        CREATE TRIGGER IF NOT EXISTS journal_no_update
+        BEFORE UPDATE ON action_journal
+        BEGIN SELECT RAISE(ABORT, 'action_journal is append-only'); END;
+
+        CREATE TRIGGER IF NOT EXISTS journal_no_delete
+        BEFORE DELETE ON action_journal
+        WHEN OLD.importance IN ('critical','important') OR OLD.milestone = 1
+        BEGIN SELECT RAISE(ABORT, 'meaningful journal rows are permanent'); END;
+
         CREATE INDEX IF NOT EXISTS idx_messages_conversation
             ON messages(conversation_id, id);
         """
     )
     conn.commit()
     _migrate_memories(conn)
+    _migrate_journal(conn)
     conn.close()
 
 
@@ -388,3 +440,135 @@ def clear_executive() -> None:
     conn.execute("DELETE FROM executive_state")
     conn.commit()
     conn.close()
+
+
+# --------------------------------------------------------------------------
+# Action Journal (storage primitives — record building lives in app/journal.py)
+# --------------------------------------------------------------------------
+
+# The columns a journal row may set. add_action() whitelists against this, so a
+# caller can pass a partial dict and unknown keys are ignored (never SQL-injected
+# as column names). event_type/parent_id carry the event-sourcing.
+JOURNAL_COLUMNS = (
+    "action_id", "event_type", "parent_id", "created_at", "conversation_id",
+    "actor", "capability", "risk", "approval", "status", "ok", "importance",
+    "milestone", "human_notes", "undo_available", "duration_ms",
+    "intent_json", "exec_json", "recovery_json", "transitions_json",
+    "schema_version", "embedding",
+)
+_JOURNAL_BOOLS = ("ok", "milestone", "undo_available")
+
+
+def _migrate_journal(conn: sqlite3.Connection) -> None:
+    """Add any missing columns to an older `action_journal`, without data loss.
+
+    Mirrors `_migrate_memories`: additive only, so a journal created by an earlier
+    version gains new columns on the next startup. The table/indexes/triggers
+    themselves are created idempotently in init_db().
+    """
+    cols = {row["name"] for row in conn.execute("PRAGMA table_info(action_journal)")}
+    if not cols:
+        return  # table absent (shouldn't happen — init_db created it)
+    additions = {
+        "event_type": "TEXT NOT NULL DEFAULT 'action'",
+        "parent_id": "TEXT",
+        "milestone": "INTEGER NOT NULL DEFAULT 0",
+        "human_notes": "TEXT NOT NULL DEFAULT ''",
+        "recovery_json": "TEXT",
+        "transitions_json": "TEXT NOT NULL DEFAULT '[]'",
+        "schema_version": "INTEGER NOT NULL DEFAULT 1",
+        "embedding": "TEXT",
+    }
+    changed = False
+    for name, ddl in additions.items():
+        if name not in cols:
+            conn.execute(f"ALTER TABLE action_journal ADD COLUMN {name} {ddl}")
+            changed = True
+    if changed:
+        conn.commit()
+
+
+def add_action(row: dict, *, durable: bool = False) -> str:
+    """Append one journal row (a base 'action' or an event). The ONLY write path.
+
+    Returns the row's action_id (generated if absent). `durable=True` forces the
+    write to disk (`PRAGMA synchronous=FULL`) for the strict-journaling path — a
+    meaningful mutation's record must survive a crash. Never UPDATEs; the
+    append-only trigger would abort that anyway.
+    """
+    r = dict(row or {})
+    action_id = str(r.get("action_id") or f"act_{uuid.uuid4().hex}")
+    r["action_id"] = action_id
+    r.setdefault("created_at", _now())
+    r.setdefault("event_type", "action")
+    for b in _JOURNAL_BOOLS:
+        if b in r:
+            r[b] = 1 if r[b] else 0
+    cols = [c for c in JOURNAL_COLUMNS if c in r]
+    placeholders = ", ".join("?" for _ in cols)
+    conn = _connect()
+    try:
+        if durable:
+            conn.execute("PRAGMA synchronous = FULL")
+        conn.execute(
+            f"INSERT INTO action_journal ({', '.join(cols)}) VALUES ({placeholders})",
+            tuple(r[c] for c in cols),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return action_id
+
+
+def get_action(action_id: str) -> dict | None:
+    """Return a single journal row by its action_id (base or event), or None."""
+    conn = _connect()
+    r = conn.execute(
+        "SELECT * FROM action_journal WHERE action_id = ?", (str(action_id),)
+    ).fetchone()
+    conn.close()
+    return dict(r) if r is not None else None
+
+
+def get_action_events(parent_id: str) -> list[dict]:
+    """Return the event rows (outcome/note/recovery) for a base action, oldest first."""
+    conn = _connect()
+    rows = conn.execute(
+        "SELECT * FROM action_journal WHERE parent_id = ? ORDER BY created_at ASC, rowid ASC",
+        (str(parent_id),),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def get_actions(
+    limit: int = 50,
+    *,
+    capability: str | None = None,
+    importance: str | None = None,
+    conversation_id: int | None = None,
+    milestone: bool | None = None,
+    since: str | None = None,
+) -> list[dict]:
+    """List base actions (newest first), filtered. Event rows are excluded."""
+    clauses = ["event_type = 'action'"]
+    params: list = []
+    if capability:
+        clauses.append("capability = ?"); params.append(capability)
+    if importance:
+        clauses.append("importance = ?"); params.append(importance)
+    if conversation_id is not None:
+        clauses.append("conversation_id = ?"); params.append(conversation_id)
+    if milestone is not None:
+        clauses.append("milestone = ?"); params.append(1 if milestone else 0)
+    if since:
+        clauses.append("created_at >= ?"); params.append(since)
+    where = " AND ".join(clauses)
+    params.append(max(1, int(limit)))
+    conn = _connect()
+    rows = conn.execute(
+        f"SELECT * FROM action_journal WHERE {where} ORDER BY created_at DESC, rowid DESC LIMIT ?",
+        tuple(params),
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
