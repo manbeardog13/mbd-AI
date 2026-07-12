@@ -22,6 +22,21 @@ Awaiting owner sign-off before merge; then **local STT** (faster-whisper).
 Owner's build order: voice → computer control → design system (the last is
 now largely delivered inside PR #9).*
 
+*Governance layer added (rides along in PR #9): a **Constitution** (v1.1, the
+stable law), **ADRs 0001–0008** (the reasoning), a phased **Roadmap**, and a
+**Phase-1 technical design** — all in `docs/`, mirrored on a shareable
+[architecture page](https://claude.ai/code/artifact/f12facf1-875b-46d6-bdb4-78e35d817ea8).
+Two product decisions are now settled: **ADR-0006 — "Local-First with
+Intelligence Escalation"** (local is the default path; cloud is an explicit,
+opt-in, transparent escalation, off by default), and a new constitutional law,
+**the Principle of Least Intelligence** (use the simplest deterministic
+mechanism that's correct; invoke the LLM only when it genuinely adds value).
+The committed next build is **Phase 1 — "The Hands"**: agent/tool loop +
+**Capability Registry** (reason about capabilities, not hard-coded tools) +
+**Executive Memory** (a small working-state register: goal/project/branch/task/
+blocker/next_action, distinct from long-term memory) + **security gate first** +
+human-in-the-loop terminal — starting once PR #9 merges to a clean `main`.*
+
 ---
 
 ## 1. What Nero is
@@ -136,8 +151,11 @@ tests/   test_memory.py        PROGRESS.md
 - **Knowledge graph** — memories store `entities`, but they aren't yet *connected*
   into a graph.
 - **No Insight Engine** — she remembers, but doesn't yet synthesize patterns.
-- **No tools / planner / skills** — she can only converse, not act (and so no
-  computer control yet; that rides on the Tool System — item 3 above).
+- **No tools / planner / skills yet** — she can only converse, not act. This is
+  now *designed*, not just deferred: **Phase 1 ("The Hands")** in
+  [ROADMAP.md](ROADMAP.md) + [DESIGN-phase1.md](DESIGN-phase1.md) builds the
+  agent/tool loop, Capability Registry, Executive Memory, security gate, and a
+  human-in-the-loop terminal. Computer control rides on this foundation.
 - **No proactivity / desktop sensing** — purely reactive.
 - **Single active conversation thread** (multi-conversation not built).
 - **Retrieval is a linear scan** over SQLite (fine at current scale; no vector DB yet).
@@ -149,6 +167,10 @@ tests/   test_memory.py        PROGRESS.md
   **Croatian** TTS (Meta MMS-TTS).
 
 ## 5. Roadmap
+
+> The authoritative, measurable plan now lives in
+> [ROADMAP.md](ROADMAP.md) (governed by [CONSTITUTION.md](CONSTITUTION.md) +
+> [the ADRs](adr/README.md)). This section is the friendly summary.
 
 - ✅ **Done:** v0.1 foundation · Phase 1 (identity: goals/principles/confidence +
   the full memory subsystem) · **Phase 2 (World Model / continuity)** · the
@@ -163,9 +185,12 @@ tests/   test_memory.py        PROGRESS.md
      when unavailable (incl. iOS autoplay), plus barge-in. Next: local STT
      (faster-whisper), the real-time loop (continuous listen, <1s latency), and
      Croatian (Meta MMS-TTS).
-  2. **Computer control** — a *local "Cowork"*: see the screen, drive
-     mouse/keyboard, act in real apps, with hard safety rails. Rides on the
-     **Tool System + planner**, so that foundation lands here.
+  2. **Phase 1 — "The Hands"** (the committed foundation): agent/tool loop +
+     **Capability Registry** + **Executive Memory** + **security gate (built
+     first)** + human-in-the-loop terminal. This is what unlocks acting at all —
+     and **computer control** (a *local "Cowork"*: see the screen, drive
+     mouse/keyboard, act in real apps with hard safety rails) rides directly on
+     it. Starts on a clean `main` once PR #9 merges.
   3. ✅ **Design System v1.0 applied** to the live frontend (in PR #9, pulled
      forward alongside the voice work): light/violet redesign, two-button
      composer, conversation-mode orb, responsive + iPhone safe-area.
