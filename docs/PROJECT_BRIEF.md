@@ -51,8 +51,9 @@ Voice Platform** (an output interface only — it never calls dispatch/authorize
 writes no Journal, executes nothing; "the Brain produces a response, the Voice
 presents it"). Voice is built **model-independent foundation first, API-first**
 (the contract before any engine body); GPU/VRAM/latency work belongs to the local
-4070, never cloud assumption. **Voice Stages 1–9 shipped** on their own branch/PR
-(**PR #14**, draft): (1) the **TTSEngine interface** — `voice/local_tts/base.py`
+4070, never cloud assumption. **Voice Stages 1–10 shipped** (the model-independent
+foundation is complete) on their own branch/PR (**PR #14**, draft): (1) the
+**TTSEngine interface** — `voice/local_tts/base.py`
 (`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
 fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
 **Voice Capability Graph** — `voice_capability_graph.py`, answering "can THIS
@@ -156,8 +157,25 @@ selection, health decisions, retries, recovery, memory, personality, LLM, or Jou
 The one sanctioned broad-import module (composition needs it); one-way (nothing
 imports startup); `voice_manager.py` constructed, never modified. 16 tests + 4
 verify checks green; build ≈0.13 ms (10-voice cast), readiness ≈22 µs (CPU-only);
-zero regressions across Stages 1–8. Stopped for review before Stage 10 (Voice Health
-Check).*
+zero regressions across Stages 1–8. (10) **Voice Health Check** —
+`voice/manager/health.py`, a **stateless read-only interpreter**: *"what is the
+current observable health picture?"* (never *"what should the system do next?"*).
+`build_health_report(*, graph, engine_health, emergency_voice, telemetry, now,
+clock)` and `report_for_runtime(runtime)` compose three lenses — availability
+(Graph: `available_voices`/`emergency_available`), attempt-health (Engine Health:
+per-engine `status`/`should_attempt`/`consecutive_failures` + `gated_engines`),
+execution (Telemetry snapshot: failures/fallbacks/text-only/latency) — plus a **pure
+advisory rollup** `overall ∈ {HEALTHY, DEGRADED, OFFLINE}` (OFFLINE = no voice
+available; DEGRADED = emergency down OR engine gated OR recent failures>0 OR
+text_only>0; else HEALTHY) that the Manager never consumes. Immutable report; owns
+nothing — no routing, no health mutation (never `record_*`), no state, no
+persistence, no learning, no Event Bus subscription (reads Telemetry's snapshot). It
+imports **no** voice module (duck-typed on `runtime.graph/health/telemetry`); one-way,
+no cycle. Engine Health remembers · Telemetry observes · Startup assembles · the
+Health Report interprets — three questions, three owners, nobody decides for the
+Manager. 13 tests + 5 verify checks green; ≈22 µs/report (CPU-only); zero regressions
+across Stages 1–9. **Stages 1–10 complete the model-independent foundation** — engine
+bodies + all GPU/VRAM/latency/audio work are reserved for the local RTX-4070.*
 
 ---
 

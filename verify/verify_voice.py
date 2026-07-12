@@ -40,6 +40,9 @@ from voice.manager.telemetry import (  # noqa: E402
 from voice.manager.startup import (  # noqa: E402
     ReadinessState, StartupError, VoiceRuntime, build_voice_runtime,
 )
+from voice.manager.health import (  # noqa: E402
+    VoiceHealthLevel, VoiceHealthReport, build_health_report, report_for_runtime,
+)
 
 FAILS: list[str] = []
 
@@ -450,13 +453,48 @@ def main() -> int:
           and VoiceEventType.ENGINE_FAILED in kinds9 and VoiceEventType.FALLBACK_USED in kinds9
           and snap9.fallback_count == 1 and rt.health.get("e_prime").consecutive_failures == 1)
 
+    # ---- Stage 10: Voice Health Check (stateless read-only interpreter) ----
+    # A FRESH runtime (prime fails -> luna), isolated so counts are deterministic.
+    p10 = _cast9(fb)
+    rt10 = build_voice_runtime(engines={"e_prime": _Fail9("e_prime"), "e_luna": _Ok9("e_luna")},
+                               cast_path=p10, clock=lambda: _fixed9)
+    _os9.remove(p10)
+    rt10.manager.speak(VoiceRequest(text="hi", voice_id="nero_prime"))     # one fallback
+    hr = report_for_runtime(rt10, clock=lambda: _fixed9)
+    check("health report composes three lenses (availability + attempt-health + execution)",
+          isinstance(hr, VoiceHealthReport) and isinstance(hr.available_voices, tuple)
+          and hr.recent is not None)
+    check("attempt-health lens surfaces the failed engine's cooldown (recorded by the Manager)",
+          hr.engines["e_prime"].consecutive_failures == 1
+          and hr.engines["e_prime"].should_attempt is False and "e_prime" in hr.gated_engines)
+    check("execution lens reflects the Telemetry snapshot (failure + fallback)",
+          hr.recent.engine_failures == 1 and hr.recent.fallback_count == 1
+          and hr.overall == VoiceHealthLevel.DEGRADED)
+
+    before10 = rt10.health.get("e_prime").consecutive_failures
+    report_for_runtime(rt10, clock=lambda: _fixed9)        # re-report...
+    check("the health report changes nothing (no health mutation, stateless)",
+          rt10.health.get("e_prime").consecutive_failures == before10)
+
+    # rollup determinism (pure function): OFFLINE when no voice can perform
+    class _Down10(BaseTTSEngine):
+        def __init__(self, name): super().__init__(); self.name = name; self._languages = ("en",)
+        def _available(self): return False
+        def _synthesize(self, request): return (b"", 0)
+    g10 = VoiceCapabilityGraph()
+    g10.register(VoiceCapability("nero_prime", "d", ("en",)), _Down10("d"))
+    off = build_health_report(graph=g10, engine_health=EngineHealthCache(),
+                              emergency_voice="nero_prime", clock=lambda: _fixed9)
+    check("rollup is a pure function: no available voice -> OFFLINE",
+          off.overall == VoiceHealthLevel.OFFLINE and off.available_voices == ())
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stages 1-9 (contract + Capability Graph + Health Cache + Voice "
+    print("  Voice Stages 1-10 (contract + Capability Graph + Health Cache + Voice "
           "Manager + Voice Profiles + Performance Director + Event Bus + Telemetry + "
-          "Warm Startup) verified.")
+          "Warm Startup + Health Check) verified.")
     return 0
 
 

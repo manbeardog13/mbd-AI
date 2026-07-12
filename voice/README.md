@@ -50,8 +50,8 @@ Each stage stops with a verification report before the next begins.
 | 6 | **Performance Director** | `personalities/performance_director.py` | ✅ done |
 | 7 | **Event Bus** | `manager/events.py` | ✅ done |
 | 8 | **Voice Telemetry** | `manager/telemetry.py` | ✅ done |
-| 9 | **Warm Startup** | `manager/startup.py` | ✅ this stage |
-| 10 | Voice Health Check | `manager/health.py` | ⏭ next |
+| 9 | **Warm Startup** | `manager/startup.py` | ✅ done |
+| 10 | **Voice Health Check** | `manager/health.py` | ✅ this stage — foundation complete |
 
 **Deferred (not this foundation):** engine bodies (`kokoro_engine`, `mms_hr_engine`),
 XTTS integration, advanced effects, the voice-selection UI, and the ElevenLabs
@@ -359,3 +359,52 @@ execution begins. `readiness()` re-probes live state on every call.
 import the Manager, Graph, Health, Bus, and Telemetry together — construction requires
 it. Direction stays one-way: startup depends on the components; nothing depends on
 startup. `voice_manager.py` is **constructed, never modified**.
+
+## Stage 10 — Voice Health Check (`manager/health.py`)
+
+> **Engine Health remembers. Telemetry observes. Startup assembles. The Health
+> Report interprets the current picture — and nobody decides for the Manager.**
+
+A **stateless, read-only interpreter** answering *"what is the current observable
+health picture of the voice subsystem?"* — never *"what should the system do next?"*
+A crystal-clear glass window, not a mysterious oracle. It composes **three lenses**
+from three sovereign authorities, on demand, owning nothing:
+
+| Lens | Source (authority) | Question |
+|---|---|---|
+| **Availability** — `available_voices`, `total_voices`, `emergency_available` | Capability Graph | *can voices perform now?* |
+| **Attempt-health** — `engines{status, should_attempt, consecutive_failures}`, `gated_engines` | Engine Health | *would this engine be allowed an attempt?* |
+| **Execution** — `recent{engine_failures, fallback_count, text_only_count, selected_count, average_latency_ms, per_engine_failures}` | Telemetry snapshot | *what has happened?* |
+
+Plus an **advisory rollup** `overall ∈ {HEALTHY, DEGRADED, OFFLINE}` — a **pure
+function**, *descriptive only, never consumed by the Manager*:
+- **OFFLINE** — no voice can perform now.
+- **DEGRADED** — the emergency voice is unavailable, **or** any engine is gated by
+  cooldown, **or** recent `engine_failures > 0`, **or** `text_only_count > 0`.
+- **HEALTHY** — otherwise. No weighting, no scoring, no confidence, no prediction.
+
+```python
+from voice.manager.health import build_health_report, report_for_runtime
+report = report_for_runtime(runtime)          # or build_health_report(graph=…, engine_health=…, telemetry=…)
+report.overall                                 # HEALTHY | DEGRADED | OFFLINE  (advisory)
+```
+
+**Owns:** interpretation / presentation of one immutable report.
+**Refuses to own:** routing · fallback · voice selection · recovery/restart/reload ·
+retries · health mutation (never `record_*`) · its own state · persistence ·
+learning/scoring/prediction · Event Bus subscription (it reads Telemetry's *snapshot*)
+· any executive coupling.
+
+**Availability overlaps Startup readiness because both read the Graph — but reading an
+authority is not becoming one.** Two consumers reading one source is fine; neither owns
+it. Pull-only and stateless (every call re-reads live state), the report imports **no**
+voice module (duck-typed on `runtime.graph`/`health`/`telemetry`), so there is no cycle
+and nothing depends on it. The three lenses stay three questions with three owners.
+
+---
+
+*Stages 1–10 complete the model-independent Voice Platform foundation. Remaining work
+— engine bodies (`kokoro_engine` wrapping `app/tts.py`, `mms_hr_engine`), XTTS,
+advanced effects, the voice-selection UI, and the ElevenLabs adapter — is GPU/model
+work reserved for the local RTX-4070 environment (measured results only, never cloud
+assumption).*
