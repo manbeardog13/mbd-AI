@@ -51,7 +51,7 @@ Voice Platform** (an output interface only — it never calls dispatch/authorize
 writes no Journal, executes nothing; "the Brain produces a response, the Voice
 presents it"). Voice is built **model-independent foundation first, API-first**
 (the contract before any engine body); GPU/VRAM/latency work belongs to the local
-4070, never cloud assumption. **Voice Stages 1–5 shipped** on their own branch/PR
+4070, never cloud assumption. **Voice Stages 1–6 shipped** on their own branch/PR
 (**PR #14**, draft): (1) the **TTSEngine interface** — `voice/local_tts/base.py`
 (`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
 fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
@@ -90,7 +90,23 @@ self/circular fallbacks, a missing engine binding, and — the Stage 4 finding �
 not as a silent runtime drop). 15 tests + 10 verify checks green; load ≈0.09 ms,
 populate ≈0.013 ms (startup-only); zero regressions across Stages 1–4. Croatian
 voices join the manifest — a data change, not a code change — when `mms_hr` ships.
-Stopped for review before Stage 6 (Performance Director).*
+(6) the **Performance Director** — `voice/personalities/performance_director.py`:
+answers *"how should this be delivered?"* and nothing else. `docs/VOICE.md`'s
+single "Voice Director" (which chose both voice and style) is **split** —
+voice-selection stays with the Voice Manager (Stage 4); delivery-interpretation is
+this component. A **pure, deterministic** transform (Principle of Least
+Intelligence): `direct(request) → VoiceRequest` reads the Brain's raw `delivery`
+intent and returns a **new** request whose `delivery` is a canonical, clamped
+`DeliveryPlan` (emotion→neutral fallback; authority/warmth/intensity/humor clamped
+0–1, `humor` = the TARS dial; pace slow/normal/fast→0.85/1.0/1.15; pauses
+none/short/long; unknown effects dropped). `text`/`voice_id`/`language`/`speed`
+pass through untouched, input never mutated. **Option A** wiring (Director upstream
+of the Manager) needs **zero contract changes** — `VoiceRequest.delivery` already
+exists and `_with_voice` already forwards it, so the canonical plan reaches the
+engine unchanged. No LLM, no randomness, no I/O, no memory, no text/sentiment
+inference, no routing, no voice/engine/health/capability awareness. 16 tests + 6
+verify checks green; ≈4.2 µs/call (CPU-only, no GPU); zero regressions across
+Stages 1–5. Stopped for review before Stage 7 (Event Bus).*
 
 ---
 

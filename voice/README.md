@@ -46,9 +46,9 @@ Each stage stops with a verification report before the next begins.
 | 2 | **Voice Capability Graph** | `local_tts/voice_capability_graph.py` | ✅ done |
 | 3 | **Engine Health (cache)** | `local_tts/engine_health.py` | ✅ done |
 | 4 | **Voice Manager** | `manager/voice_manager.py` | ✅ done |
-| 5 | **Voice Profiles** (`cast.json`) | `profiles/cast.json` + `profiles/loader.py` | ✅ this stage |
-| 6 | Performance Director | `personalities/performance_director.py` | ⏭ next |
-| 7 | Event Bus | `manager/events.py` | planned |
+| 5 | **Voice Profiles** (`cast.json`) | `profiles/cast.json` + `profiles/loader.py` | ✅ done |
+| 6 | **Performance Director** | `personalities/performance_director.py` | ✅ this stage |
+| 7 | Event Bus | `manager/events.py` | ⏭ next |
 | 8 | Voice Telemetry | `manager/telemetry.py` | planned |
 | 9 | Warm Startup | `manager/startup.py` | planned |
 | 10 | Voice Health Check | `manager/health.py` | planned |
@@ -174,3 +174,50 @@ zero voices; the *runtime* layers, not the loader, decide whether that is useful
 engine (English). Croatian (`hr`) voices are added to `cast.json` — a **data**
 change, not a code change — once the `mms_hr` engine ships. That is the whole point
 of moving identity into data.
+
+## Stage 6 — Performance Director (`personalities/performance_director.py`)
+
+> **Brain decides *what* is said. The Performance Director decides *how* it's
+> delivered. The Voice Manager decides *who* says it. The Engine decides *how* the
+> audio is produced.** Four responsibilities, four components, one-way.
+
+**The split from the Bible.** `docs/VOICE.md` (§119) describes a single "Voice
+Director" that chose *both* the voice *and* the delivery style in one blob. V1.2.1
+**split** that: voice selection → the **Voice Manager** (Stage 4); delivery
+interpretation → the **Performance Director** (this stage). The Director is the
+*delivery-style half* of the Bible's Voice Director, with the routing half removed.
+
+It is a **pure, deterministic transformation** — the Principle of Least
+Intelligence made concrete. It reads the Brain's raw *delivery intent* (the
+free-form `delivery` dict on a `VoiceRequest`) and returns a **new**
+`VoiceRequest` whose `delivery` is a canonical, clamped `DeliveryPlan`:
+
+```
+Brain → VoiceRequest(raw delivery intent)
+      → PerformanceDirector.direct()            ← this stage (upstream of routing)
+      → VoiceRequest(canonical DeliveryPlan)
+      → VoiceManager.speak() → engine.synthesize()
+```
+
+**Contract.** `direct(request) -> VoiceRequest`. Normalizes `emotion` (unknown →
+`neutral`), the 0–1 dials `authority`/`warmth`/`intensity`/`humor` (clamped;
+`humor` is the TARS dial), `pace` (`slow`→0.85 / `normal`→1.0 / `fast`→1.15, or a
+clamped multiplier), `pauses` (`none`/`short`/`long`, unknown → `short`), and
+`effects` (canonical names only; unknown dropped). `text`, `voice_id`, `language`
+and `speed` pass through **untouched**, and the input request is **never mutated**.
+Same intent in → identical plan out. Engines honor what they support and ignore the
+rest (best-effort), so the Director stays engine-agnostic.
+
+**MAY NOT (non-negotiable):**
+- **no voice selection** — it never creates or changes `voice_id`;
+- **no routing / fallback** — that authority is the Voice Manager's alone;
+- **no memory**, no state, no learning, no adaptation;
+- **no inference** — it never reads the *meaning* of the response text, runs no
+  sentiment/emotion detection, calls no LLM;
+- **no engine control** and **no engine/health/capability awareness**;
+- **no capability decisions**, no executive calls, no I/O, no randomness.
+
+> The goal is not a clever component — it is a *perfectly placed* one. If the
+> Director is ever tempted toward emotional intelligence, context understanding,
+> personality simulation, automatic voice choice, or adaptive behavior, that
+> temptation is rejected: those are other components' jobs.

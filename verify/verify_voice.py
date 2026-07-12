@@ -28,6 +28,9 @@ from voice.manager.voice_manager import (  # noqa: E402
 from voice.profiles.loader import (  # noqa: E402
     DEFAULT_CAST_PATH, CastError, load_cast,
 )
+from voice.personalities.performance_director import (  # noqa: E402
+    PerformanceDirector, direct as direct_delivery,
+)
 
 FAILS: list[str] = []
 
@@ -236,12 +239,50 @@ def main() -> int:
     check("empty cast loads safely (0 voices, no crash)",
           _empty_cast_ok(_tmp_cast))
 
+    # ---- Stage 6: Performance Director (deterministic delivery interpretation) ----
+    class _Capture(BaseTTSEngine):
+        def __init__(self, name): super().__init__(); self.name = name; self._languages = ("en",); self.seen = None
+        def _available(self): return True
+        def _synthesize(self, request): self.seen = dict(request.delivery); return (b"wav", 24_000)
+
+    director = PerformanceDirector()
+    intent = {"emotion": "serious", "authority": 5.0, "pace": "slow",
+              "effect": "subtle_system_alert", "humor": 0.7, "warmth": -1.0}
+    p1 = director.direct(VoiceRequest(text="x", delivery=intent)).delivery
+    p2 = direct_delivery(VoiceRequest(text="x", delivery=intent)).delivery
+    check("delivery normalization is deterministic (same intent -> same plan)", p1 == p2)
+    check("numeric dials clamp to [0,1] (authority 5.0 -> 1.0, warmth -1.0 -> 0.0)",
+          p1["authority"] == 1.0 and p1["warmth"] == 0.0)
+    check("pace word normalized (slow -> 0.85), unknown effect dropped, known kept",
+          p1["pace"] == 0.85 and p1["effects"] == ["subtle_system_alert"])
+
+    src_req = VoiceRequest(text="Dobar dan", voice_id="nero_luna", language="hr", speed=1.2,
+                           delivery={"emotion": "warm"})
+    out_req = director.direct(src_req)
+    check("request identity preserved (text/voice_id/language/speed), input not mutated",
+          out_req.text == "Dobar dan" and out_req.voice_id == "nero_luna"
+          and out_req.language == "hr" and out_req.speed == 1.2
+          and src_req.delivery == {"emotion": "warm"})
+    check("Director owns no routing (never invents/changes voice_id)",
+          director.direct(VoiceRequest(text="x", delivery={})).voice_id == ""
+          and "voice_id" not in out_req.delivery and "voice" not in out_req.delivery)
+
+    cap = _Capture("cap")
+    g6d = VoiceCapabilityGraph()
+    g6d.register(VoiceCapability("nero_prime", "cap", ("en",)), cap)
+    mgr6 = VoiceManager(g6d, EngineHealthCache(), emergency_voice="nero_prime")
+    directed = director.direct(VoiceRequest(text="hi", voice_id="nero_prime",
+                                            delivery={"emotion": "serious", "pace": "fast"}))
+    res6 = mgr6.speak(directed)
+    check("canonical delivery reaches the engine unchanged through the Voice Manager",
+          res6.ok and cap.seen == directed.delivery and cap.seen["pace"] == 1.15)
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stages 1-5 (contract + Capability Graph + Health Cache + "
-          "Voice Manager + Voice Profiles) verified.")
+    print("  Voice Stages 1-6 (contract + Capability Graph + Health Cache + "
+          "Voice Manager + Voice Profiles + Performance Director) verified.")
     return 0
 
 
