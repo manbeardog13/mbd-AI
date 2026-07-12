@@ -6,10 +6,36 @@ It doubles as a self-contained handoff you can give to an external advisor
 gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
 
-*Last updated: Phase 2 (World Model) **merged & verified 7/7** on the RTX 4070.
-Now building the **voice agent — Increment 1: local neural English voice**
-(Kokoro), in review (PR #8). Owner's build order: voice → computer control →
-apply the new design system.*
+*Last updated: Phase 2 (World Model) merged & verified 7/7, and voice
+**Increment 1** (local neural English voice, Kokoro) merged & verified 8/8, both
+on the RTX 4070. **PR #9** (open) now bundles: neural voice wired into the chat UI
+(sentence-by-sentence for low latency, emoji stripped, **iOS playback via Web
+Audio — confirmed speaking on the owner's iPhone**) + a full **UI redesign** to
+the NERO Design System v1.0 (light, violet, floating, calm) + a **ChatGPT-style
+two-button composer** (voice recording · conversation mode) + a hands-free
+**conversation-mode** screen (animated orb) + iPhone **safe-area** fixes.
+Rendered-verified desktop + emulated iPhone (no overflow / JS errors).
+**Remote access confirmed** on iPhone/iPad via **Tailscale HTTPS** (`tailscale
+serve --bg 8080`), which also unlocks the browser mic off-localhost. Added a
+one-click **`update-nero.bat`** (sync + restart) so the owner never types git.
+Awaiting owner sign-off before merge; then **local STT** (faster-whisper).
+Owner's build order: voice → computer control → design system (the last is
+now largely delivered inside PR #9).*
+
+*Governance layer added (rides along in PR #9): a **Constitution** (v1.1, the
+stable law), **ADRs 0001–0008** (the reasoning), a phased **Roadmap**, and a
+**Phase-1 technical design** — all in `docs/`, mirrored on a shareable
+[architecture page](https://claude.ai/code/artifact/f12facf1-875b-46d6-bdb4-78e35d817ea8).
+Two product decisions are now settled: **ADR-0006 — "Local-First with
+Intelligence Escalation"** (local is the default path; cloud is an explicit,
+opt-in, transparent escalation, off by default), and a new constitutional law,
+**the Principle of Least Intelligence** (use the simplest deterministic
+mechanism that's correct; invoke the LLM only when it genuinely adds value).
+The committed next build is **Phase 1 — "The Hands"**: agent/tool loop +
+**Capability Registry** (reason about capabilities, not hard-coded tools) +
+**Executive Memory** (a small working-state register: goal/project/branch/task/
+blocker/next_action, distinct from long-term memory) + **security gate first** +
+human-in-the-loop terminal — starting once PR #9 merges to a clean `main`.*
 
 ---
 
@@ -46,7 +72,9 @@ first) is in [DIRECTIVE.md](DIRECTIVE.md).
   - "Thinking" (Qwen3 `<think>` reasoning) is **disabled by default** for direct
     replies and clean reflection output; a `thinking: true` config flag re-enables it.
 - **Storage:** **SQLite** (conversations, messages, memories).
-- **Frontend:** a single **vanilla HTML/CSS/JS** web app (responsive, PWA-installable).
+- **Frontend:** a single **vanilla HTML/CSS/JS** web app (responsive, PWA-installable),
+  redesigned to the **NERO Design System** (light, violet, floating, calm) with a
+  ChatGPT-style two-button voice composer and a hands-free conversation-mode screen.
 - **Access:** local network + Tailscale (device-only; no app login).
 - **Setup:** one-command `bootstrap.py` (venv + deps + pulls all 3 models + launch).
 
@@ -70,8 +98,12 @@ first) is in [DIRECTIVE.md](DIRECTIVE.md).
 - **Reflection:** after each exchange, a background pass (small model, `think=false`)
   extracts durable facts, **dedupes** against existing memories (text + embedding),
   and reinforces or adds. Writes are serialized (lock) to avoid duplicate races.
-- **Voice:** browser TTS (prefers a female voice; speaks Croatian for Croatian
-  replies), STT (EN/HR), an iPhone **Siri Shortcut**.
+- **Voice:** a **local neural English voice** (Kokoro via ONNX Runtime) speaks
+  her replies in the app, falling back to the browser voice for Croatian or when
+  unavailable; barge-in (a new message/mic cuts her off); mobile audio unlock so
+  replies play on phone/tablet. Input via browser STT (EN/HR) — needs an HTTPS
+  origin off-localhost (Tailscale `serve`), so the mic works on phone/tablet;
+  iPhone can also use the native **Siri Shortcut**.
 - **Observability:** `GET /api/metrics` exposes retrieval latency + counts.
 
 **World Model (continuity — Phase 2, new)**
@@ -119,19 +151,26 @@ tests/   test_memory.py        PROGRESS.md
 - **Knowledge graph** — memories store `entities`, but they aren't yet *connected*
   into a graph.
 - **No Insight Engine** — she remembers, but doesn't yet synthesize patterns.
-- **No tools / planner / skills** — she can only converse, not act (and so no
-  computer control yet; that rides on the Tool System — item 3 above).
+- **No tools / planner / skills yet** — she can only converse, not act. This is
+  now *designed*, not just deferred: **Phase 1 ("The Hands")** in
+  [ROADMAP.md](ROADMAP.md) + [DESIGN-phase1.md](DESIGN-phase1.md) builds the
+  agent/tool loop, Capability Registry, Executive Memory, security gate, and a
+  human-in-the-loop terminal. Computer control rides on this foundation.
 - **No proactivity / desktop sensing** — purely reactive.
 - **Single active conversation thread** (multi-conversation not built).
 - **Retrieval is a linear scan** over SQLite (fine at current scale; no vector DB yet).
 - **Observability is minimal** (`/api/metrics`); no dashboard.
-- **Voice** — a *local neural English voice* (Kokoro) now exists server-side
-  (`app/tts.py`, `POST /api/speak`), but it isn't wired into the chat UI yet
-  (still browser TTS there), there's no local STT (faster-whisper) yet, and the
-  real-time loop (continuous listen, barge-in) and Croatian (MMS-TTS) are still
-  to come.
+- **Voice** — the *local neural English voice* (Kokoro) now speaks her replies in
+  the chat UI, on desktop and phone/tablet. Still to come: **local STT**
+  (faster-whisper) to replace the browser's cloud speech recognition, the
+  **real-time loop** (continuous listen, voice-driven barge-in, <1s latency), and
+  **Croatian** TTS (Meta MMS-TTS).
 
 ## 5. Roadmap
+
+> The authoritative, measurable plan now lives in
+> [ROADMAP.md](ROADMAP.md) (governed by [CONSTITUTION.md](CONSTITUTION.md) +
+> [the ADRs](adr/README.md)). This section is the friendly summary.
 
 - ✅ **Done:** v0.1 foundation · Phase 1 (identity: goals/principles/confidence +
   the full memory subsystem) · **Phase 2 (World Model / continuity)** · the
@@ -139,16 +178,22 @@ tests/   test_memory.py        PROGRESS.md
   → reflect → learn) · Development Directive + verification framework · Qwen3
   defaults · thinking disabled.
 - 🔜 **Next (owner's chosen order):**
-  1. **Real-time voice agent** (in progress) — Increment 1 (local neural English
-     voice, Kokoro via ONNX Runtime — no PyTorch, Python-3.13-friendly) is in
-     review (PR #8). Then: wire it into the chat UI, local STT (faster-whisper),
-     the real-time loop (continuous listen + barge-in via Silero VAD, <1s
-     latency), and Croatian (Meta MMS-TTS).
-  2. **Computer control** — a *local "Cowork"*: see the screen, drive
-     mouse/keyboard, act in real apps, with hard safety rails. Rides on the
-     **Tool System + planner**, so that foundation lands here.
-  3. **Apply the Design System v1.0** to the live frontend (violet, floating
-     cards, responsive desktop/tablet/mobile — previewed as an artifact).
+  1. **Real-time voice agent** (in progress). ✅ Increment 1 — local neural
+     English voice (Kokoro via ONNX Runtime, no PyTorch, Python 3.13), verified
+     8/8. 🔨 Increment 2 (in review, PR #9) — that voice now plays in the chat UI
+     (`/api/speak`), with graceful fallback to the browser voice for Croatian or
+     when unavailable (incl. iOS autoplay), plus barge-in. Next: local STT
+     (faster-whisper), the real-time loop (continuous listen, <1s latency), and
+     Croatian (Meta MMS-TTS).
+  2. **Phase 1 — "The Hands"** (the committed foundation): agent/tool loop +
+     **Capability Registry** + **Executive Memory** + **security gate (built
+     first)** + human-in-the-loop terminal. This is what unlocks acting at all —
+     and **computer control** (a *local "Cowork"*: see the screen, drive
+     mouse/keyboard, act in real apps with hard safety rails) rides directly on
+     it. Starts on a clean `main` once PR #9 merges.
+  3. ✅ **Design System v1.0 applied** to the live frontend (in PR #9, pulled
+     forward alongside the voice work): light/violet redesign, two-button
+     composer, conversation-mode orb, responsive + iPhone safe-area.
 - 🗓️ **Then:** intent router + thought budget · **Experience Engine** (workflows,
   not just facts) · knowledge-graph connections · **Insight Engine** (Second Brain)
   · observability dashboard.
