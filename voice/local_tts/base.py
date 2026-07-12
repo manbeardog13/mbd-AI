@@ -81,6 +81,9 @@ class AudioResult:
     voice_id: str = ""
     duration_ms: float = 0.0
     error: str = ""
+    # Routing outcome, set ONLY by the VoiceManager (engines leave it ""):
+    # "primary" | "fallback" | "text_only" — for future diagnostics.
+    outcome: str = ""
 
     @classmethod
     def failure(cls, engine: str, error: str, voice_id: str = "") -> "AudioResult":

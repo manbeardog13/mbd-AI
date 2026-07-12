@@ -51,7 +51,7 @@ Voice Platform** (an output interface only — it never calls dispatch/authorize
 writes no Journal, executes nothing; "the Brain produces a response, the Voice
 presents it"). Voice is built **model-independent foundation first, API-first**
 (the contract before any engine body); GPU/VRAM/latency work belongs to the local
-4070, never cloud assumption. **Voice Stages 1–3 shipped** on their own branch/PR
+4070, never cloud assumption. **Voice Stages 1–4 shipped** on their own branch/PR
 (**PR #14**, draft): (1) the **TTSEngine interface** — `voice/local_tts/base.py`
 (`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
 fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
@@ -66,9 +66,17 @@ predictable, capped time-based cooldown/backoff (protection, not intelligence; n
 VRAM, no routing, no `app/` imports) over the lifecycle UNKNOWN → AVAILABLE →
 FAILING → COOLDOWN → RECOVERING → AVAILABLE. Capability Graph ("can it perform?")
 and Health Cache ("should we attempt it now?") stay separate; the future Voice
-Manager composes them and makes routing. A later `kokoro_engine` will **wrap** the
+Manager composes them and makes routing. (4) the **Voice Manager** —
+`manager/voice_manager.py`, the single routing authority: `speak(request)` walks
+an injected fallback chain (preferred → personality fallbacks → emergency NERO
+PRIME → text-only), gating each candidate on the Capability Graph + Health Cache,
+attempting synthesis, recording outcomes, emitting telemetry; engine exceptions
+become health failures (never crashes); the result's `outcome` distinguishes
+primary/fallback/text_only. It orchestrates, never absorbs — no intelligence,
+intent, memory, security, or synthesis logic; fallback *reasons* are injected data
+(`cast.json`, Stage 5), not inferred. A later `kokoro_engine` will **wrap** the
 shipped `app/tts.py` (strangler-fig), never rewrite it. Stopped for review before
-Stage 4 (Voice Manager).*
+Stage 5 (Voice Profiles / cast.json).*
 
 ---
 

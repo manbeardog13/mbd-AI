@@ -22,6 +22,9 @@ from voice.local_tts.voice_capability_graph import (  # noqa: E402
 from voice.local_tts.engine_health import (  # noqa: E402
     EngineHealthCache, HealthStatus,
 )
+from voice.manager.voice_manager import (  # noqa: E402
+    OUTCOME_FALLBACK, OUTCOME_PRIMARY, OUTCOME_TEXT_ONLY, VoiceManager,
+)
 
 FAILS: list[str] = []
 
@@ -106,11 +109,42 @@ def main() -> int:
           hc.should_attempt("kokoro", now=t0 + timedelta(seconds=1)) is False
           and hc.should_attempt("mms_hr", now=t0 + timedelta(seconds=1)) is True)
 
+    # ---- Stage 4: Voice Manager (single routing authority, composition) ----
+    class _Ok(BaseTTSEngine):
+        def __init__(self, name): super().__init__(); self.name = name; self.calls = 0
+        def _available(self): return True
+        def _synthesize(self, request): self.calls += 1; return (b"wav", 24_000)
+
+    class _Fail(BaseTTSEngine):
+        def __init__(self, name): super().__init__(); self.name = name
+        def _available(self): return True
+        def _synthesize(self, request): return (b"", 0)
+
+    g4 = VoiceCapabilityGraph()
+    e_prime, e_luna = _Ok("e_prime"), _Ok("e_luna")
+    g4.register(VoiceCapability("nero_prime", "e_prime", ("en",)), e_prime)
+    g4.register(VoiceCapability("nero_luna", "e_luna", ("en",)), e_luna)
+    h4 = EngineHealthCache(base_cooldown_s=5.0)
+    mgr = VoiceManager(g4, h4, emergency_voice="nero_prime",
+                       fallback_map={"nero_prime": ("nero_luna",)})
+    r = mgr.speak(VoiceRequest(text="hi", voice_id="nero_prime"))
+    check("preferred voice wins (outcome=primary), fallback untouched",
+          r.ok and r.outcome == OUTCOME_PRIMARY and e_luna.calls == 0)
+    h4.record_failure("e_prime", "down")   # prime engine now in cooldown
+    r2 = mgr.speak(VoiceRequest(text="hi", voice_id="nero_prime"))
+    check("unhealthy engine skipped -> fallback voice used (outcome=fallback)",
+          r2.ok and r2.voice_id == "nero_luna" and r2.outcome == OUTCOME_FALLBACK)
+    g5 = VoiceCapabilityGraph()
+    g5.register(VoiceCapability("nero_prime", "null", ("en",)), null)
+    r3 = VoiceManager(g5, EngineHealthCache()).speak(VoiceRequest(text="hi", voice_id="nero_prime"))
+    check("all engines down -> explicit text_only, never crash",
+          r3.ok is False and r3.outcome == OUTCOME_TEXT_ONLY)
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stages 1-3 (TTSEngine contract + Capability Graph + Health Cache) verified.")
+    print("  Voice Stages 1-4 (contract + Capability Graph + Health Cache + Voice Manager) verified.")
     return 0
 
 

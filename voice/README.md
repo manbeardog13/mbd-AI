@@ -44,9 +44,9 @@ Each stage stops with a verification report before the next begins.
 |---|-----------|---------------|--------|
 | 1 | **TTSEngine Interface** | `local_tts/base.py` | ✅ done |
 | 2 | **Voice Capability Graph** | `local_tts/voice_capability_graph.py` | ✅ done |
-| 3 | **Engine Health (cache)** | `local_tts/engine_health.py` | ✅ this stage |
-| 4 | Voice Manager | `manager/voice_manager.py` | ⏭ next |
-| 5 | Voice Profiles (`cast.json`) | `profiles/cast.json` | planned |
+| 3 | **Engine Health (cache)** | `local_tts/engine_health.py` | ✅ done |
+| 4 | **Voice Manager** | `manager/voice_manager.py` | ✅ this stage |
+| 5 | Voice Profiles (`cast.json`) | `profiles/cast.json` | ⏭ next |
 | 6 | Performance Director | `personalities/performance_director.py` | planned |
 | 7 | Event Bus | `manager/events.py` | planned |
 | 8 | Voice Telemetry | `manager/telemetry.py` | planned |
@@ -107,3 +107,30 @@ Cooldown/backoff is **time-based protection only** — VRAM awareness belongs to
 future, separate **VRAM Guard**, not here. This separation is recorded here first;
 if it proves important across multiple future subsystems, promote it to a formal
 ADR then (no ADR overhead yet).
+
+## Stage 4 — the Voice Manager (`manager/voice_manager.py`)
+
+The **single routing authority** in the presentation layer. *"Given a voice
+request, select the best available presentation path and attempt audio delivery."*
+It composes the Capability Graph (*can it perform?*) and the Health Cache (*should
+we attempt it?*), walks an **injected** fallback chain, attempts synthesis, records
+health outcomes, and emits telemetry. Small surface: `VoiceManager(graph, health,
+*, emergency_voice, fallback_map, telemetry)` + `speak(request) → AudioResult`.
+
+- **Routing chain:** preferred voice → injected personality fallbacks → emergency
+  voice (NERO PRIME) → text-only. `AudioResult.outcome` distinguishes
+  `primary` / `fallback` / `text_only` (for future diagnostics). Never raises,
+  never returns `None`, never silently fails.
+- **Engine exceptions become health failures**, not app crashes; the next
+  candidate is still evaluated.
+- **Fallback ordering is injected data only** — the manager knows the *order*,
+  never the *reason* two voices are related (`fallback_map`; wired to `cast.json`
+  in Stage 5).
+- **Telemetry is observational only** — it never influences routing, never
+  modifies health, never triggers recovery, never touches executive systems.
+
+> **Principle (documented, not yet an ADR):** *The Voice Manager is the only
+> component allowed to select presentation routing. It does not decide
+> intelligence, intent, capability, or permissions.* No other component chooses
+> voices, engines, or fallback paths. Promote to a formal ADR only if the same
+> rule later expands beyond the Voice subsystem.
