@@ -47,9 +47,9 @@ Each stage stops with a verification report before the next begins.
 | 3 | **Engine Health (cache)** | `local_tts/engine_health.py` | ✅ done |
 | 4 | **Voice Manager** | `manager/voice_manager.py` | ✅ done |
 | 5 | **Voice Profiles** (`cast.json`) | `profiles/cast.json` + `profiles/loader.py` | ✅ done |
-| 6 | **Performance Director** | `personalities/performance_director.py` | ✅ this stage |
-| 7 | Event Bus | `manager/events.py` | ⏭ next |
-| 8 | Voice Telemetry | `manager/telemetry.py` | planned |
+| 6 | **Performance Director** | `personalities/performance_director.py` | ✅ done |
+| 7 | **Event Bus** | `manager/events.py` | ✅ this stage |
+| 8 | Voice Telemetry | `manager/telemetry.py` | ⏭ next |
 | 9 | Warm Startup | `manager/startup.py` | planned |
 | 10 | Voice Health Check | `manager/health.py` | planned |
 
@@ -221,3 +221,48 @@ rest (best-effort), so the Director stays engine-agnostic.
 > Director is ever tempted toward emotional intelligence, context understanding,
 > personality simulation, automatic voice choice, or adaptive behavior, that
 > temptation is rejected: those are other components' jobs.
+
+## Stage 7 — the Voice Event Bus (`manager/events.py`)
+
+> **Report what happened. Never influence what happens.**
+
+A tiny, synchronous, in-process observation pipe. Its purpose is **visibility, not
+control**. It **wraps** the Voice Manager's *existing* `telemetry` callback
+(Option B) — so the entire bus ships **without modifying the routing authority**,
+which is the strongest property of the design:
+
+```
+Voice Manager → telemetry callback (existing contract) → VoiceEventBus → subscribers
+```
+
+**Facts, not commands.** Events describe what happened in the past tense
+(`ENGINE_FAILED` because an engine returned no audio) — never what should happen
+(there is no `TRY_FALLBACK`). Commands disguised as events are forbidden. The
+minimal vocabulary: `VOICE_SELECTED`, `FALLBACK_USED`, `ENGINE_FAILED`,
+`ENGINE_COOLDOWN`, `VOICE_SKIPPED`, `TEXT_ONLY_RESULT`, and `DELIVERY_APPLIED`
+(*defined for a stable schema but not emitted* — the future Brain→Director→Manager
+orchestrator is its correct emitter; the Director stays pure and the Manager stays
+unchanged).
+
+**Subscriber isolation.** `VoiceEvent` is a frozen, schema-versioned,
+timestamped, sequence-numbered fact; its `payload` is a **read-only** mapping of
+value-copied scalars — never a reference to a live Manager/Graph/Health/Engine
+object. Subscribers are notified synchronously in subscription order, each inside
+its own guard, so **one bad observer cannot affect another — or voice execution**.
+Timestamps come from an **injected clock** (the Engine-Health pattern) for
+deterministic tests. Zero subscribers is a near-zero-overhead no-op. Wiring is a
+one-liner: `VoiceManager(graph, health, telemetry=bus.manager_sink())`.
+
+**Wrap the existing seam.** `manager_sink()` translates the Manager's telemetry
+dicts into typed events; unknown telemetry is safely ignored (never crashes,
+never affects execution). The Manager depends on a callback; the bus is one
+implementation of it — the dependency is strictly one-way (`events.py` imports
+nothing about the Manager, Graph, Health, Director, or any executive system).
+
+**MAY:** notify observers · carry lifecycle metadata · aid debugging · enable
+future dashboards/metrics.
+**MAY NOT:** select voices · mark engines healthy/unhealthy · alter a
+`DeliveryPlan` · write memory · trigger tools · call security · dispatch actions ·
+persist data · use async/threads/queues · become a second brain — or a second
+**Action Journal** (that owns durable executive chain-of-custody + replay; this
+bus is ephemeral, in-process, executive-blind visibility).

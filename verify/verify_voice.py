@@ -31,6 +31,9 @@ from voice.profiles.loader import (  # noqa: E402
 from voice.personalities.performance_director import (  # noqa: E402
     PerformanceDirector, direct as direct_delivery,
 )
+from voice.manager.events import (  # noqa: E402
+    VoiceEvent, VoiceEventBus, VoiceEventType, from_manager_event,
+)
 
 FAILS: list[str] = []
 
@@ -277,12 +280,70 @@ def main() -> int:
     check("canonical delivery reaches the engine unchanged through the Voice Manager",
           res6.ok and cap.seen == directed.delivery and cap.seen["pace"] == 1.15)
 
+    # ---- Stage 7: Voice Event Bus (observational only, wraps the telemetry seam) ----
+    from datetime import datetime as _dt, timezone as _tz
+    _fixed = _dt(2026, 7, 12, 12, 0, 0, tzinfo=_tz.utc)
+
+    check("telemetry dicts convert to typed events (selected/fallback/failed/text_only)",
+          from_manager_event({"event": "selected", "outcome": "primary"}).type == VoiceEventType.VOICE_SELECTED
+          and from_manager_event({"event": "selected", "outcome": "fallback"}).type == VoiceEventType.FALLBACK_USED
+          and from_manager_event({"event": "engine_failed"}).type == VoiceEventType.ENGINE_FAILED
+          and from_manager_event({"event": "text_only"}).type == VoiceEventType.TEXT_ONLY_RESULT
+          and from_manager_event({"event": "mystery"}) is None)      # unknown -> ignored
+
+    bus7 = VoiceEventBus(clock=lambda: _fixed)
+    delivered: list = []
+    bus7.subscribe(delivered.append)
+    bus7.emit(VoiceEvent(type=VoiceEventType.VOICE_SELECTED, payload={"voice": "nero_prime"}))
+    check("a subscriber receives an immutable, timestamped, sequenced event",
+          len(delivered) == 1 and delivered[0].sequence == 0
+          and delivered[0].timestamp == _fixed.isoformat())
+
+    def _boom(_): raise RuntimeError("bad observer")
+    seen7: list = []
+    bus7.subscribe(_boom); bus7.subscribe(seen7.append)
+    bus7.emit(VoiceEvent(type=VoiceEventType.ENGINE_FAILED))         # must not raise
+    check("one failing subscriber does not stop the others", len(seen7) == 1)
+
+    empty_bus = VoiceEventBus(clock=lambda: _fixed)
+    try:
+        empty_bus.emit(VoiceEvent(type=VoiceEventType.TEXT_ONLY_RESULT))
+        zero_ok = True
+    except Exception:
+        zero_ok = False
+    check("zero subscribers is a safe no-op", zero_ok)
+
+    # real Manager -> telemetry callback -> bus (Option B; Manager unchanged)
+    class _Fail7(BaseTTSEngine):
+        def __init__(self, name): super().__init__(); self.name = name; self._languages = ("en",)
+        def _available(self): return True
+        def _synthesize(self, request): return (b"", 0)
+
+    class _Ok7(BaseTTSEngine):
+        def __init__(self, name): super().__init__(); self.name = name; self._languages = ("en",)
+        def _available(self): return True
+        def _synthesize(self, request): return (b"wav", 24_000)
+
+    bus7b = VoiceEventBus(clock=lambda: _fixed)
+    evs: list = []
+    bus7b.subscribe(evs.append)
+    g7 = VoiceCapabilityGraph()
+    g7.register(VoiceCapability("nero_prime", "e_prime", ("en",)), _Fail7("e_prime"))
+    g7.register(VoiceCapability("nero_luna", "e_luna", ("en",)), _Ok7("e_luna"))
+    mgr7 = VoiceManager(g7, EngineHealthCache(), emergency_voice="nero_prime",
+                        fallback_map={"nero_prime": ("nero_luna",)}, telemetry=bus7b.manager_sink())
+    r7 = mgr7.speak(VoiceRequest(text="hi", voice_id="nero_prime"))
+    kinds = [e.type for e in evs]
+    check("real Manager drives real events through manager_sink(), fallback intact",
+          r7.ok and r7.voice_id == "nero_luna"
+          and VoiceEventType.ENGINE_FAILED in kinds and VoiceEventType.FALLBACK_USED in kinds)
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stages 1-6 (contract + Capability Graph + Health Cache + "
-          "Voice Manager + Voice Profiles + Performance Director) verified.")
+    print("  Voice Stages 1-7 (contract + Capability Graph + Health Cache + Voice "
+          "Manager + Voice Profiles + Performance Director + Event Bus) verified.")
     return 0
 
 

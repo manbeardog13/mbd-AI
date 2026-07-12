@@ -51,7 +51,7 @@ Voice Platform** (an output interface only — it never calls dispatch/authorize
 writes no Journal, executes nothing; "the Brain produces a response, the Voice
 presents it"). Voice is built **model-independent foundation first, API-first**
 (the contract before any engine body); GPU/VRAM/latency work belongs to the local
-4070, never cloud assumption. **Voice Stages 1–6 shipped** on their own branch/PR
+4070, never cloud assumption. **Voice Stages 1–7 shipped** on their own branch/PR
 (**PR #14**, draft): (1) the **TTSEngine interface** — `voice/local_tts/base.py`
 (`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
 fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
@@ -106,7 +106,23 @@ exists and `_with_voice` already forwards it, so the canonical plan reaches the
 engine unchanged. No LLM, no randomness, no I/O, no memory, no text/sentiment
 inference, no routing, no voice/engine/health/capability awareness. 16 tests + 6
 verify checks green; ≈4.2 µs/call (CPU-only, no GPU); zero regressions across
-Stages 1–5. Stopped for review before Stage 7 (Event Bus).*
+Stages 1–5. (7) the **Voice Event Bus** — `voice/manager/events.py`: an
+observational-only pub/sub — *"report what happened, never influence what
+happens."* It **wraps** the Manager's existing `telemetry` callback (Option B), so
+the whole bus ships with **zero change to `voice_manager.py`** (the headline).
+`VoiceEvent` is a frozen, schema-versioned, timestamped, sequence-numbered fact
+with a read-only value-copied payload (no references to live routing objects);
+`VoiceEventBus` is `subscribe`/`unsubscribe`/`emit`/`manager_sink` — synchronous,
+subscription-ordered, subscriber-fault-isolated, injectable clock, no
+persistence/async/threads/queues. `manager_sink()` maps telemetry dicts to a
+minimal past-tense vocabulary (VOICE_SELECTED, FALLBACK_USED, ENGINE_FAILED,
+ENGINE_COOLDOWN, VOICE_SKIPPED, TEXT_ONLY_RESULT; DELIVERY_APPLIED defined but not
+emitted — the future orchestrator is its emitter); unknown telemetry is ignored,
+never crashes. Facts, not commands (no `TRY_FALLBACK`); observers cannot influence
+routing; dependency is one-way (events.py imports nothing about Manager/Graph/
+Health/Director/executive). 14 tests + 5 verify checks green; emit ≈0.08 µs (0
+subs) / ≈3.4 µs (1–10 subs), CPU-only; zero regressions across Stages 1–6.
+Stopped for review before Stage 8 (Voice Telemetry).*
 
 ---
 
