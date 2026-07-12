@@ -28,16 +28,17 @@ seam every call — built-in now, MCP/Skills later — passes through), the
 **security gate** (every MEDIUM+ action needs confirmation, fail-closed; project
 jail), **Executive Memory** (the working-state register —
 goal/project/branch/task/blocker/next_action; branch & project observed from git,
-not guessed), and the first capability **`git.status`**. Endpoints: `POST
+not guessed), and read-only capabilities **`git.status`** and **`fs.read`**
+(jailed, bounded — a path escaping the jail is gated). Endpoints: `POST
 /api/agent`, `GET /api/agent/capabilities`, `GET`/`DELETE /api/executive`; agent
 + capability metrics in `/api/metrics`. **Verified on the PC:** a real qwen3:14b
 drove the loop and answered via `git.status` (`verify_agent` live), the
 adversarial battery gated 32 unconfirmed dangerous attempts with **0 escapes**,
 and Executive Memory observed the real git branch — alongside the pre-existing
 GPU / Ollama / memory / world-model / reflection checks. Next Phase-1
-capabilities, one PR each: `fs.read`, `fs.list`, `git.log`, then the
-human-in-the-loop terminal (the confirmation Approve/Deny UX lands with the first
-MEDIUM+ capability).*
+capabilities, one PR each: `fs.list`, `git.log`, then the human-in-the-loop
+terminal (the confirmation Approve/Deny UX lands with the first MEDIUM+
+capability).*
 
 *Toni now also runs a **local Claude Code instance** on the PC (repo at
 `D:\mbd AI`) that verifies and drives things directly on the 4070 — the cloud
@@ -160,11 +161,13 @@ tests/   test_*.py             PROGRESS.md
 - **No Insight Engine** — she remembers, but doesn't yet synthesize patterns.
 - **Tools / planner / skills — foundation shipped & verified on the PC (PR #10).**
   The **agent loop + Capability Registry + security gate + Executive Memory** are
-  live, with the first capability (`git.status`). Verified end-to-end on the 4070:
+  live, with read-only capabilities `git.status` + `fs.read` (jailed, bounded;
+  adding the second needed zero agent-loop changes — the registry's whole point).
+  Verified end-to-end on the 4070:
   a real qwen3:14b drove the loop via `git.status`, the security battery gated 32
   unconfirmed dangerous attempts (0 escapes), and Executive Memory observed the
   real git branch. Still to come this phase: more read-only capabilities
-  (`fs.read`, `fs.list`, `git.log`) then the human-in-the-loop terminal; the
+  (`fs.list`, `git.log`) then the human-in-the-loop terminal; the
   Approve/Deny confirmation UX lands with the first MEDIUM+ capability (until then
   MEDIUM+ actions are safely denied). No planner/skills yet (later phases).
   Computer control rides on this foundation.
