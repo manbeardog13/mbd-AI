@@ -48,9 +48,9 @@ Each stage stops with a verification report before the next begins.
 | 4 | **Voice Manager** | `manager/voice_manager.py` | ✅ done |
 | 5 | **Voice Profiles** (`cast.json`) | `profiles/cast.json` + `profiles/loader.py` | ✅ done |
 | 6 | **Performance Director** | `personalities/performance_director.py` | ✅ done |
-| 7 | **Event Bus** | `manager/events.py` | ✅ this stage |
-| 8 | Voice Telemetry | `manager/telemetry.py` | ⏭ next |
-| 9 | Warm Startup | `manager/startup.py` | planned |
+| 7 | **Event Bus** | `manager/events.py` | ✅ done |
+| 8 | **Voice Telemetry** | `manager/telemetry.py` | ✅ this stage |
+| 9 | Warm Startup | `manager/startup.py` | ⏭ next |
 | 10 | Voice Health Check | `manager/health.py` | planned |
 
 **Deferred (not this foundation):** engine bodies (`kokoro_engine`, `mms_hr_engine`),
@@ -266,3 +266,44 @@ future dashboards/metrics.
 persist data · use async/threads/queues · become a second brain — or a second
 **Action Journal** (that owns durable executive chain-of-custody + replay; this
 bus is ephemeral, in-process, executive-blind visibility).
+
+## Stage 8 — Voice Telemetry (`manager/telemetry.py`)
+
+> **The Event Bus reports facts. Voice Telemetry summarizes facts. The Action
+> Journal records executive history.**
+
+Voice Telemetry is a **bus subscriber** — the first real consumer of Stage 7's
+observation seam, and the proof the seam was drawn correctly. It receives immutable
+`VoiceEvent` facts, aggregates them into small in-memory counters, and exposes an
+immutable `VoiceTelemetrySnapshot`. It **observes what happened; it never decides
+what happens.** Wiring adds **no** Manager dependency:
+
+```
+Voice Manager → telemetry callback → Event Bus → VoiceTelemetry.handle() → snapshot()
+```
+```python
+bus = VoiceEventBus(); telemetry = VoiceTelemetry(); telemetry.attach(bus)
+mgr = VoiceManager(graph, health, telemetry=bus.manager_sink())   # Manager untouched
+```
+
+**Snapshot (minimal):** `total_events`, `selected_count`, `primary_count`,
+`fallback_count`, `engine_failures`, `cooldown_skips`, `unavailable_skips`,
+`language_skips`, `text_only_count`, `per_voice_counts`, `per_engine_failures`,
+`average_latency_ms`, `last_event_timestamp`, `schema_version`. The snapshot is a
+frozen dataclass whose map fields are read-only (`MappingProxyType`) copies — fully
+**detached** from the live collector, so later events never change an old snapshot.
+
+**Properties (by charter):**
+- **Ephemeral** — in-memory only; it resets with the process. *No persistence.*
+- **Synchronous** — `handle()` runs in-process on the emit path, doing only O(1)
+  counter work (no sorting, I/O, network, model calls, or background processing).
+- **No learning** — no scoring, trends, prediction, percentile analytics, or
+  adaptation. Boring by design.
+- **No decision authority** — it can never select voices, influence fallbacks,
+  mutate Engine Health, alter a `DeliveryPlan`, call engines, or trigger actions.
+
+**Dependency direction** is one-way: telemetry imports only the event *vocabulary*
+(`VoiceEvent`, `VoiceEventType`); it imports nothing about the Voice Manager, the
+Capability Graph, the Engine Health cache, the Performance Director, or any
+executive system. It is **not** an Action Journal — that remains the sole authority
+for durable executive history; telemetry is ephemeral voice visibility only.

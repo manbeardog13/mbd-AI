@@ -34,6 +34,9 @@ from voice.personalities.performance_director import (  # noqa: E402
 from voice.manager.events import (  # noqa: E402
     VoiceEvent, VoiceEventBus, VoiceEventType, from_manager_event,
 )
+from voice.manager.telemetry import (  # noqa: E402
+    VoiceTelemetry, VoiceTelemetrySnapshot,
+)
 
 FAILS: list[str] = []
 
@@ -338,13 +341,76 @@ def main() -> int:
           r7.ok and r7.voice_id == "nero_luna"
           and VoiceEventType.ENGINE_FAILED in kinds and VoiceEventType.FALLBACK_USED in kinds)
 
+    # ---- Stage 8: Voice Telemetry (observe + aggregate; a bus subscriber) ----
+    from types import MappingProxyType as _MPT
+
+    bus8 = VoiceEventBus()
+    telem8 = VoiceTelemetry()
+    telem8.attach(bus8)
+    bus8.emit(VoiceEvent(type=VoiceEventType.VOICE_SELECTED,
+                         payload={"voice": "nero_prime", "engine": "kokoro", "latency_ms": 10.0}))
+    bus8.emit(VoiceEvent(type=VoiceEventType.FALLBACK_USED,
+                         payload={"voice": "nero_luna", "engine": "e_luna", "latency_ms": 20.0}))
+    bus8.emit(VoiceEvent(type=VoiceEventType.ENGINE_FAILED,
+                         payload={"voice": "nero_prime", "engine": "e_prime", "error": "no audio"}))
+    snap8 = telem8.snapshot()
+    check("telemetry subscribes to the bus and aggregates facts",
+          snap8.total_events == 3 and snap8.primary_count == 1 and snap8.fallback_count == 1
+          and snap8.engine_failures == 1 and snap8.per_engine_failures["e_prime"] == 1
+          and snap8.average_latency_ms == 15.0)
+
+    check("snapshot is immutable (frozen + read-only maps)",
+          isinstance(snap8, VoiceTelemetrySnapshot)
+          and isinstance(snap8.per_voice_counts, _MPT) and _frozen(snap8))
+
+    a8, b8 = VoiceTelemetry(), VoiceTelemetry()
+    a8.handle(VoiceEvent(type=VoiceEventType.VOICE_SELECTED, payload={"voice": "nero_prime"}))
+    check("telemetry instances are isolated",
+          a8.snapshot().primary_count == 1 and b8.snapshot().primary_count == 0)
+
+    # real Manager -> telemetry callback -> bus -> telemetry (routing unaffected)
+    class _Fail8(BaseTTSEngine):
+        def __init__(self, name): super().__init__(); self.name = name; self._languages = ("en",)
+        def _available(self): return True
+        def _synthesize(self, request): return (b"", 0)
+
+    class _Ok8(BaseTTSEngine):
+        def __init__(self, name): super().__init__(); self.name = name; self._languages = ("en",)
+        def _available(self): return True
+        def _synthesize(self, request): return (b"wav", 24_000)
+
+    bus8b = VoiceEventBus()
+    telem8b = VoiceTelemetry(); telem8b.attach(bus8b)
+    g8 = VoiceCapabilityGraph()
+    g8.register(VoiceCapability("nero_prime", "e_prime", ("en",)), _Fail8("e_prime"))
+    g8.register(VoiceCapability("nero_luna", "e_luna", ("en",)), _Ok8("e_luna"))
+    h8 = EngineHealthCache()
+    mgr8 = VoiceManager(g8, h8, emergency_voice="nero_prime",
+                        fallback_map={"nero_prime": ("nero_luna",)}, telemetry=bus8b.manager_sink())
+    r8 = mgr8.speak(VoiceRequest(text="hi", voice_id="nero_prime"))
+    s8b = telem8b.snapshot()
+    check("real Manager -> Event Bus -> Telemetry path works, routing unaffected",
+          r8.ok and r8.voice_id == "nero_luna"
+          and h8.get("e_prime").consecutive_failures == 1
+          and s8b.fallback_count == 1 and s8b.engine_failures == 1)
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stages 1-7 (contract + Capability Graph + Health Cache + Voice "
-          "Manager + Voice Profiles + Performance Director + Event Bus) verified.")
+    print("  Voice Stages 1-8 (contract + Capability Graph + Health Cache + Voice "
+          "Manager + Voice Profiles + Performance Director + Event Bus + Telemetry) verified.")
     return 0
+
+
+def _frozen(obj) -> bool:
+    """True if `obj` is a frozen dataclass instance (attribute assignment raises)."""
+    try:
+        object.__getattribute__(obj, "__dataclass_fields__")
+        obj.schema_version = -999
+        return False
+    except Exception:
+        return True
 
 
 def _missing_is_cast_error() -> bool:

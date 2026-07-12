@@ -51,7 +51,7 @@ Voice Platform** (an output interface only — it never calls dispatch/authorize
 writes no Journal, executes nothing; "the Brain produces a response, the Voice
 presents it"). Voice is built **model-independent foundation first, API-first**
 (the contract before any engine body); GPU/VRAM/latency work belongs to the local
-4070, never cloud assumption. **Voice Stages 1–7 shipped** on their own branch/PR
+4070, never cloud assumption. **Voice Stages 1–8 shipped** on their own branch/PR
 (**PR #14**, draft): (1) the **TTSEngine interface** — `voice/local_tts/base.py`
 (`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
 fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
@@ -122,7 +122,23 @@ never crashes. Facts, not commands (no `TRY_FALLBACK`); observers cannot influen
 routing; dependency is one-way (events.py imports nothing about Manager/Graph/
 Health/Director/executive). 14 tests + 5 verify checks green; emit ≈0.08 µs (0
 subs) / ≈3.4 µs (1–10 subs), CPU-only; zero regressions across Stages 1–6.
-Stopped for review before Stage 8 (Voice Telemetry).*
+(8) **Voice Telemetry** — `voice/manager/telemetry.py`: the first real bus
+subscriber — *"the Event Bus reports facts; Voice Telemetry summarizes facts; the
+Action Journal records executive history."* It observes immutable `VoiceEvent`s and
+aggregates them into in-memory counters (`total_events`, primary/fallback/selected,
+engine_failures + `per_engine_failures`, cooldown/unavailable/language skips,
+text_only, `per_voice_counts`, `average_latency_ms`, `last_event_timestamp`),
+exposed as an immutable `VoiceTelemetrySnapshot` (frozen; read-only map copies,
+detached from the live collector). API: `handle(event)` (O(1), on the synchronous
+emit path), `snapshot()` (on-demand, off the hot path), `attach(bus)` (duck-typed
+`bus.subscribe`, no bus/Manager import). Ephemeral (no persistence), synchronous
+(no async/queue/worker), no learning/scoring/prediction, no decision authority —
+it can never select voices, influence fallbacks, mutate health, alter delivery, or
+call engines. Wiring adds **zero Manager dependency** (`telemetry=bus.manager_sink()`).
+Dependency is one-way (imports only the event vocabulary). 16 tests + 4 verify
+checks green; handle ≈0.55 µs, snapshot ≈2.2 µs, +≈7.9 µs per speak (CPU-only);
+zero regressions across Stages 1–7; voice_manager.py untouched. Stopped for review
+before Stage 9 (Warm Startup).*
 
 ---
 
