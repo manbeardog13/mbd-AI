@@ -7,23 +7,26 @@ For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
 
 ---
 
-## 🧪 In review (PR)
-- **Phase 1 — "The Hands" · first slice** 🧪 — the primitive that lets Nero
-  *act*: the **agent loop** (reason → tool → observe → repeat, bounded and
-  cancellable), the **Capability Registry** (one guarded dispatch seam; the model
-  reasons over capabilities discovered at runtime, not a hard-coded list), the
-  **security gate** (every MEDIUM+ action needs confirmation; project jail;
-  fail-closed), **Executive Memory** (the working-state register — goal/project/
-  branch/task/blocker/next_action; branch & project observed from git, not
-  guessed), and the first capability **`git.status`**. New endpoints `POST
-  /api/agent`, `GET /api/agent/capabilities`, `GET/DELETE /api/executive`; agent
-  + capability metrics in `/api/metrics`. 32 offline tests + `verify_security.py`,
-  `verify_capabilities.py`, `verify_executive_memory.py`, `verify_agent.py` all
-  green (the live agent run verifies on the PC where Ollama runs). Next Phase-1
-  capabilities, one PR each: `fs.read`, `fs.list`, `git.log`, then the
-  human-in-the-loop terminal.
+## ⏭️ Next
+- **Phase 1 — more capabilities, one PR each:** `fs.read`, `fs.list`, `git.log`
+  (read-only), then the **human-in-the-loop terminal**, then the Approve/Deny
+  **confirmation UX** with the first MEDIUM+ (write) capability.
 
 ## ✅ Shipped (on `main`)
+- **Phase 1 — "The Hands" · first slice** ✅ (PR #10) — the primitive that lets
+  Nero *act*, **verified end-to-end on the RTX 4070**: the **agent loop**
+  (reason → tool → observe → repeat, bounded, never hangs), the **Capability
+  Registry** (one guarded dispatch seam; the model reasons over capabilities
+  discovered at runtime, not a hard-coded list), the **security gate** (every
+  MEDIUM+ action needs confirmation; project jail; fail-closed), **Executive
+  Memory** (the working-state register — goal/project/branch/task/blocker/
+  next_action; branch & project observed from git, not guessed), and the first
+  capability **`git.status`**. Endpoints `POST /api/agent`, `GET
+  /api/agent/capabilities`, `GET/DELETE /api/executive`; agent + capability
+  metrics in `/api/metrics`. Live PC verify: a real qwen3:14b drove the loop via
+  `git.status`; adversarial battery gated 32 unconfirmed attempts (0 escapes);
+  Executive Memory observed the real git branch. 32 offline tests + four new
+  `verify_*.py`.
 - **V3 governance layer** ✅ — the Constitution (v1.1), ADRs 0001–0008, the phased
   Roadmap, and the Phase-1 technical design in `docs/`. Two decisions settled:
   **ADR-0006 "Local-First with Intelligence Escalation"** and the **Principle of
