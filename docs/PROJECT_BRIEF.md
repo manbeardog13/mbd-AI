@@ -56,7 +56,10 @@ The explicit goal is to grow from "a chatbot" into a **cognitive companion**.
 **North Star: continuity** — she should wake up already knowing what the owner
 was doing and quietly help without being asked. The full architecture is in
 [VISION.md](VISION.md); the governing philosophy (local-first, verification-
-first) is in [DIRECTIVE.md](DIRECTIVE.md).
+first) is in [DIRECTIVE.md](DIRECTIVE.md). **New here? Start at
+[ARCHITECT_MEMORY.md](ARCHITECT_MEMORY.md)** — the project's durable memory and the
+entry point for rebuilding context from the repo (documentation is the memory;
+chat is only discussion about it).
 
 ## 2. The owner & hardware
 
