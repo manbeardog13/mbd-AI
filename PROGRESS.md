@@ -8,9 +8,9 @@ For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
 ---
 
 ## ⏭️ Next
-- **Phase 1 — more capabilities, one PR each:** `fs.read`, `fs.list`, `git.log`
-  (read-only), then the **human-in-the-loop terminal**, then the Approve/Deny
-  **confirmation UX** with the first MEDIUM+ (write) capability.
+- **Phase 1 — more capabilities, one PR each:** `fs.list`, `git.log` (read-only),
+  then the **human-in-the-loop terminal**, then the Approve/Deny **confirmation
+  UX** with the first MEDIUM+ (write) capability.
 
 ## ✅ Shipped (on `main`)
 - **Phase 1 — "The Hands" · first slice** ✅ (PR #10) — the primitive that lets
@@ -21,7 +21,8 @@ For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
   MEDIUM+ action needs confirmation; project jail; fail-closed), **Executive
   Memory** (the working-state register — goal/project/branch/task/blocker/
   next_action; branch & project observed from git, not guessed), and the first
-  capability **`git.status`**. Endpoints `POST /api/agent`, `GET
+  read-only capabilities **`git.status`** and **`fs.read`** (jailed, bounded —
+  a path escaping the jail is gated). Endpoints `POST /api/agent`, `GET
   /api/agent/capabilities`, `GET/DELETE /api/executive`; agent + capability
   metrics in `/api/metrics`. Live PC verify: a real qwen3:14b drove the loop via
   `git.status`; adversarial battery gated 32 unconfirmed attempts (0 escapes);
