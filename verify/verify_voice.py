@@ -43,6 +43,9 @@ from voice.manager.startup import (  # noqa: E402
 from voice.manager.health import (  # noqa: E402
     VoiceHealthLevel, VoiceHealthReport, build_health_report, report_for_runtime,
 )
+from voice.engines.kokoro import (  # noqa: E402
+    FakeKokoroBackend, KokoroEngine, RealKokoroBackend,
+)
 
 FAILS: list[str] = []
 
@@ -488,13 +491,43 @@ def main() -> int:
     check("rollup is a pure function: no available voice -> OFFLINE",
           off.overall == VoiceHealthLevel.OFFLINE and off.available_voices == ())
 
+    # ---- Stage 11: Kokoro engine body (contract adapter; cloud = fake backend) ----
+    k_backend = FakeKokoroBackend(ready=True, audio=b"WAVDATA", sample_rate=24_000)
+    k_engine = KokoroEngine(k_backend)
+    kr = k_engine.synthesize(VoiceRequest(text="Good evening, Toni.", voice_id="nero_prime"))
+    check("KokoroEngine (fake backend) available + synthesizes through the sealed envelope",
+          k_engine.available() and kr.ok and kr.engine == "kokoro" and kr.audio == b"WAVDATA")
+
+    for _ in range(3):
+        k_engine.available()
+    check("availability is cheap (never triggers synthesis) + synth called exactly once (no retries)",
+          k_backend.calls == 1)                 # 1 from the synth above, 0 from availability
+
+    down_engine = KokoroEngine(FakeKokoroBackend(ready=False))
+    check("an unavailable Kokoro backend is a clean failure, never a crash",
+          down_engine.available() is False
+          and down_engine.synthesize(VoiceRequest(text="hi")).ok is False)
+
+    gK = VoiceCapabilityGraph()
+    gK.register(VoiceCapability("nero_prime", "kokoro", ("en",)),
+                KokoroEngine(FakeKokoroBackend(ready=True, audio=b"WAV")))
+    mgrK = VoiceManager(gK, EngineHealthCache(), emergency_voice="nero_prime")
+    rK = mgrK.speak(VoiceRequest(text="hi", voice_id="nero_prime"))
+    check("the Kokoro body plugs into the sealed foundation (graph -> manager -> speak)",
+          rK.ok and rK.engine == "kokoro" and rK.outcome == "primary")
+
+    real = RealKokoroBackend(cfg=None)
+    check("RealKokoroBackend is import-safe and degrades gracefully in the cloud (no GPU/model)",
+          real.is_ready() is False and real.synthesize("hi") is None)
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stages 1-10 (contract + Capability Graph + Health Cache + Voice "
+    print("  Voice Stages 1-11 (contract + Capability Graph + Health Cache + Voice "
           "Manager + Voice Profiles + Performance Director + Event Bus + Telemetry + "
-          "Warm Startup + Health Check) verified.")
+          "Warm Startup + Health Check + Kokoro engine body) verified.")
+    print("  [Kokoro real-audio / GPU / VRAM / latency validation is reserved for the RTX-4070.]")
     return 0
 
 

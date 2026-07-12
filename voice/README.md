@@ -51,11 +51,18 @@ Each stage stops with a verification report before the next begins.
 | 7 | **Event Bus** | `manager/events.py` | ✅ done |
 | 8 | **Voice Telemetry** | `manager/telemetry.py` | ✅ done |
 | 9 | **Warm Startup** | `manager/startup.py` | ✅ done |
-| 10 | **Voice Health Check** | `manager/health.py` | ✅ this stage — foundation complete |
+| 10 | **Voice Health Check** | `manager/health.py` | ✅ done — foundation complete |
 
-**Deferred (not this foundation):** engine bodies (`kokoro_engine`, `mms_hr_engine`),
-XTTS integration, advanced effects, the voice-selection UI, and the ElevenLabs
-adapter (stub only, disabled) — all after every Phase-1 abstraction is verified.
+**Engine bodies (post-foundation, `voice/engines/`):**
+
+| # | Engine body | File | Status |
+|---|-------------|------|--------|
+| 11 | **Kokoro** (English) | `engines/kokoro.py` | ✅ this stage (contract adapter; real audio pending on RTX-4070) |
+| 12 | MMS (Croatian) | `engines/mms.py` | ⏭ next — the first true multi-engine / bilingual proof |
+
+**Still deferred:** XTTS integration, advanced effects, the voice-selection UI, the
+ElevenLabs adapter (stub only, disabled), and Kokoro voice-parameter mapping
+(per-profile voice differentiation) — all additive, after the engine bodies land.
 
 ## Stage 1 — the TTSEngine contract (`local_tts/base.py`)
 
@@ -403,8 +410,52 @@ and nothing depends on it. The three lenses stay three questions with three owne
 
 ---
 
-*Stages 1–10 complete the model-independent Voice Platform foundation. Remaining work
-— engine bodies (`kokoro_engine` wrapping `app/tts.py`, `mms_hr_engine`), XTTS,
-advanced effects, the voice-selection UI, and the ElevenLabs adapter — is GPU/model
-work reserved for the local RTX-4070 environment (measured results only, never cloud
-assumption).*
+*Stages 1–10 complete the model-independent Voice Platform foundation.*
+
+## Stage 11 — the Kokoro engine body (`engines/kokoro.py`)
+
+> **The first ship docking into the harbor — and it does not steer the harbor.**
+
+The first real engine body. `KokoroEngine` exposes the proven `app/tts.py` (Kokoro)
+through the sealed `BaseTTSEngine` contract — a **docking adapter, not a rebuild**:
+`app/tts.py` is *wrapped, never modified* (strangler-fig). Engine **bodies** now live
+in `voice/engines/`, separate from orchestration (`voice/manager/`) and from the
+sealed contract (`voice/local_tts/base.py`).
+
+**The split (backend injected, testable):**
+```
+TTSEngine (contract, sealed) ← KokoroEngine (translates) ← KokoroBackend (does the work)
+                                                             ├── FakeKokoroBackend (cloud tests)
+                                                             └── RealKokoroBackend  → app/tts.py → Kokoro + RTX-4070
+```
+- **`KokoroEngine`** owns only contract translation · metadata · backend delegation.
+  It implements `_available()`/`_synthesize()` **only** — no `speak`/`fallback`/
+  `select_voice`/`recover`/`retry`. It never bypasses the Stage 1 envelope (timing,
+  exception containment, `AudioResult`, health bookkeeping).
+- **`RealKokoroBackend`** is the **only** place that imports `app.tts`, and it does so
+  **lazily** — so `voice/engines/` stays importable where Kokoro's deps don't exist.
+  It reports not-ready and never raises without the model (real behavior = RTX-4070).
+- **`FakeKokoroBackend`** is the cloud-safe test double (no model, no GPU, no `app`).
+
+**Availability is a flashlight, not a lighthouse keeper** (the Stage 10 rule):
+`is_ready()` is O(1) and never loads the model, probes VRAM, or generates sample
+audio. `RealKokoroBackend` caches the **dependency probe** (not a synthesis success);
+reality changes (model unload / GPU fail) surface at `synthesize()` time as a clean
+`AudioResult(ok=False)` that the existing fallback + Engine Health handle.
+
+**Current limitation (accepted):** `app/tts.py.synthesize(cfg, text)` takes text only,
+so Stage 11 lights up **one** Kokoro voice — every cast profile sounds the same until
+a future *additive* voice-parameter mapping (`request.voice_id`/`delivery` → Kokoro
+voice/speed), which extends the backend without touching `app/tts.py` and stays inside
+the engine (the Manager/Director are never involved). Stage 11 does **not** sneak in
+voice identity.
+
+**Owns:** turning text into audio · reporting availability.
+**Refuses:** routing · fallback · voice selection · health decisions · engine ranking
+· learning · model/GPU/download concerns (those belong to `RealKokoroBackend`/the
+4070).
+
+> **RTX-4070 validation (reserved, not cloud):** model load time · VRAM · cold vs.
+> warm synthesis latency · RTF · failure behavior (missing dep/model/GPU →
+> `AudioResult(ok=False)` → existing fallback handles it). The cloud proves the
+> contract with a fake backend; measured audio/GPU numbers come only from the 4070.

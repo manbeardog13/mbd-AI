@@ -51,8 +51,8 @@ Voice Platform** (an output interface only — it never calls dispatch/authorize
 writes no Journal, executes nothing; "the Brain produces a response, the Voice
 presents it"). Voice is built **model-independent foundation first, API-first**
 (the contract before any engine body); GPU/VRAM/latency work belongs to the local
-4070, never cloud assumption. **Voice Stages 1–10 shipped** (the model-independent
-foundation is complete) on their own branch/PR (**PR #14**, draft): (1) the
+4070, never cloud assumption. **Voice Stages 1–10 (foundation) + Stage 11 (first
+engine body) shipped** on their own branch/PR (**PR #14**, draft): (1) the
 **TTSEngine interface** — `voice/local_tts/base.py`
 (`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
 fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
@@ -174,8 +174,24 @@ imports **no** voice module (duck-typed on `runtime.graph/health/telemetry`); on
 no cycle. Engine Health remembers · Telemetry observes · Startup assembles · the
 Health Report interprets — three questions, three owners, nobody decides for the
 Manager. 13 tests + 5 verify checks green; ≈22 µs/report (CPU-only); zero regressions
-across Stages 1–9. **Stages 1–10 complete the model-independent foundation** — engine
-bodies + all GPU/VRAM/latency/audio work are reserved for the local RTX-4070.*
+across Stages 1–9. **Stages 1–10 complete the model-independent foundation.** (11)
+**Kokoro engine body** — `voice/engines/kokoro.py`, the first real engine (bodies now
+live in `voice/engines/`, separate from orchestration): a **contract adapter** that
+exposes the proven `app/tts.py` (Kokoro) through the sealed `BaseTTSEngine` — wrapped,
+never modified (strangler-fig). `KokoroEngine(backend, *, name="kokoro", languages,
+voices)` implements `_available()`/`_synthesize()` **only** (no speak/fallback/select/
+recover/retry) and never bypasses the Stage-1 envelope; it delegates to an **injected**
+`KokoroBackend`. `RealKokoroBackend(cfg)` is the sole `app.tts` importer (lazy — the
+package stays importable without Kokoro deps) and caches the dependency probe (not a
+synthesis success); `FakeKokoroBackend` is the cloud test double. Availability is a
+flashlight (O(1), never loads/probes/synthesizes). Accepted limitation: text-only for
+now (one Kokoro voice; per-profile voice mapping is a future additive step that never
+touches `app/tts.py`). 14 cloud tests + 5 verify checks (61 total) green; fake-backend
+overhead ≈0.18 µs available / ≈3.9 µs synth (adapter+envelope only). `app/tts.py` and
+the entire sealed foundation unchanged; `build_voice_runtime` unchanged (the caller
+injects `KokoroEngine(RealKokoroBackend(cfg))` on the 4070). **Real audio / model load
+/ VRAM / latency / RTF validation is reserved for the local RTX-4070 (measured only,
+never cloud-claimed).** Stopped for review before Stage 12 (MMS Croatian engine).*
 
 ---
 
