@@ -2,6 +2,9 @@
 
 The single place to see where things stand. I update this every increment.
 For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
+**Rebuilding context?** Start at
+[docs/ARCHITECT_MEMORY.md](docs/ARCHITECT_MEMORY.md) — the project's durable memory
+and session-continuity entry point.
 
 **Legend:** ✅ shipped · 🔨 building now · 🧪 in review (PR) · ⏭️ next · 🗓️ planned
 
