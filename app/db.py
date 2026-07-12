@@ -79,6 +79,14 @@ def init_db() -> None:
             updated_at TEXT NOT NULL
         );
 
+        -- Executive Memory (ADR-0008): the AI's own working-state register,
+        -- kept in its own table — distinct store, distinct job from world_state.
+        CREATE TABLE IF NOT EXISTS executive_state (
+            key        TEXT PRIMARY KEY,
+            value      TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+
         CREATE INDEX IF NOT EXISTS idx_messages_conversation
             ON messages(conversation_id, id);
         """
@@ -330,5 +338,53 @@ def clear_world() -> None:
     """Wipe the whole world state — a clean-slate reset for the owner."""
     conn = _connect()
     conn.execute("DELETE FROM world_state")
+    conn.commit()
+    conn.close()
+
+
+# --------------------------------------------------------------------------
+# Executive state (the AI's working-state register — see app/agent/state.py)
+# --------------------------------------------------------------------------
+
+def get_executive() -> dict:
+    """Return the stored working-state fields as {key: value}."""
+    conn = _connect()
+    rows = conn.execute(
+        "SELECT key, value FROM executive_state ORDER BY key ASC"
+    ).fetchall()
+    conn.close()
+    return {r["key"]: r["value"] for r in rows}
+
+
+def upsert_executive(updates: dict) -> None:
+    """Merge updates into the working-state register. A blank value clears a key."""
+    if not updates:
+        return
+    now = _now()
+    conn = _connect()
+    for key, value in updates.items():
+        key = str(key).strip()
+        if not key:
+            continue
+        text = "" if value is None else str(value).strip()
+        if not text:
+            conn.execute("DELETE FROM executive_state WHERE key = ?", (key,))
+        else:
+            conn.execute(
+                """
+                INSERT INTO executive_state (key, value, updated_at) VALUES (?, ?, ?)
+                ON CONFLICT(key) DO UPDATE SET value = excluded.value,
+                                               updated_at = excluded.updated_at
+                """,
+                (key, text, now),
+            )
+    conn.commit()
+    conn.close()
+
+
+def clear_executive() -> None:
+    """Wipe the working-state register — a fresh start for a new goal."""
+    conn = _connect()
+    conn.execute("DELETE FROM executive_state")
     conn.commit()
     conn.close()

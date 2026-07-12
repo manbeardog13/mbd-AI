@@ -18,12 +18,27 @@ Run it inside the project's virtualenv so app imports resolve:
 """
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SELF = Path(__file__).name
+
+
+def _utf8_env() -> dict:
+    """Child env that forces UTF-8 stdout.
+
+    On Windows, Python uses the locale codepage for stdout (e.g. cp1250), which
+    can't encode glyphs like → or ≈ — a bare print() then crashes a check that
+    was otherwise passing. Forcing UTF-8 in every child makes the suite
+    locale-independent, whatever a script chooses to print.
+    """
+    env = dict(os.environ)
+    env["PYTHONUTF8"] = "1"
+    env["PYTHONIOENCODING"] = "utf-8"
+    return env
 
 
 def main() -> int:
@@ -37,7 +52,7 @@ def main() -> int:
         print("\n" + "=" * 60)
         print(f"  {script.name}")
         print("-" * 60)
-        code = subprocess.run([sys.executable, str(script)]).returncode
+        code = subprocess.run([sys.executable, str(script)], env=_utf8_env()).returncode
         status = {0: "PASS", 2: "SKIP"}.get(code, "FAIL")
         results.append((script.name, status))
 

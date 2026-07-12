@@ -6,36 +6,34 @@ It doubles as a self-contained handoff you can give to an external advisor
 gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
 
-*Last updated: Phase 2 (World Model) merged & verified 7/7, and voice
-**Increment 1** (local neural English voice, Kokoro) merged & verified 8/8, both
-on the RTX 4070. **PR #9** (open) now bundles: neural voice wired into the chat UI
-(sentence-by-sentence for low latency, emoji stripped, **iOS playback via Web
-Audio — confirmed speaking on the owner's iPhone**) + a full **UI redesign** to
-the NERO Design System v1.0 (light, violet, floating, calm) + a **ChatGPT-style
-two-button composer** (voice recording · conversation mode) + a hands-free
-**conversation-mode** screen (animated orb) + iPhone **safe-area** fixes.
-Rendered-verified desktop + emulated iPhone (no overflow / JS errors).
-**Remote access confirmed** on iPhone/iPad via **Tailscale HTTPS** (`tailscale
-serve --bg 8080`), which also unlocks the browser mic off-localhost. Added a
-one-click **`update-nero.bat`** (sync + restart) so the owner never types git.
-Awaiting owner sign-off before merge; then **local STT** (faster-whisper).
-Owner's build order: voice → computer control → design system (the last is
-now largely delivered inside PR #9).*
+*Last updated: **PR #9 merged to `main`** — the NERO Design System UI redesign,
+the ChatGPT-style two-button voice composer, hands-free conversation mode, and
+Nero's local neural voice (Kokoro) playing her replies with iOS Web-Audio
+playback + barge-in. Bundled in the same merge: the **V3 governance layer** — a
+**Constitution** (v1.1), **ADRs 0001–0008**, a phased **Roadmap**, and the
+**Phase-1 technical design** (all in `docs/`, mirrored on a shareable
+[architecture page](https://claude.ai/code/artifact/f12facf1-875b-46d6-bdb4-78e35d817ea8)).
+Two product decisions are settled: **ADR-0006 "Local-First with Intelligence
+Escalation"** (local is the default; cloud is an explicit, opt-in, transparent
+escalation, off by default) and the **Principle of Least Intelligence** (use the
+simplest deterministic mechanism that's correct; invoke the LLM only when it
+genuinely adds value).*
 
-*Governance layer added (rides along in PR #9): a **Constitution** (v1.1, the
-stable law), **ADRs 0001–0008** (the reasoning), a phased **Roadmap**, and a
-**Phase-1 technical design** — all in `docs/`, mirrored on a shareable
-[architecture page](https://claude.ai/code/artifact/f12facf1-875b-46d6-bdb4-78e35d817ea8).
-Two product decisions are now settled: **ADR-0006 — "Local-First with
-Intelligence Escalation"** (local is the default path; cloud is an explicit,
-opt-in, transparent escalation, off by default), and a new constitutional law,
-**the Principle of Least Intelligence** (use the simplest deterministic
-mechanism that's correct; invoke the LLM only when it genuinely adds value).
-The committed next build is **Phase 1 — "The Hands"**: agent/tool loop +
-**Capability Registry** (reason about capabilities, not hard-coded tools) +
-**Executive Memory** (a small working-state register: goal/project/branch/task/
-blocker/next_action, distinct from long-term memory) + **security gate first** +
-human-in-the-loop terminal — starting once PR #9 merges to a clean `main`.*
+*Now in review — **PR #10 (draft): Phase 1 "The Hands," first slice**. The
+primitive that lets Nero **act**, built safety-first: the **agent loop**
+(reason → tool → observe → repeat, bounded, never hangs), the **Capability
+Registry** (the model reasons over capabilities discovered at runtime, not a
+hard-coded list; one guarded dispatch seam every call — built-in now, MCP/Skills
+later — passes through), the **security gate** (every MEDIUM+ action needs
+confirmation, fail-closed; project jail), **Executive Memory** (the working-state
+register — goal/project/branch/task/blocker/next_action; branch & project
+observed from git, not guessed), and the first capability **`git.status`**.
+**32 offline tests + `verify_security/capabilities/executive_memory/agent.py`
+all green** (adversarial battery: 32 unconfirmed dangerous attempts, 0 escapes).
+The one gate left is the PC: the agent's **live** end-to-end run (ask → call
+`git.status` → answer) verifies where Ollama runs; once green there, PR #10
+merges. Next Phase-1 capabilities, one PR each: `fs.read`, `fs.list`, `git.log`,
+then the human-in-the-loop terminal.*
 
 ---
 
@@ -141,9 +139,10 @@ first) is in [DIRECTIVE.md](DIRECTIVE.md).
 **Repo layout**
 ```
 bootstrap.py · start.bat/.sh · run.py · config.example.yaml
-app/  main.py · config.py · db.py · memory.py · llm.py · prompt.py · static/
-verify/  verify_*.py           docs/  DIRECTIVE · VISION · PROJECT_BRIEF · MODELS · SETUP · …
-tests/   test_memory.py        PROGRESS.md
+app/  main.py · config.py · db.py · memory.py · world_model.py · llm.py · prompt.py · tts.py · static/
+app/  security/gate.py · capabilities/{registry,builtin/git_status}.py · agent/{loop,state}.py   # Phase 1 (PR #10)
+verify/  verify_*.py           docs/  CONSTITUTION · adr/ · ROADMAP · DESIGN-phase1 · VISION · PROJECT_BRIEF · …
+tests/   test_*.py             PROGRESS.md
 ```
 
 ## 4. Known gaps / not built yet
@@ -151,11 +150,14 @@ tests/   test_memory.py        PROGRESS.md
 - **Knowledge graph** — memories store `entities`, but they aren't yet *connected*
   into a graph.
 - **No Insight Engine** — she remembers, but doesn't yet synthesize patterns.
-- **No tools / planner / skills yet** — she can only converse, not act. This is
-  now *designed*, not just deferred: **Phase 1 ("The Hands")** in
-  [ROADMAP.md](ROADMAP.md) + [DESIGN-phase1.md](DESIGN-phase1.md) builds the
-  agent/tool loop, Capability Registry, Executive Memory, security gate, and a
-  human-in-the-loop terminal. Computer control rides on this foundation.
+- **Tools / planner / skills — foundation now in review (PR #10).** The **agent
+  loop + Capability Registry + security gate + Executive Memory** are built, with
+  the first capability (`git.status`); offline-verified, awaiting the live PC
+  run before merge. Still to come this phase: more read-only capabilities
+  (`fs.read`, `fs.list`, `git.log`) then the human-in-the-loop terminal; the
+  Approve/Deny confirmation UX lands with the first MEDIUM+ capability (until
+  then MEDIUM+ actions are safely denied). No planner/skills yet (later phases).
+  Computer control rides on this foundation.
 - **No proactivity / desktop sensing** — purely reactive.
 - **Single active conversation thread** (multi-conversation not built).
 - **Retrieval is a linear scan** over SQLite (fine at current scale; no vector DB yet).

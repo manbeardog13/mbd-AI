@@ -56,7 +56,7 @@ def main() -> int:
     ok = frames > 0 and seconds > 0.3
     print(f"  {'OK' if ok else 'XX'} synthesized {len(audio):,} bytes "
           f"({seconds:.1f}s, {rate} Hz, {ch}ch, {tts.METRICS['last_ms']} ms)")
-    print(f"     ▶ play it:  {OUT}")
+    print(f"     > play it:  {OUT}")
     return 0 if ok else 1
 
 

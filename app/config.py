@@ -72,6 +72,11 @@ class Config:
     tts_voice: str
     tts_speed: float
     tts_model_dir: str
+    # Agent (Phase 1: the hands — agent loop, capabilities, executive memory)
+    agent_enabled: bool
+    agent_max_steps: int
+    agent_max_seconds: float
+    agent_project_dir: str
 
 
 def ensure_config() -> None:
@@ -181,4 +186,11 @@ def load_config() -> Config:
         tts_voice=(data.get("tts_voice") or "af_heart"),
         tts_speed=_num(data.get("tts_speed"), 1.0, float),
         tts_model_dir=(data.get("tts_model_dir") or "models"),
+        agent_enabled=(
+            True if data.get("agent_enabled") is None
+            else bool(data.get("agent_enabled"))
+        ),
+        agent_max_steps=_clamp(_num(data.get("agent_max_steps"), 8, int), 1, 32),
+        agent_max_seconds=_num(data.get("agent_max_seconds"), 60.0, float),
+        agent_project_dir=(data.get("agent_project_dir") or ""),
     )
