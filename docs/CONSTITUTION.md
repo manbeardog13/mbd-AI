@@ -4,8 +4,10 @@
 roadmaps, and implementations serve these principles — not the other way around.
 When a proposal conflicts with the Constitution, the proposal changes.*
 
-Version 1.0 · supersedes the philosophy sections of DIRECTIVE.md, VISION.md, and
+Version 1.1 · supersedes the philosophy sections of DIRECTIVE.md, VISION.md, and
 the V1–V3 directives (those remain as vision/history; this is the law).
+*v1.1 (2026-07-12): adopted the Principle of Least Intelligence (§3); confirmed
+ADR-0006 as "Local-First with Intelligence Escalation."*
 
 ---
 
@@ -29,8 +31,10 @@ When principles conflict, the higher one wins.
 
 1. **Reliability** — she never corrupts data, never takes a destructive action
    without consent, and degrades gracefully instead of failing catastrophically.
-2. **Privacy / local-first** — nothing leaves the machine by default. Cloud is
-   opt-in, off by default, and consciously chosen (see ADR-0006).
+2. **Privacy / local-first** — nothing leaves the machine by default. Local is
+   the default path; cloud reasoning is an *escalation* that is explicit, opt-in,
+   off by default, and transparent when used ("Local-First with Intelligence
+   Escalation" — ADR-0006).
 3. **Perceived speed** — she feels instant. Most of that is architecture, not a
    bigger model: don't reason when you can *know*; don't block on the GPU.
 4. **Intelligence** — accept the local model's real ceiling; win on continuity,
@@ -44,9 +48,14 @@ When principles conflict, the higher one wins.
 - **Modular monolith.** One deployment. Modules communicate through defined
   interfaces; no module reaches into another's internals. Extraction into a
   service must be *possible* later, never *required* now. (ADR-0001)
-- **Don't reason when you can know.** Retrieval, deterministic code, filesystem,
-  git, SQL, and cached results come before invoking the LLM. The LLM reasons; it
-  does not replace software.
+- **The Principle of Least Intelligence.** Always solve a problem with the
+  *simplest deterministic mechanism* that produces the correct result; invoke LLM
+  reasoning only when it genuinely adds value. Retrieval, deterministic code,
+  filesystem, git, SQL, and cached results come first — *don't reason when you
+  can know.* The LLM reasons about the genuinely ambiguous; it does not replace
+  software that can be right by construction. This applies to Nero's own
+  architecture too: prefer the thin, knowable mechanism over the clever one
+  (e.g. read the git branch, don't ask the model for it).
 - **One resident model.** A single primary model stays loaded; everything else
   (vision, a larger model, speech) is loaded on demand at an honest, visible
   latency cost. Never promise hot, concurrent, multi-model routing on 12 GB.

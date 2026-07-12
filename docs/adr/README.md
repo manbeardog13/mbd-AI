@@ -23,4 +23,6 @@ that supersedes it, and set the old one's status to "Superseded by ADR-XXXX".
 | [0003](0003-agent-tool-loop.md) | The agent/tool loop is the core execution primitive | Accepted |
 | [0004](0004-mcp-for-plugins.md) | MCP is the plugin standard | Accepted |
 | [0005](0005-security-gate.md) | Security gate + human-in-the-loop terminal, built first | Accepted |
-| [0006](0006-local-model-ceiling.md) | Accept the local model ceiling; cloud is an opt-in flag | Proposed — needs Toni's confirm |
+| [0006](0006-local-model-ceiling.md) | Local-First with Intelligence Escalation (cloud is explicit, opt-in, transparent) | Accepted |
+| [0007](0007-capability-registry.md) | Capabilities, not hard-coded tools — the Capability Registry | Accepted |
+| [0008](0008-executive-memory.md) | Executive Memory — the working-state register | Accepted |
