@@ -51,14 +51,18 @@ Voice Platform** (an output interface only — it never calls dispatch/authorize
 writes no Journal, executes nothing; "the Brain produces a response, the Voice
 presents it"). Voice is built **model-independent foundation first, API-first**
 (the contract before any engine body); GPU/VRAM/latency work belongs to the local
-4070, never cloud assumption. **Voice Stage 1 shipped** on its own branch/PR
-(**PR #14**, draft): the **TTSEngine interface** — `voice/local_tts/base.py`
+4070, never cloud assumption. **Voice Stages 1–2 shipped** on their own branch/PR
+(**PR #14**, draft): (1) the **TTSEngine interface** — `voice/local_tts/base.py`
 (`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
-fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts), best-
-effort (never raises), 7 tests + `verify_voice.py` green, 2.45 µs envelope
-overhead, zero regressions. A later `kokoro_engine` will **wrap** the shipped
-`app/tts.py` (strangler-fig), never rewrite it. Stopped for review before Stage 2
-(Voice Capability Graph).*
+fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
+**Voice Capability Graph** — `voice_capability_graph.py`, answering "can THIS
+voice perform right now?" by resolving against **live** engine state (runtime
+discovery, never cached), mapping voice → engine → language → features →
+availability → quality. All best-effort/never-raises; 14 tests + `verify_voice.py`
+(14 checks) green; overheads 2.45 µs (envelope) / 0.2 µs (live resolve); zero
+regressions. A later `kokoro_engine` will **wrap** the shipped `app/tts.py`
+(strangler-fig), never rewrite it. Stopped for review before Stage 3 (Engine
+Health cache).*
 
 ---
 

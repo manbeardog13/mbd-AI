@@ -16,6 +16,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from voice.local_tts.base import (  # noqa: E402
     BaseTTSEngine, EngineStatus, NullEngine, TTSEngine, VoiceRequest,
 )
+from voice.local_tts.voice_capability_graph import (  # noqa: E402
+    QualityLevel, VoiceCapability, VoiceCapabilityGraph,
+)
 
 FAILS: list[str] = []
 
@@ -56,11 +59,32 @@ def main() -> int:
     check("both engines satisfy the TTSEngine Protocol (API-first)",
           isinstance(stub, TTSEngine) and isinstance(null, TTSEngine))
 
+    # ---- Stage 2: Voice Capability Graph (runtime discovery) ----
+    graph = VoiceCapabilityGraph()
+    graph.register(VoiceCapability("nero_prime", "stub", ("en", "hr"),
+                                   ("emotion",), QualityLevel.PREMIUM), stub)
+    graph.register(VoiceCapability("nero_demon", "null", ("en",)), null)
+    check("graph lists all registered voices",
+          set(graph.voices()) == {"nero_prime", "nero_demon"})
+    check("can_perform is LIVE: available engine -> True, unavailable -> False",
+          graph.can_perform("nero_prime") is True and graph.can_perform("nero_demon") is False)
+    check("available_voices returns only voices live right now",
+          [c.voice_id for c in graph.available_voices()] == ["nero_prime"])
+    check("available_voices filters by language",
+          [c.voice_id for c in graph.available_voices(language="hr")] == ["nero_prime"]
+          and graph.available_voices(language="fr") == [])
+    check("resolve returns capability + engine + live status",
+          graph.resolve("nero_prime").available is True
+          and graph.resolve("nero_demon").available is False)
+    check("snapshot is a telemetry view with live availability",
+          {r["voice_id"]: r["available"] for r in graph.snapshot()}
+          == {"nero_prime": True, "nero_demon": False})
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stage 1 (TTSEngine contract) verified.")
+    print("  Voice Stages 1-2 (TTSEngine contract + Capability Graph) verified.")
     return 0
 
 

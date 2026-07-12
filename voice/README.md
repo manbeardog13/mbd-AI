@@ -42,9 +42,9 @@ Each stage stops with a verification report before the next begins.
 
 | # | Component | Contract file | Status |
 |---|-----------|---------------|--------|
-| 1 | **TTSEngine Interface** | `local_tts/base.py` | ✅ this stage |
-| 2 | Voice Capability Graph | `local_tts/voice_capability_graph.py` | ⏭ next |
-| 3 | Engine Health (cache) | `local_tts/engine_health.py` | planned |
+| 1 | **TTSEngine Interface** | `local_tts/base.py` | ✅ done |
+| 2 | **Voice Capability Graph** | `local_tts/voice_capability_graph.py` | ✅ this stage |
+| 3 | Engine Health (cache) | `local_tts/engine_health.py` | ⏭ next |
 | 4 | Voice Manager | `manager/voice_manager.py` | planned |
 | 5 | Voice Profiles (`cast.json`) | `profiles/cast.json` | planned |
 | 6 | Performance Director | `personalities/performance_director.py` | planned |
