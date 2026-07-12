@@ -81,6 +81,10 @@ Orchestrator (psutil + NVML; pause bg on foreground) · Task Scheduler
 **Build:** real-time voice loop (VAD, wake word, faster-whisper STT, streaming
 barge-in) · on-demand vision (VLM by eviction) · advanced planning · MCP
 ecosystem (2–3 daily connectors) · proven speculative prep.
+**Governing spec for voice:** [VOICE.md](VOICE.md) — the Voice Director +
+personality-cast architecture (TTS engine replaceable, personality is not).
+Architecture-first: a decent local voice (Kokoro, already shipped) before any
+chase for perfect TTS; the magic is the Voice Director, not the engine.
 **Depends on:** Phase 1–3 · ADR-0002/0004.
 **Success criteria:**
 - Hands-free conversation on desktop with **<1.2 s** to first spoken token and
