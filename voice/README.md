@@ -110,16 +110,57 @@ Each stage stops with a verification report before the next begins.
 | 11 | **Kokoro** (English) | `engines/kokoro.py` | ✅ done (contract adapter; real audio pending on RTX-4070) |
 | 12 | **MMS** (Croatian) | `engines/mms.py` | ✅ this stage — first true multi-engine / bilingual proof (real audio pending on RTX-4070) |
 
-**Next — Stage 13: Voice Rendering Profile.** The first feature a human will actually
-*hear*: it makes the cast's identities **audible** by giving each persona an
-engine-agnostic *rendering profile* (voice / speed / pitch / energy / pause_style),
-which the engine body — and only the engine body — translates into native parameters.
-Until then, every cast profile renders the same default voice. This is *Rendering* in
-the three-concept model above; it touches no orchestration layer.
+**Rendering (`voice/rendering/`):**
+
+| # | Component | File | Status |
+|---|-----------|------|--------|
+| 13 | **Voice Rendering Profile** | `rendering/profile.py` · `rendering/casting.py` · `rendering/profiles.json` | ✅ this stage — casting layer + engine honoring (real audio pending on RTX-4070) |
 
 **Still deferred (additive, later):** XTTS/streaming integration, advanced effects,
 the voice-selection UI, the ElevenLabs adapter (stub only, disabled), and — once a
 *third* engine genuinely justifies it — the first-class `EngineIdentity` object.
+
+## Stage 13 — Voice Rendering Profile (`voice/rendering/`)
+
+> **The first feature a human will *hear*.** It makes the cast's identities *audible*
+> — each persona rendered consistently across engines — without teaching orchestration
+> anything about engines.
+
+The one design question — *who owns `DeliveryPlan → RenderingProfile`?* — is answered
+**Candidate C: a new pure "Voice Casting" mapper** (not the Director, which stays
+semantic; not the engine, which must not see semantic intent; not the Manager, which
+routes). The realized flow (no sealed-contract change — the `delivery: dict` seam
+carries each step):
+
+```
+Intent → DeliveryPlan (semantic, Stage 6) → RenderingProfile (parametric, Stage 13)
+       → engine-native parameters (inside the engine body) → Audio
+```
+
+- **`RenderingProfile`** (`rendering/profile.py`) — engine-agnostic + **identity-blind**:
+  `voice_character` (an *abstract* descriptor like `"authoritative"`, never an engine
+  voice id or persona name), `speed`, `pitch`, `energy`, `pause_style`. Loaded from
+  **`rendering/profiles.json`** (kept **separate** from `cast.json` — the four concepts
+  are never merged); a malformed manifest fails loud, an unknown `voice_id` resolves to
+  a default (a persona without a declared rendering still speaks).
+- **`VoiceCasting`** (`rendering/casting.py`) — the **pure, deterministic** mapper:
+  `cast(voice_id, delivery) = base(voice_id) ⊕ modulate(delivery)` (identity baseline
+  modulated by the DeliveryPlan's `pace`/`intensity`). No state, routing, health,
+  telemetry, learning, I/O, or randomness; it imports nothing about the Manager, Graph,
+  Health, Telemetry, or Startup. `cast_request()` returns a new `VoiceRequest` whose
+  `delivery` now holds the RenderingProfile — **the semantic DeliveryPlan is consumed
+  here and never reaches the engine** (closing the pre-Stage-13 leak).
+- **Engine honoring** (`engines/kokoro.py`, `engines/mms.py`) — the engine body, and
+  **only** it, maps the abstract `voice_character` → a native voice (Kokoro's and MMS's
+  tables are **parallel, not shared** — no engine base class) and passes `speed`. The
+  `*Backend.synthesize` seam gained optional `voice`/`speed` (additive, backward-
+  compatible: text-only / pre-casting requests still work, falling back to the engine's
+  default voice). **`app/tts.py` is untouched** — real parameterized Kokoro/MMS
+  synthesis (audibly distinct personas) is a new backend path measured on the RTX-4070;
+  the cloud proves the plumbing with fake backends that *record* the params.
+
+*Only the engine bodies changed for Stage 13 (their designated job); the foundation and
+`app/tts.py` are untouched.*
 
 ## Stage 1 — the TTSEngine contract (`local_tts/base.py`)
 

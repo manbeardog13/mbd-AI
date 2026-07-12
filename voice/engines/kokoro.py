@@ -29,16 +29,35 @@ from ..local_tts.base import BaseTTSEngine, VoiceRequest
 
 _KOKORO_SAMPLE_RATE = 24_000  # Kokoro outputs 24 kHz mono (see app/tts.py SAMPLE_RATE)
 
+# Abstract voice_character -> native Kokoro voice. This engine-specific table is the
+# ONLY place that knows Kokoro voice ids; a RenderingProfile never carries them (the
+# frozen Rendering-Profile Charter). Unknown characters fall back to the default voice.
+_KOKORO_CHARACTER_VOICES = {
+    "balanced": "af_heart",
+    "authoritative": "am_michael",
+    "commanding": "am_adam",
+    "warm": "af_bella",
+    "calm": "af_sarah",
+    "soft": "af_sarah",
+    "alert": "am_adam",
+    "intense": "am_michael",
+    "gentle": "af_nicole",
+    "neutral": "af_heart",
+}
+_KOKORO_DEFAULT_VOICE = "af_heart"
+
 
 @runtime_checkable
 class KokoroBackend(Protocol):
     """The narrow seam between the engine body and real synthesis. A backend does the
-    real work; the engine only translates the contract to it."""
+    real work; the engine only translates the contract to it. `voice`/`speed` are the
+    engine-native rendering parameters (optional + defaulted, so text-only callers and
+    older backends keep working)."""
 
     sample_rate: int
 
     def is_ready(self) -> bool: ...
-    def synthesize(self, text: str) -> bytes | None: ...
+    def synthesize(self, text: str, *, voice: str | None = None, speed: float = 1.0) -> bytes | None: ...
 
 
 class KokoroEngine(BaseTTSEngine):
@@ -55,26 +74,42 @@ class KokoroEngine(BaseTTSEngine):
         name: str = "kokoro",
         languages: tuple[str, ...] = ("en",),
         voices: tuple[str, ...] = (),
+        voice_map: dict | None = None,
+        default_voice: str = _KOKORO_DEFAULT_VOICE,
     ) -> None:
         super().__init__()
         self.name = name                       # must equal the cast's engine name
         self._backend = backend
         self._languages = tuple(languages)
         self._voices = tuple(voices)
+        self._voice_map = dict(voice_map or _KOKORO_CHARACTER_VOICES)  # abstract char -> native
+        self._default_voice = default_voice
 
     def _available(self) -> bool:
         # A flashlight, not a lighthouse keeper: delegate to the backend's cheap probe.
         return bool(self._backend.is_ready())
 
     def _synthesize(self, request: VoiceRequest) -> tuple[bytes, int]:
-        # Translate the contract to the backend. The envelope has already guarded
-        # empty text and unavailability, and contains any exception raised here.
-        # NOTE: Kokoro voice / speed / delivery mapping is a future additive step —
-        # Stage 11 renders text only. The engine renders what it is handed; it never
-        # infers personality.
-        data = self._backend.synthesize(request.text)      # bytes | None
+        # Translate the contract to the backend. The envelope has already guarded empty
+        # text and unavailability, and contains any exception raised here. `delivery`
+        # carries a RenderingProfile (rendering parameters) when Voice Casting ran; the
+        # engine — and ONLY the engine — maps the abstract voice_character to a native
+        # Kokoro voice. Semantic intent (emotion/authority) never reaches here.
+        native_voice, speed = self._render_params(request.delivery)
+        data = self._backend.synthesize(request.text, voice=native_voice, speed=speed)  # bytes | None
         rate = int(getattr(self._backend, "sample_rate", _KOKORO_SAMPLE_RATE) or 0)
         return (data or b"", rate)                          # None/empty -> clean failure
+
+    def _render_params(self, delivery: object) -> tuple[str, float]:
+        """Map an (optional) RenderingProfile in `delivery` to native params. Absent or
+        unknown -> the engine default voice + neutral speed (honest, never a crash);
+        this keeps text-only / pre-casting requests working unchanged."""
+        rp = delivery if isinstance(delivery, dict) else {}
+        character = rp.get("voice_character")
+        native_voice = self._voice_map.get(character, self._default_voice) if character else self._default_voice
+        speed = rp.get("speed", 1.0)
+        speed = float(speed) if isinstance(speed, (int, float)) and not isinstance(speed, bool) else 1.0
+        return native_voice, speed
 
 
 class FakeKokoroBackend:
@@ -90,12 +125,15 @@ class FakeKokoroBackend:
         self._raises = raises
         self.sample_rate = sample_rate
         self.calls = 0
+        self.last_voice: str | None = None      # records the native params it received
+        self.last_speed: float = 1.0
 
     def is_ready(self) -> bool:
         return self._ready
 
-    def synthesize(self, text: str) -> bytes | None:
+    def synthesize(self, text: str, *, voice: str | None = None, speed: float = 1.0) -> bytes | None:
         self.calls += 1                                     # exactly-once is asserted by tests
+        self.last_voice, self.last_speed = voice, speed     # proves the RenderingProfile arrived
         if self._raises:
             raise RuntimeError("fake Kokoro backend failure")
         return self._audio
@@ -134,9 +172,13 @@ class RealKokoroBackend:
         except Exception:  # noqa: BLE001 - a broken probe is simply not ready, never a crash
             return False
 
-    def synthesize(self, text: str) -> bytes | None:
+    def synthesize(self, text: str, *, voice: str | None = None, speed: float = 1.0) -> bytes | None:
+        # `voice`/`speed` are accepted so the engine can pass rendering params, but the
+        # frozen `app/tts.py` is text-only and MUST NOT be modified, so they are not yet
+        # applied here. Honoring them (parameterized Kokoro synthesis) is a NEW method
+        # calling kokoro-onnx directly — RTX-4070 work — never an edit to app/tts.py.
         try:
             from app import tts
-            return tts.synthesize(self._cfg, text)          # bytes | None (best-effort)
+            return tts.synthesize(self._cfg, text)          # bytes | None (best-effort, text-only for now)
         except Exception:  # noqa: BLE001 - real failures become a clean None -> AudioResult(ok=False)
             return None

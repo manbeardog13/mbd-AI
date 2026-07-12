@@ -49,6 +49,10 @@ from voice.engines.kokoro import (  # noqa: E402
 from voice.engines.mms import (  # noqa: E402
     FakeMMSBackend, MMSEngine, RealMMSBackend,
 )
+from voice.rendering.casting import VoiceCasting  # noqa: E402
+from voice.rendering.profile import (  # noqa: E402
+    DEFAULT_PROFILES_PATH, RenderingProfile, RenderingProfiles,
+)
 
 FAILS: list[str] = []
 
@@ -557,13 +561,45 @@ def main() -> int:
     check("health report shows engine-specific state (kokoro/en available, mms/hr not)",
           "nero_prime" in rep12.available_voices and "nero_hr" not in rep12.available_voices)
 
+    # ---- Stage 13: Voice Rendering Profile (casting layer + engine honoring) ----
+    profs13 = RenderingProfiles.load(DEFAULT_PROFILES_PATH)
+    casting13 = VoiceCasting(profs13)
+    check("rendering profiles load (10 personas); unknown voice_id -> default, no crash",
+          len(profs13.voices()) == 10 and profs13.get("ghost").voice_character == "neutral")
+
+    cmd13 = casting13.cast("nero_commander")
+    luna13 = casting13.cast("nero_luna")
+    slow13 = casting13.cast("nero_prime", {"pace": 0.85}).speed
+    norm13 = casting13.cast("nero_prime", {"pace": 1.0}).speed
+    check("VoiceCasting is deterministic, personas are distinct, DeliveryPlan modulates speed",
+          casting13.cast("nero_prime", {"pace": 0.85}).as_dict() == casting13.cast("nero_prime", {"pace": 0.85}).as_dict()
+          and cmd13.voice_character != luna13.voice_character and slow13 < norm13)
+
+    cast_req = casting13.cast_request(VoiceRequest(
+        text="hi", voice_id="nero_commander",
+        delivery={"emotion": "serious", "authority": 0.9, "intensity": 0.9, "pace": 1.0}))
+    check("casting consumes the semantic DeliveryPlan (no emotion/authority reaches the engine)",
+          "voice_character" in cast_req.delivery and "emotion" not in cast_req.delivery
+          and "authority" not in cast_req.delivery)
+
+    kb13 = FakeKokoroBackend(ready=True, audio=b"WAV")
+    KokoroEngine(kb13).synthesize(VoiceRequest(text="hi", voice_id="nero_commander",
+                                               delivery=casting13.cast("nero_commander").as_dict()))
+    check("engine maps abstract voice_character -> native voice + carries rendering speed",
+          kb13.last_voice == "am_michael" and abs(kb13.last_speed - cmd13.speed) < 1e-9)
+
+    shipped13 = DEFAULT_PROFILES_PATH.read_text(encoding="utf-8")
+    check("rendering data carries NO engine-native detail (frozen Rendering-Profile Charter)",
+          all(tok not in shipped13 for tok in ("af_", "am_", "kokoro", "mms", "hrv")))
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stages 1-12 (foundation + Kokoro/en + MMS/hr engine bodies, "
-          "multi-engine capability routing) verified.")
-    print("  [Real Kokoro & MMS audio / GPU / VRAM / latency validation is reserved for the RTX-4070.]")
+    print("  Voice Stages 1-13 (foundation + Kokoro/en + MMS/hr engine bodies + "
+          "Voice Rendering Profile) verified.")
+    print("  [Real Kokoro & MMS audio / GPU / VRAM / latency + audibly-distinct personas "
+          "are reserved for the RTX-4070.]")
     return 0
 
 

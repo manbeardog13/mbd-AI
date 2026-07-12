@@ -52,8 +52,9 @@ writes no Journal, executes nothing; "the Brain produces a response, the Voice
 presents it"). Voice is built **model-independent foundation first, API-first**
 (the contract before any engine body); GPU/VRAM/latency work belongs to the local
 4070, never cloud assumption. **Voice Stages 1–10 (foundation) + Stages 11–12 (two
-engine bodies, first multi-engine proof) shipped** on their own branch/PR (**PR #14**,
-draft): (1) the **TTSEngine interface** — `voice/local_tts/base.py`
+engine bodies, first multi-engine proof) + Stage 13 (Voice Rendering Profile) shipped**
+on their own branch/PR (**PR #14**, draft): (1) the **TTSEngine interface** —
+`voice/local_tts/base.py`
 (`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
 fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
 **Voice Capability Graph** — `voice_capability_graph.py`, answering "can THIS
@@ -206,10 +207,29 @@ country); and the shipped `cast.json` stays **all-`kokoro`** (all-or-nothing sta
 would turn a premature `mms_hr` data change into a boot failure — Croatian joins the
 shipped cast as a 4070 data step when the backend is real; Stage 12 proves it with
 test manifests). Deferred note: a first-class `EngineIdentity` object once a *third*
-engine exists. 13 cloud tests + 5 verify checks (66 total) green; fake-backend
-overhead ≈0.12 µs available / ≈2.9 µs synth. Foundation, Kokoro, `cast.json`, and
-`app/*` all unchanged. **Real MMS/Croatian audio / model / VRAM / latency validation
-is reserved for the local RTX-4070.** Stopped for review before Stage 13.*
+engine exists. 13 cloud tests + 5 verify checks green; fake-backend overhead ≈0.12 µs
+available / ≈2.9 µs synth. Foundation, Kokoro, `cast.json`, and `app/*` all unchanged.
+(13) **Voice Rendering Profile** — `voice/rendering/`: makes the cast's identities
+*audible*. The one design question (*who owns `DeliveryPlan → RenderingProfile`*) is
+answered **Candidate C — a new pure "Voice Casting" mapper** (not the Director/semantic,
+not the engine/must-not-see-intent, not the Manager/routing). `RenderingProfile`
+(`profile.py`) is engine-agnostic + identity-blind (`voice_character` abstract, +
+speed/pitch/energy/pause_style), loaded from `rendering/profiles.json` — **separate**
+from `cast.json` (four concepts never merged); malformed → loud `RenderingError`,
+unknown voice_id → default. `VoiceCasting` (`casting.py`) is a **pure deterministic**
+`cast(voice_id, delivery) = base(voice_id) ⊕ modulate(pace/intensity)`; it consumes the
+semantic DeliveryPlan (via the `delivery` seam) so **no emotion/authority reaches the
+engine** — closing the pre-13 leak — and imports nothing about Manager/Graph/Health/
+Telemetry/Startup. Engine honoring (13b): each engine body — and only it — maps the
+abstract `voice_character` → a native voice (Kokoro/MMS tables **parallel, no shared
+base**) and applies speed; the `*Backend.synthesize` seam gained optional voice/speed
+(additive, backward-compatible). **`app/tts.py` and the whole foundation are unchanged**
+— only the engine bodies were extended (their designated job); real parameterized
+synthesis (audibly distinct personas) is a new backend path on the RTX-4070, proven in
+cloud via fake backends recording the params. 16 tests + 5 verify checks (71 total)
+green; casting ≈3.2 µs/call; zero regressions across Stages 1–12. **Real audio /
+audibly-distinct persona validation is reserved for the local RTX-4070.** Stopped for
+review before Stage 14.*
 
 ---
 
