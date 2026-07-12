@@ -44,6 +44,22 @@ capability).*
 `D:\mbd AI`) that verifies and drives things directly on the 4070 — the cloud
 session owns planning + merges; the local instance is the hands on the machine.*
 
+*In progress — **the Action Journal (Nero's accountability spine)**, the third
+leg of the **executive control layer**: Capability Registry (*what can I do?*) ·
+Trust Engine / security gate (*am I allowed?*) · **Action Journal** (*what did I
+do, and can I prove it?*). Design approved + finalized (immutable/event-sourced;
+hybrid durability — strict for mutations; 3-layer retention; an integrity check
+that drops Nero into read-only **safe-mode** if her records can't be trusted) plus
+**Amendment V1.1** (Emergency Lockdown · Explain-Before-Execute · Action Replay
+metadata). Being built as a **controlled, staged PR**: **Stage 1 — storage
+foundation** is pushed (append-only `action_journal` table with DB-level
+immutability triggers, event-sourcing, `add_action`/`get_action`/`get_actions`;
+10 storage tests green, 0 regressions), awaiting review before Stage 2. Separately,
+the **Voice System V1.2.1** implementation map has been produced (Step-0 inspection
+of the adopted `docs/VOICE.md` "Bible") and awaits approval — a parallel,
+interface-only track (voice acts on nothing; it never touches the Trust Engine or
+the Journal), whose GPU milestones run on the local instance.*
+
 ---
 
 ## 1. What Nero is
