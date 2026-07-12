@@ -49,9 +49,9 @@ Each stage stops with a verification report before the next begins.
 | 5 | **Voice Profiles** (`cast.json`) | `profiles/cast.json` + `profiles/loader.py` | ✅ done |
 | 6 | **Performance Director** | `personalities/performance_director.py` | ✅ done |
 | 7 | **Event Bus** | `manager/events.py` | ✅ done |
-| 8 | **Voice Telemetry** | `manager/telemetry.py` | ✅ this stage |
-| 9 | Warm Startup | `manager/startup.py` | ⏭ next |
-| 10 | Voice Health Check | `manager/health.py` | planned |
+| 8 | **Voice Telemetry** | `manager/telemetry.py` | ✅ done |
+| 9 | **Warm Startup** | `manager/startup.py` | ✅ this stage |
+| 10 | Voice Health Check | `manager/health.py` | ⏭ next |
 
 **Deferred (not this foundation):** engine bodies (`kokoro_engine`, `mms_hr_engine`),
 XTTS integration, advanced effects, the voice-selection UI, and the ElevenLabs
@@ -307,3 +307,55 @@ frozen dataclass whose map fields are read-only (`MappingProxyType`) copies — 
 Capability Graph, the Engine Health cache, the Performance Director, or any
 executive system. It is **not** an Action Journal — that remains the sole authority
 for durable executive history; telemetry is ephemeral voice visibility only.
+
+## Stage 9 — Warm Startup / Voice Runtime Initialization (`manager/startup.py`)
+
+> **The composition root — a composer, not a commander.** The workshop table where
+> the machine is assembled, never the mechanic deciding which gear should turn.
+
+`build_voice_runtime(...)` wires the sealed Stages 1–8 bricks together in a fixed,
+deterministic order and returns a `VoiceRuntime`:
+
+```
+build_voice_runtime(engines, cast_path, clock, …)
+  load_cast → VoiceCapabilityGraph → cast.populate(graph, engines)
+           → EngineHealthCache → VoiceEventBus → VoiceTelemetry.attach(bus)
+           → VoiceManager(graph, health, emergency_voice, fallback_map,
+                          telemetry=bus.manager_sink())
+```
+```python
+rt = build_voice_runtime(engines={"kokoro": kokoro_engine})   # engines are INJECTED
+rt.manager.speak(VoiceRequest(text="…", voice_id="nero_prime"))
+rt.readiness()   # -> VoiceReadiness(state=READY|DEGRADED|OFFLINE, …)
+```
+
+`VoiceRuntime` contains `manager`, `bus`, `telemetry`, `graph`, `health`, `cast`.
+Callers speak through `runtime.manager.speak(...)` — the runtime is a container, not
+a second interface hiding the routing authority (no `runtime.speak()`).
+
+**Owns:** object construction · dependency wiring · composition ordering · readiness
+*reporting*.
+**Does NOT own:** routing · fallback logic · voice ranking · engine selection · health
+*decisions* · retries · recovery · memory · personality · LLM calls · Action Journal.
+
+**Engines are injected, never created here.** The RTX-4070's real engines — and their
+GPU warm-up — live behind the `TTSEngine` abstraction; startup sees *a plug, not the
+electricity behind the wall*, keeping it model-independent and cloud-testable.
+
+**Composition failure vs. operational readiness.** An unreadable/invalid manifest, a
+missing engine binding, or a language a bound engine cannot produce is a
+*configuration* failure → `StartupError`, **no partial runtime**. Engines merely being
+*unavailable* is **not** a failure — it is *reported*, never raised:
+- **READY** — the emergency voice can perform now (a guaranteed audio path).
+- **DEGRADED** — some voice can perform, but the emergency voice cannot.
+- **OFFLINE** — no voice can perform now (the Manager returns `text_only`).
+
+**Not a health authority.** Readiness is derived by *asking* the Capability Graph
+("can this voice perform now?", live) — startup **never** calls `record_success`/
+`record_failure`/`record_repair`; engine health history begins only when runtime
+execution begins. `readiness()` re-probes live state on every call.
+
+**The one sanctioned composition root.** `startup.py` is the only module allowed to
+import the Manager, Graph, Health, Bus, and Telemetry together — construction requires
+it. Direction stays one-way: startup depends on the components; nothing depends on
+startup. `voice_manager.py` is **constructed, never modified**.

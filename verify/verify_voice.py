@@ -37,6 +37,9 @@ from voice.manager.events import (  # noqa: E402
 from voice.manager.telemetry import (  # noqa: E402
     VoiceTelemetry, VoiceTelemetrySnapshot,
 )
+from voice.manager.startup import (  # noqa: E402
+    ReadinessState, StartupError, VoiceRuntime, build_voice_runtime,
+)
 
 FAILS: list[str] = []
 
@@ -394,12 +397,66 @@ def main() -> int:
           and h8.get("e_prime").consecutive_failures == 1
           and s8b.fallback_count == 1 and s8b.engine_failures == 1)
 
+    # ---- Stage 9: Warm Startup / Voice Runtime Initialization (composition root) ----
+    import json as _json9, os as _os9, tempfile as _tf9
+    from datetime import datetime as _dt9, timezone as _tz9
+    _fixed9 = _dt9(2026, 7, 12, 12, 0, 0, tzinfo=_tz9.utc)
+
+    class _Ok9(BaseTTSEngine):
+        def __init__(self, name): super().__init__(); self.name = name; self._languages = ("en",); self.calls = 0
+        def _available(self): return True
+        def _synthesize(self, request): self.calls += 1; return (b"wav", 24_000)
+
+    class _Fail9(BaseTTSEngine):
+        def __init__(self, name): super().__init__(); self.name = name; self._languages = ("en",)
+        def _available(self): return True
+        def _synthesize(self, request): return (b"", 0)
+
+    def _cast9(data):
+        fd, path = _tf9.mkstemp(suffix=".json", prefix="verify_rt_")
+        with _os9.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(_json9.dumps(data))
+        return path
+
+    fb = {"emergency": "nero_prime", "voices": [
+        {"voice_id": "nero_prime", "engine": "e_prime", "languages": ["en"], "fallbacks": ["nero_luna"]},
+        {"voice_id": "nero_luna", "engine": "e_luna", "languages": ["en"]}]}
+    p9 = _cast9(fb)
+    rt = build_voice_runtime(engines={"e_prime": _Fail9("e_prime"), "e_luna": _Ok9("e_luna")},
+                             cast_path=p9, clock=lambda: _fixed9)
+    _os9.remove(p9)
+    check("build_voice_runtime composes a wired VoiceRuntime (manager/bus/telemetry/graph/health/cast)",
+          isinstance(rt, VoiceRuntime) and rt.manager and rt.bus and rt.telemetry
+          and set(rt.graph.voices()) == {"nero_prime", "nero_luna"})
+
+    check("readiness reports READY (emergency voice available), asks the graph, mutates nothing",
+          rt.readiness().state == ReadinessState.READY
+          and rt.health.get("e_prime") is None)          # no health record created at boot
+
+    try:
+        build_voice_runtime(engines={}, cast_path="/no/such/verify_rt_missing.json")
+        startup_failed_loud = False
+    except StartupError:
+        startup_failed_loud = True
+    check("a composition failure is a loud StartupError (no partial runtime)", startup_failed_loud)
+
+    observed9: list = []
+    rt.bus.subscribe(observed9.append)
+    r9 = rt.manager.speak(VoiceRequest(text="hi", voice_id="nero_prime"))
+    snap9 = rt.telemetry.snapshot()
+    kinds9 = [e.type for e in observed9]
+    check("end-to-end: composed runtime falls back correctly; bus observes; telemetry records",
+          r9.ok and r9.voice_id == "nero_luna"
+          and VoiceEventType.ENGINE_FAILED in kinds9 and VoiceEventType.FALLBACK_USED in kinds9
+          and snap9.fallback_count == 1 and rt.health.get("e_prime").consecutive_failures == 1)
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stages 1-8 (contract + Capability Graph + Health Cache + Voice "
-          "Manager + Voice Profiles + Performance Director + Event Bus + Telemetry) verified.")
+    print("  Voice Stages 1-9 (contract + Capability Graph + Health Cache + Voice "
+          "Manager + Voice Profiles + Performance Director + Event Bus + Telemetry + "
+          "Warm Startup) verified.")
     return 0
 
 

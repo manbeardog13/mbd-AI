@@ -51,7 +51,7 @@ Voice Platform** (an output interface only — it never calls dispatch/authorize
 writes no Journal, executes nothing; "the Brain produces a response, the Voice
 presents it"). Voice is built **model-independent foundation first, API-first**
 (the contract before any engine body); GPU/VRAM/latency work belongs to the local
-4070, never cloud assumption. **Voice Stages 1–8 shipped** on their own branch/PR
+4070, never cloud assumption. **Voice Stages 1–9 shipped** on their own branch/PR
 (**PR #14**, draft): (1) the **TTSEngine interface** — `voice/local_tts/base.py`
 (`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
 fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
@@ -137,8 +137,27 @@ it can never select voices, influence fallbacks, mutate health, alter delivery, 
 call engines. Wiring adds **zero Manager dependency** (`telemetry=bus.manager_sink()`).
 Dependency is one-way (imports only the event vocabulary). 16 tests + 4 verify
 checks green; handle ≈0.55 µs, snapshot ≈2.2 µs, +≈7.9 µs per speak (CPU-only);
-zero regressions across Stages 1–7; voice_manager.py untouched. Stopped for review
-before Stage 9 (Warm Startup).*
+zero regressions across Stages 1–7; voice_manager.py untouched. (9) **Warm Startup**
+— `voice/manager/startup.py`, the **composition root** (a composer, not a
+commander): `build_voice_runtime(*, engines, cast_path, clock, …)` wires the sealed
+Stages 1–8 bricks in a deterministic order (load_cast → graph → populate → health →
+bus → telemetry.attach → Manager with `telemetry=bus.manager_sink()`) and returns a
+frozen `VoiceRuntime(manager, bus, telemetry, graph, health, cast)` with a
+`readiness()` re-probe. **Engines are injected, never created** (the 4070's engines
++ GPU warm-up stay behind the `TTSEngine` plug — model-independent, cloud-testable).
+Composition failures (unreadable/invalid manifest, missing engine binding,
+unsupported declared language) raise `StartupError` with no partial runtime;
+operational unavailability is *reported* not raised via `VoiceReadiness`
+(READY = emergency voice available / DEGRADED = some voice, not emergency / OFFLINE
+= none). Not a health authority — readiness is derived by *asking* the Capability
+Graph (live); startup never calls `record_success/failure/repair`. It owns only
+construction/wiring/ordering/readiness-reporting — no routing, ranking, engine
+selection, health decisions, retries, recovery, memory, personality, LLM, or Journal.
+The one sanctioned broad-import module (composition needs it); one-way (nothing
+imports startup); `voice_manager.py` constructed, never modified. 16 tests + 4
+verify checks green; build ≈0.13 ms (10-voice cast), readiness ≈22 µs (CPU-only);
+zero regressions across Stages 1–8. Stopped for review before Stage 10 (Voice Health
+Check).*
 
 ---
 
