@@ -140,6 +140,22 @@ tts_speed: 1.0
 # Relative paths are under the project folder.
 tts_model_dir: "models"
 
+# ---- Agent (Phase 1: the hands) ----
+# Nero's ability to take verified actions via tools (capabilities), behind a
+# security gate. Read-only to start (git.status); anything that changes files
+# waits for your confirmation.
+agent_enabled: true
+
+# Safety bounds on the reason→tool→observe loop: the most tool steps in one turn,
+# and the most wall-clock seconds before she returns a graceful partial answer.
+agent_max_steps: 8
+agent_max_seconds: 60
+
+# The project directory the agent is jailed to (filesystem/terminal tools can't
+# escape it) and observes for git branch/state. Blank = the folder Nero runs
+# from. Use a full path to point her at a specific project.
+agent_project_dir: ""
+
 # ---- Server ----
 
 # 0.0.0.0 lets your other devices (via Tailscale) reach the AI.

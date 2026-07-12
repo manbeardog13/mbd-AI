@@ -7,15 +7,31 @@ For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
 
 ---
 
-## 🔨 Building now
-- **Voice agent — Increment 2: neural voice in the chat UI** 🔨 — the browser
-  now plays Nero's **local neural voice** for her replies (via `POST /api/speak`),
-  falling back to the browser voice when it's unavailable or the reply is
-  Croatian (until MMS-TTS lands). Includes barge-in (a new message or the mic
-  cuts her off mid-sentence). Next: local **STT** (faster-whisper), the
-  real-time loop (continuous listen), and Croatian.
+## 🧪 In review (PR)
+- **Phase 1 — "The Hands" · first slice** 🧪 — the primitive that lets Nero
+  *act*: the **agent loop** (reason → tool → observe → repeat, bounded and
+  cancellable), the **Capability Registry** (one guarded dispatch seam; the model
+  reasons over capabilities discovered at runtime, not a hard-coded list), the
+  **security gate** (every MEDIUM+ action needs confirmation; project jail;
+  fail-closed), **Executive Memory** (the working-state register — goal/project/
+  branch/task/blocker/next_action; branch & project observed from git, not
+  guessed), and the first capability **`git.status`**. New endpoints `POST
+  /api/agent`, `GET /api/agent/capabilities`, `GET/DELETE /api/executive`; agent
+  + capability metrics in `/api/metrics`. 32 offline tests + `verify_security.py`,
+  `verify_capabilities.py`, `verify_executive_memory.py`, `verify_agent.py` all
+  green (the live agent run verifies on the PC where Ollama runs). Next Phase-1
+  capabilities, one PR each: `fs.read`, `fs.list`, `git.log`, then the
+  human-in-the-loop terminal.
 
 ## ✅ Shipped (on `main`)
+- **V3 governance layer** ✅ — the Constitution (v1.1), ADRs 0001–0008, the phased
+  Roadmap, and the Phase-1 technical design in `docs/`. Two decisions settled:
+  **ADR-0006 "Local-First with Intelligence Escalation"** and the **Principle of
+  Least Intelligence**.
+- **UI redesign + voice in the app** ✅ (PR #9) — the NERO Design System, a
+  ChatGPT-style two-button voice composer, hands-free conversation mode, and
+  Nero's **local neural voice** playing her replies (`POST /api/speak`) with
+  browser-voice fallback, barge-in, and iOS Web-Audio playback.
 - **Voice agent — Increment 1: local neural English voice** ✅ — Nero speaks with
   a real, local Kokoro voice (via ONNX Runtime; no torch; Python 3.13). `app/tts.py`,
   `POST /api/speak` + `GET /api/voice`, `verify_tts.py`. Verified 8/8 on the RTX 4070.

@@ -23,9 +23,22 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import db, memory, tts, world_model
-from .config import load_config, set_override
+from .agent import loop as agent_loop, state as agent_state
+from .capabilities import Context, Registry
+from .capabilities.builtin import register_builtins
+from .config import ROOT, load_config, set_override
 from .llm import check_ollama, embed_text, stream_chat
 from .prompt import build_system_prompt
+
+# One Capability Registry for the process, populated with the built-in provider
+# at import (ADR-0007). MCP / Skills register here later, no loop changes needed.
+REGISTRY = Registry()
+register_builtins(REGISTRY)
+
+
+def _project_dir(cfg) -> str:
+    """The directory the agent is jailed to and observes (default: repo root)."""
+    return (cfg.agent_project_dir or "").strip() or str(ROOT)
 
 # Keep references to fire-and-forget reflection tasks so they aren't GC'd.
 _bg_tasks: set[asyncio.Task] = set()
@@ -63,6 +76,10 @@ class SpeakIn(BaseModel):
 class SettingsIn(BaseModel):
     humor: int | None = None
     voice: str | None = None
+
+
+class AgentIn(BaseModel):
+    message: str
 
 
 # ---- Pages & basic info ----
@@ -215,10 +232,75 @@ def clear_world_field(key: str) -> dict:
     return {"ok": True}
 
 
+# ---- Agent (Phase 1: the hands) ----
+
+@app.get("/api/agent/capabilities")
+def agent_capabilities() -> dict:
+    """What Nero can currently do — the live registry the model reasons over."""
+    return {"capabilities": REGISTRY.specs()}
+
+
+@app.get("/api/executive")
+def executive_state() -> dict:
+    """Nero's working-state register — what she's doing now, and where (ADR-0008)."""
+    cfg = load_config()
+    ws = agent_state.read(_project_dir(cfg))
+    return {"working_state": ws.as_dict()}
+
+
+@app.delete("/api/executive")
+def clear_executive_state() -> dict:
+    """Reset the working-state register (a fresh start for a new goal)."""
+    agent_state.clear()
+    return {"ok": True}
+
+
+@app.post("/api/agent")
+async def agent_run(payload: AgentIn) -> dict:
+    """Run the agent loop on a task: reason → use a capability → observe → answer.
+
+    Read-only capabilities run freely; anything MEDIUM+ needs confirmation, and
+    this non-interactive endpoint has no confirm channel yet, so such actions are
+    safely denied (fail-closed) until the confirmation UX lands. The working-state
+    register is observed before and updated after the turn.
+    """
+    text = payload.message.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Message is empty.")
+    cfg = load_config()
+    if not cfg.agent_enabled:
+        raise HTTPException(status_code=403, detail="Agent mode is disabled.")
+
+    project_dir = _project_dir(cfg)
+    # Deterministic working-state: read (observes branch/project), record the
+    # task, then re-read so the response shows the live register.
+    await asyncio.to_thread(agent_state.update, {"task": text})
+    ws = await asyncio.to_thread(agent_state.read, project_dir)
+    ctx = Context(allowed_dirs=[project_dir], conversation_id=None, confirm=None)
+
+    result = await asyncio.to_thread(
+        agent_loop.run, cfg, REGISTRY, ctx, text,
+        system_extra=agent_state.render(ws),
+    )
+    return {
+        "answer": result.answer,
+        "steps": result.steps,
+        "stopped": result.stopped_reason,
+        "working_state": ws.as_dict(),
+    }
+
+
 @app.get("/api/metrics")
 def metrics() -> dict:
-    """Lightweight observability into the memory + world-model + voice subsystems."""
-    return {"memory": memory.METRICS, "world": world_model.METRICS, "voice": tts.METRICS}
+    """Lightweight observability into every subsystem."""
+    from .capabilities import METRICS as cap_metrics
+    return {
+        "memory": memory.METRICS,
+        "world": world_model.METRICS,
+        "voice": tts.METRICS,
+        "agent": agent_loop.METRICS,
+        "capabilities": cap_metrics,
+    }
 
 
 # ---- Voice (local neural text-to-speech) ----
