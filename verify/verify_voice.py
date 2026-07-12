@@ -46,6 +46,9 @@ from voice.manager.health import (  # noqa: E402
 from voice.engines.kokoro import (  # noqa: E402
     FakeKokoroBackend, KokoroEngine, RealKokoroBackend,
 )
+from voice.engines.mms import (  # noqa: E402
+    FakeMMSBackend, MMSEngine, RealMMSBackend,
+)
 
 FAILS: list[str] = []
 
@@ -520,14 +523,47 @@ def main() -> int:
     check("RealKokoroBackend is import-safe and degrades gracefully in the cloud (no GPU/model)",
           real.is_ready() is False and real.synthesize("hi") is None)
 
+    # ---- Stage 12: MMS Croatian engine body + first multi-engine validation ----
+    mms_engine = MMSEngine(FakeMMSBackend(ready=True, audio=b"HR-WAV", sample_rate=16_000))
+    mr = mms_engine.synthesize(VoiceRequest(text="Dobro jutro.", voice_id="nero_hr", language="hr"))
+    check("MMSEngine (fake backend) available + synthesizes hr (16 kHz) through the envelope",
+          mms_engine.available() and mr.ok and mr.engine == "mms_hr" and mr.sample_rate == 16_000)
+
+    check("RealMMSBackend is import-safe and not-ready in the cloud (app.mms_tts absent)",
+          RealMMSBackend(cfg=None).is_ready() is False and RealMMSBackend(cfg=None).synthesize("bok") is None)
+
+    # multi-engine graph: nero_prime -> kokoro(en), nero_hr -> mms(hr). Foundation UNCHANGED.
+    def _bi_graph(mms_up=True):
+        g = VoiceCapabilityGraph()
+        g.register(VoiceCapability("nero_prime", "kokoro", ("en",)),
+                   KokoroEngine(FakeKokoroBackend(ready=True, audio=b"EN")))
+        g.register(VoiceCapability("nero_hr", "mms_hr", ("hr",)),
+                   MMSEngine(FakeMMSBackend(ready=mms_up, audio=b"HR")))
+        return g
+
+    mgrBi = VoiceManager(_bi_graph(), EngineHealthCache(), emergency_voice="nero_prime")
+    en12 = mgrBi.speak(VoiceRequest(text="Good evening.", voice_id="nero_prime", language="en"))
+    hr12 = mgrBi.speak(VoiceRequest(text="Dobra vecer.", voice_id="nero_hr", language="hr"))
+    check("routing is pure capability: en -> kokoro, hr -> mms (no special Croatian logic)",
+          en12.ok and en12.engine == "kokoro" and hr12.ok and hr12.engine == "mms_hr")
+
+    mgrDown = VoiceManager(_bi_graph(mms_up=False), EngineHealthCache(), emergency_voice="nero_prime")
+    honest = mgrDown.speak(VoiceRequest(text="Dobro jutro", voice_id="nero_hr", language="hr"))
+    check("honest failure: hr with MMS down -> text_only, English is NEVER substituted",
+          honest.ok is False and honest.outcome == OUTCOME_TEXT_ONLY)
+
+    rep12 = build_health_report(graph=_bi_graph(mms_up=False), engine_health=EngineHealthCache(),
+                                emergency_voice="nero_prime")
+    check("health report shows engine-specific state (kokoro/en available, mms/hr not)",
+          "nero_prime" in rep12.available_voices and "nero_hr" not in rep12.available_voices)
+
     print()
     if FAILS:
         print(f"  {len(FAILS)} check(s) FAILED: {', '.join(FAILS)}")
         return 1
-    print("  Voice Stages 1-11 (contract + Capability Graph + Health Cache + Voice "
-          "Manager + Voice Profiles + Performance Director + Event Bus + Telemetry + "
-          "Warm Startup + Health Check + Kokoro engine body) verified.")
-    print("  [Kokoro real-audio / GPU / VRAM / latency validation is reserved for the RTX-4070.]")
+    print("  Voice Stages 1-12 (foundation + Kokoro/en + MMS/hr engine bodies, "
+          "multi-engine capability routing) verified.")
+    print("  [Real Kokoro & MMS audio / GPU / VRAM / latency validation is reserved for the RTX-4070.]")
     return 0
 
 

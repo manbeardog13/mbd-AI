@@ -8,5 +8,11 @@ chooses a voice, never decides fallback or health — those live above it, seale
 from .kokoro import (
     FakeKokoroBackend, KokoroBackend, KokoroEngine, RealKokoroBackend,
 )
+from .mms import (
+    FakeMMSBackend, MMSBackend, MMSEngine, RealMMSBackend,
+)
 
-__all__ = ["KokoroEngine", "KokoroBackend", "FakeKokoroBackend", "RealKokoroBackend"]
+__all__ = [
+    "KokoroEngine", "KokoroBackend", "FakeKokoroBackend", "RealKokoroBackend",
+    "MMSEngine", "MMSBackend", "FakeMMSBackend", "RealMMSBackend",
+]

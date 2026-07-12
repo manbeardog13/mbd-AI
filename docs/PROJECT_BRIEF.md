@@ -51,9 +51,9 @@ Voice Platform** (an output interface only — it never calls dispatch/authorize
 writes no Journal, executes nothing; "the Brain produces a response, the Voice
 presents it"). Voice is built **model-independent foundation first, API-first**
 (the contract before any engine body); GPU/VRAM/latency work belongs to the local
-4070, never cloud assumption. **Voice Stages 1–10 (foundation) + Stage 11 (first
-engine body) shipped** on their own branch/PR (**PR #14**, draft): (1) the
-**TTSEngine interface** — `voice/local_tts/base.py`
+4070, never cloud assumption. **Voice Stages 1–10 (foundation) + Stages 11–12 (two
+engine bodies, first multi-engine proof) shipped** on their own branch/PR (**PR #14**,
+draft): (1) the **TTSEngine interface** — `voice/local_tts/base.py`
 (`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
 fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
 **Voice Capability Graph** — `voice_capability_graph.py`, answering "can THIS
@@ -189,9 +189,27 @@ now (one Kokoro voice; per-profile voice mapping is a future additive step that 
 touches `app/tts.py`). 14 cloud tests + 5 verify checks (61 total) green; fake-backend
 overhead ≈0.18 µs available / ≈3.9 µs synth (adapter+envelope only). `app/tts.py` and
 the entire sealed foundation unchanged; `build_voice_runtime` unchanged (the caller
-injects `KokoroEngine(RealKokoroBackend(cfg))` on the 4070). **Real audio / model load
-/ VRAM / latency / RTF validation is reserved for the local RTX-4070 (measured only,
-never cloud-claimed).** Stopped for review before Stage 12 (MMS Croatian engine).*
+injects `KokoroEngine(RealKokoroBackend(cfg))` on the 4070). (12) **MMS Croatian
+engine body + first multi-engine proof** — `voice/engines/mms.py`: the second engine
+(Meta MMS-TTS, `hr`, 16 kHz) behind the same sealed contract. Adding it changes **no**
+upper layer — `KokoroEngine(en)` + `MMSEngine(hr)` route purely by capability through
+the *unchanged* Stage-4 language gate (en→kokoro, hr→mms), and an hr request with MMS
+down fails **honestly** to `text_only` — English is never substituted (**no smart
+fallback**). Built in **parallel**, not on a shared base (two engines aren't enough
+evidence; MMS already diverges at 16 kHz — *good duplication beats bad inheritance*).
+Unlike Kokoro (a strangler-fig wrap of `app/tts.py`), MMS has no existing code:
+`RealMMSBackend` is a new seam lazily wrapping a **future `app/mms_tts.py`** (4070
+work; not-ready in cloud). Permanent rules set here: **language preprocessing lives
+only in the backend** (never Manager/Graph/Startup/Telemetry); the **charter
+principle** *"the architecture never learns that Croatia exists"* (capability, not
+country); and the shipped `cast.json` stays **all-`kokoro`** (all-or-nothing startup
+would turn a premature `mms_hr` data change into a boot failure — Croatian joins the
+shipped cast as a 4070 data step when the backend is real; Stage 12 proves it with
+test manifests). Deferred note: a first-class `EngineIdentity` object once a *third*
+engine exists. 13 cloud tests + 5 verify checks (66 total) green; fake-backend
+overhead ≈0.12 µs available / ≈2.9 µs synth. Foundation, Kokoro, `cast.json`, and
+`app/*` all unchanged. **Real MMS/Croatian audio / model / VRAM / latency validation
+is reserved for the local RTX-4070.** Stopped for review before Stage 13.*
 
 ---
 

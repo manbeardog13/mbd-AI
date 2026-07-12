@@ -57,8 +57,8 @@ Each stage stops with a verification report before the next begins.
 
 | # | Engine body | File | Status |
 |---|-------------|------|--------|
-| 11 | **Kokoro** (English) | `engines/kokoro.py` | ✅ this stage (contract adapter; real audio pending on RTX-4070) |
-| 12 | MMS (Croatian) | `engines/mms.py` | ⏭ next — the first true multi-engine / bilingual proof |
+| 11 | **Kokoro** (English) | `engines/kokoro.py` | ✅ done (contract adapter; real audio pending on RTX-4070) |
+| 12 | **MMS** (Croatian) | `engines/mms.py` | ✅ this stage — first true multi-engine / bilingual proof (real audio pending on RTX-4070) |
 
 **Still deferred:** XTTS integration, advanced effects, the voice-selection UI, the
 ElevenLabs adapter (stub only, disabled), and Kokoro voice-parameter mapping
@@ -459,3 +459,52 @@ voice identity.
 > warm synthesis latency · RTF · failure behavior (missing dep/model/GPU →
 > `AudioResult(ok=False)` → existing fallback handles it). The cloud proves the
 > contract with a fake backend; measured audio/GPU numbers come only from the 4070.
+
+## Stage 12 — the MMS Croatian engine body + first multi-engine proof (`engines/mms.py`)
+
+> **The architecture never learns that Croatia exists.** The Capability Graph
+> understands `language = "hr"`. It never understands "Croatia", "Croatian people",
+> or "Croatian rules". That separation lets NERO grow to dozens of languages without
+> accumulating special cases.
+
+The second real engine body (Meta **MMS-TTS**, Croatian), and the first **true
+multi-engine** proof — the "first driver-installation test." Adding it changes **no**
+upper layer: `KokoroEngine(en)` + `MMSEngine(hr)` route purely by capability through
+the *unchanged* Stage-4 language gate.
+
+```
+"Dobro jutro Nero" → VoiceRequest(language="hr")
+   → Capability Graph: kokoro (en) can't · mms_hr (hr) can     ← language gate, UNCHANGED
+   → Voice Manager: selects mms_hr                             ← no Croatian logic; pure capability
+   → MMSEngine → audio
+```
+
+**Built in parallel, not on a shared base.** Two engines are not enough evidence to
+justify a shared engine base — and MMS already diverges (16 kHz vs. Kokoro's 24 kHz).
+A shared `BackendEngine`/`common.py` waits for a **third** engine (or proven stable
+convergence): *good duplication is cheaper than bad inheritance.*
+
+**Not a strangler-fig wrap.** Kokoro wrapped the proven `app/tts.py`; **MMS has no
+existing code**, so `RealMMSBackend` is a *new integration seam* that lazily wraps a
+**future `app/mms_tts.py`** (written + validated on the 4070; expected shape
+`available(cfg)` / `synthesize(cfg, text)` / `SAMPLE_RATE`). In the cloud that module
+is absent → `RealMMSBackend` is import-safe and reports not-ready.
+
+### Permanent architectural rules (established here)
+- **Preprocessing stays in the backend, forever.** Croatian punctuation,
+  normalization, abbreviation expansion, and phonemization live **only** inside
+  `RealMMSBackend` — never in the Voice Manager, Capability Graph, Startup, or
+  Telemetry. Upper layers stay blissfully ignorant of language-specific detail.
+- **No smart fallback.** If Croatian can't be produced, the system fails honestly
+  (`text_only`) — it **never** silently substitutes English. The moment an engine
+  substitutes another language, a capability system becomes a heuristic system;
+  language substitution is a future *conversational-layer* decision, never a Voice one.
+- **`cast.json` stays all-`kokoro` for now.** Because Stage-9 startup is
+  all-or-nothing, declaring `mms_hr` voices in the *shipped* manifest before the real
+  backend exists would turn a data change into a boot failure. Croatian joins the
+  shipped cast as a deliberate **4070 data step** once `RealMMSBackend` works; Stage 12
+  proves multi-engine behavior with **test manifests**.
+
+*Note (deferred): once a **third** engine exists, engine metadata (name / languages /
+voices / sample_rate) should become a first-class immutable `EngineIdentity` object
+rather than more constructor fields — not implemented here.*
