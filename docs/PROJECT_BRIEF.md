@@ -44,6 +44,22 @@ capability).*
 `D:\mbd AI`) that verifies and drives things directly on the 4070 — the cloud
 session owns planning + merges; the local instance is the hands on the machine.*
 
+*Development now runs as **two independent tracks** (locked by Toni), each with
+its own branch/PR/rollback point: **Track A — Executive Intelligence** (Capability
+Registry · Trust Engine · Action Journal · Integrity · Terminal) and **Track B —
+Voice Platform** (an output interface only — it never calls dispatch/authorize,
+writes no Journal, executes nothing; "the Brain produces a response, the Voice
+presents it"). Voice is built **model-independent foundation first, API-first**
+(the contract before any engine body); GPU/VRAM/latency work belongs to the local
+4070, never cloud assumption. **Voice Stage 1 shipped** on its own branch/PR
+(**PR #14**, draft): the **TTSEngine interface** — `voice/local_tts/base.py`
+(`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
+fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts), best-
+effort (never raises), 7 tests + `verify_voice.py` green, 2.45 µs envelope
+overhead, zero regressions. A later `kokoro_engine` will **wrap** the shipped
+`app/tts.py` (strangler-fig), never rewrite it. Stopped for review before Stage 2
+(Voice Capability Graph).*
+
 ---
 
 ## 1. What Nero is
