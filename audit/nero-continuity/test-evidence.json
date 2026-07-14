@@ -1,0 +1,10 @@
+{
+  "repository_revision": "ede7c867fbde41115efa50cc3652225a8d16d16f",
+  "branch": "claude/github-repo-verification-vor5iw",
+  "python_version": "Python 3.14.5",
+  "sqlite_version": "3.50.4",
+  "commands": [
+    {"cmd": "python -m unittest continuity.tests.test_continuity", "exit_code": 0, "started_utc": "2026-07-14T23:08:12Z", "ended_utc": "2026-07-14T23:09:03Z", "result": "Ran 36 tests / OK"},
+    {"cmd": "python verify/verify_nero_continuity.py", "exit_code": 0, "result": "all_pass=true (see verify_result.json)"}
+  ]
+}
