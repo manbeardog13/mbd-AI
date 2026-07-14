@@ -26,3 +26,4 @@ that supersedes it, and set the old one's status to "Superseded by ADR-XXXX".
 | [0006](0006-local-model-ceiling.md) | Local-First with Intelligence Escalation (cloud is explicit, opt-in, transparent) | Accepted |
 | [0007](0007-capability-registry.md) | Capabilities, not hard-coded tools — the Capability Registry | Accepted |
 | [0008](0008-executive-memory.md) | Executive Memory — the working-state register | Accepted |
+| [0014](0014-zero-start-global-host-presence.md) | Zero-start global Nero Host Presence | Accepted |

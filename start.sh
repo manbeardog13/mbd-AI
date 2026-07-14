@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
-# Start Nero on macOS / Linux:  ./start.sh
-cd "$(dirname "$0")" || exit 1
-
-if [ ! -x ".venv/bin/python" ]; then
-    echo "First-time setup needed. Running bootstrap..."
-    python3 bootstrap.py
-else
-    exec .venv/bin/python run.py
-fi
+# HOSTED_ONLY_HARD_DISABLED = True
+echo "Local Nero is hard-disabled. Use zero-start Codex Host Presence." >&2
+echo "No local model, server, database, or voice process was started." >&2
+exit 2

@@ -1,5 +1,10 @@
 # Choosing Nero's Brain (the model)
 
+> [!IMPORTANT]
+> **Historical only:** local Nero model selection and Ollama execution are
+> hard-disabled under ADR-0014. Codex Host Presence uses hosted Codex resources
+> and must never load a Nero model on the local GPU, CPU, or RAM.
+
 Nero's intelligence comes from the model it runs. The rule of thumb:
 
 > **More parameters = smarter, but needs more GPU memory (VRAM).**

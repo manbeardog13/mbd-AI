@@ -1,5 +1,11 @@
 # Keep Your AI Always Running
 
+> [!IMPORTANT]
+> **Historical only:** local Nero auto-start is hard-disabled under ADR-0014.
+> Do not install or enable any service, scheduled task, login item, Ollama
+> process, or project server from this document. Zero-start Codex Host Presence
+> requires no local background process.
+
 For your AI to be reachable *at all times*, your PC needs to keep running the
 app in the background — ideally starting automatically on boot, and restarting
 itself if it ever crashes.
