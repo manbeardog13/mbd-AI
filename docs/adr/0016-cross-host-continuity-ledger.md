@@ -1,6 +1,6 @@
 # ADR-0016: Cross-host continuity ledger
 
-**Status:** Accepted (Claude builder lane; pending live Codex verification)
+**Status:** Accepted (live round-trips observed; disabled-continuity control pending)
 **Date:** 2026-07-15
 
 ## Context
@@ -10,8 +10,9 @@ ask Nero about it from the other host, receiving the exact stored information
 with a source receipt. The two presentations of Nero are separate hosted
 sessions expressing one designed identity; neither can silently command the
 other, and the static identity capsules (ADR-0014) do **not** synchronize
-conversations. ADR-0015's DHEF/EGCSE coordinate *task evidence and lessons*, not
-deliberate conversational memory transport, and must not be repurposed for it.
+conversations. Any separate task-evidence or learning protocol coordinates
+bounded work evidence, not deliberate conversational memory transport, and must
+not be repurposed for it.
 
 A literal shared mind is unavailable and undesirable. What is needed is a narrow,
 auditable transport for **deliberately selected** memories that stays cold,
@@ -49,9 +50,9 @@ that each active session invokes on-demand:
    retries. No daemon, hook, port, scheduled task, network call, model, voice, or
    GPU. Content and queries pass via stdin, never argv.
 
-The ledger is separate from `data/memory.db` (the standalone app), from DHEF/
-EGCSE (task evidence), and from School (training). v1 does not read, migrate, or
-modify any of them.
+The ledger is separate from `data/memory.db` (the standalone app), from any
+task-evidence or learning ledger, and from School (training). v1 does not read,
+migrate, or modify any of them.
 
 ## Consequences
 
@@ -72,8 +73,9 @@ modify any of them.
 
 - **Reuse `data/memory.db`:** rejected — it belongs to the standalone app; mixing
   cross-host transport into it risks its integrity and the app's assumptions.
-- **Extend DHEF for conversation transport:** rejected — DHEF is task-evidence
-  coordination; ADR-0015 explicitly excludes free-form conversational sync.
+- **Reuse a task-evidence ledger for conversation transport:** rejected — work
+  coordination and deliberate conversational continuity have different capture,
+  retention, and privacy boundaries.
 - **Embedding/semantic recall:** rejected — would wake a local model and make
   retrieval non-deterministic; exact+lexical is knowable by construction
   (Constitution §3, Principle of Least Intelligence).

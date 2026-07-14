@@ -6,6 +6,19 @@ It doubles as a self-contained handoff you can give to an external advisor
 gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
 
+*Latest (2026-07-15): the **cross-host continuity ledger** is integrated on a
+clean branch from the current remote tip. It is a cold, standard-library-only
+SQLite transport for deliberately selected Claude/Codex handoffs with
+hash-chained receipts, deterministic recall, sensitive-input refusal, and no
+resident process. A real Codex→Claude equation challenge passed blind, and the
+Claude→Codex transport returned the matching event and hash. Status is
+**partial live verification**: the disabled-adapter `UNAVAILABLE` control and
+the complete correction protocol remain before `LIVE_BIDIRECTIONAL_VERIFIED`.
+The ledger is separate from the standalone app's `data/memory.db`; provenance
+labels remain claimed rather than provider-attested. See
+[ADR-0016](adr/0016-cross-host-continuity-ledger.md) and
+[the Codex live update](../audit/nero-continuity/CODEX_LIVE_UPDATE.md).*
+
 *Last updated: **PR #9 merged to `main`** — the NERO Design System UI redesign,
 the ChatGPT-style two-button voice composer, hands-free conversation mode, and
 Nero's local neural voice (Kokoro) playing her replies with iOS Web-Audio

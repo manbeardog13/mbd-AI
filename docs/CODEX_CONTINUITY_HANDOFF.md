@@ -3,6 +3,12 @@
 **From:** Claude builder lane · **To:** a real Codex session · **Date:** 2026-07-15
 **Status:** `READY_FOR_CODEX_LIVE_TEST`
 
+**Codex update (2026-07-15):** real equation handoffs were retrieved in both
+directions and the live ledger verified cleanly. This is partial live evidence,
+not final certification: the disabled-adapter `UNAVAILABLE` control and complete
+correction protocol remain pending. See
+`audit/nero-continuity/CODEX_LIVE_UPDATE.md`.
+
 Claude built and builder-verified the cross-host continuity ledger. This document
 is everything a **separate, real Codex session** needs to deploy the Codex-side
 adapter and complete the live bidirectional proof. Claude did **not** edit,
