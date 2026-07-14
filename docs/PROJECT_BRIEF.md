@@ -6,7 +6,25 @@ It doubles as a self-contained handoff you can give to an external advisor
 gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
 
-*Last updated: **PR #9 merged to `main`** — the NERO Design System UI redesign,
+*Latest (2026-07-15): **Cross-host continuity layer built — status
+`READY_FOR_CODEX_LIVE_TEST`.** A cold, deterministic, standard-library-only SQLite
+ledger (`continuity/continuityctl.py`, `data/continuity/continuity.db`) lets an
+active Claude- or Codex-hosted Nero session **deliberately** save/recall selected
+memories with hash-chained source receipts — two scopes (handoff 24h / durable
+approved), exact+lexical recall, secret/oversize refusal, prompt-injection
+inertness, fail-closed integrity. Separate from `data/memory.db`, DHEF/EGCSE, and
+School ([ADR-0016](adr/0016-cross-host-continuity-ledger.md)). 36 adversarial CLI
+tests + `verify/verify_nero_continuity.py` pass (in-process read p95 ~10 ms, write
+~30 ms, 10k-event corpus); zero-resident footprint proven. **Claude cannot certify
+live cross-host continuity** — that needs a separate real Codex session to deploy
+its adapter ([docs/CODEX_CONTINUITY_HANDOFF.md](CODEX_CONTINUITY_HANDOFF.md)) and
+run the nonce round-trips + disabled-continuity control. Provenance is honest:
+`source_host_claim` is claimed, not provider-attested (shared Windows account);
+hash chains are tamper-evident, not tamper-proof. Also landed since PR #9: Phase 1
+"The Hands" first slice (agent loop, Capability Registry, security gate, Executive
+Memory, `git.status`) and zero-start hosted-presence capsules.*
+
+*Prior context — **PR #9 merged to `main`** — the NERO Design System UI redesign,
 the ChatGPT-style two-button voice composer, hands-free conversation mode, and
 Nero's local neural voice (Kokoro) playing her replies with iOS Web-Audio
 playback + barge-in. Bundled in the same merge: the **V3 governance layer** — a
