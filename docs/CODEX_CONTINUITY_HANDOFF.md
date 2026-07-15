@@ -139,6 +139,9 @@ python verify/verify_nero_continuity.py
 # full adversarial suite against isolated temp DBs
 python -m unittest continuity.tests.test_continuity -v
 
+# verifier-gate and linked-worktree path regressions
+python -m unittest continuity.tests.test_verifier_guards -v
+
 # integrity/receipt audit of the live ledger
 python continuity/continuityctl.py --host codex verify
 ```

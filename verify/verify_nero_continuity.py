@@ -32,12 +32,14 @@ REPO = Path(__file__).resolve().parent.parent
 CTL = REPO / "continuity" / "continuityctl.py"
 PY = sys.executable
 
-PROTECTED_FILES = {
-    "data/memory.db": REPO / "data" / "memory.db",
-    "global_claude_md": Path(os.path.expanduser("~/.claude/CLAUDE.md")),
-    "codex_agents_md": Path(os.path.expanduser("~/.codex/AGENTS.md")),
-    "codex_config_toml": Path(os.path.expanduser("~/.codex/config.toml")),
-}
+GATED_PROTECTED = (
+    "data/memory.db",
+    "global_claude_md",
+    "codex_agents_md",
+    "codex_config_toml",
+)
+OBSERVED_ONLY = ()
+COLD_SAMPLE_COUNT = 120
 
 
 def cli(db, *args, stdin=None, host="claude", source_host=None, timeout=60):
@@ -72,6 +74,146 @@ def _sha256_file(path: Path):
         for chunk in iter(lambda: fh.read(65536), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _main_worktree_root(repo: Path) -> Path:
+    """Return Git's primary worktree; source archives fall back to ``repo``.
+
+    A linked worktree contains a ``.git`` *file*. The standalone Nero database
+    belongs to the primary checkout, so resolving it relative to the linked
+    verifier checkout would turn the protection gate into a vacuous check.
+    """
+    repo = repo.resolve()
+    marker = repo / ".git"
+    if marker.is_dir() or not marker.exists():
+        return repo
+    if not marker.is_file():
+        raise RuntimeError(f"unsupported Git marker: {marker}")
+
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(repo), "worktree", "list", "--porcelain", "-z"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=15,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise RuntimeError(f"cannot resolve primary Git worktree: {exc}") from exc
+    if proc.returncode != 0:
+        error = proc.stderr.decode("utf-8", "replace").strip()
+        raise RuntimeError(f"cannot resolve primary Git worktree: {error}")
+    fields = proc.stdout.split(b"\0")
+    if not fields or not fields[0].startswith(b"worktree "):
+        raise RuntimeError("cannot resolve primary Git worktree: malformed output")
+    raw_primary = fields[0][len(b"worktree "):]
+    if not raw_primary:
+        raise RuntimeError("cannot resolve primary Git worktree: empty path")
+    primary = Path(os.fsdecode(raw_primary)).resolve()
+    return primary
+
+
+def _protected_paths(
+    repo: Path = REPO,
+    *,
+    home: Path | None = None,
+) -> tuple[Path, dict[str, Path]]:
+    primary = _main_worktree_root(repo)
+    home = (home or Path.home()).resolve()
+    return primary, {
+        "data/memory.db": primary / "data" / "memory.db",
+        "global_claude_md": home / ".claude" / "CLAUDE.md",
+        "codex_agents_md": home / ".codex" / "AGENTS.md",
+        "codex_config_toml": home / ".codex" / "config.toml",
+    }
+
+
+def _snapshot_files(paths: dict[str, Path]) -> dict[str, str | None]:
+    return {name: _sha256_file(path) for name, path in paths.items()}
+
+
+def _compare_protected(
+    before: dict[str, str | None],
+    after: dict[str, str | None],
+    gated: tuple[str, ...] = GATED_PROTECTED,
+) -> dict[str, object]:
+    changed = sorted(name for name in gated if before.get(name) != after.get(name))
+    absent = sorted(
+        name for name in gated if before.get(name) is None or after.get(name) is None
+    )
+    observed_only_changed = sorted(
+        name
+        for name in OBSERVED_ONLY
+        if before.get(name) != after.get(name)
+    )
+    return {
+        "ok": not changed and not absent,
+        "changed": changed,
+        "absent": absent,
+        "absent_unchanged": sorted(
+            name
+            for name in gated
+            if before.get(name) is None and after.get(name) is None
+        ),
+        "observed_only_changed": observed_only_changed,
+    }
+
+
+def _cold_cli_gates(
+    perf: dict[str, float],
+    read_codes: list[int],
+    write_codes: list[int],
+    read_semantics: list[bool],
+    write_semantics: list[bool],
+) -> dict[str, bool]:
+    read_succeeded = (
+        len(read_codes) == COLD_SAMPLE_COUNT
+        and len(read_semantics) == COLD_SAMPLE_COUNT
+        and all(code == 0 for code in read_codes)
+        and all(read_semantics)
+    )
+    write_succeeded = (
+        len(write_codes) == COLD_SAMPLE_COUNT
+        and len(write_semantics) == COLD_SAMPLE_COUNT
+        and all(code == 0 for code in write_codes)
+        and all(write_semantics)
+    )
+    return {
+        "cold_cli_read_samples_succeeded": read_succeeded,
+        "cold_cli_write_samples_succeeded": write_succeeded,
+        "cold_cli_read_p95_within_250ms": (
+            read_succeeded and perf["read_cold_p95"] <= 250
+        ),
+        "cold_cli_write_p95_within_250ms": (
+            write_succeeded and perf["write_cold_p95"] <= 250
+        ),
+    }
+
+
+def _cold_read_sample_ok(code: int, output: object, topic: str) -> bool:
+    if not isinstance(output, dict):
+        return False
+    rows = output.get("results")
+    return bool(
+        code == 0
+        and output.get("result") == "OK"
+        and output.get("action") == "recall"
+        and isinstance(rows, list)
+        and any(isinstance(row, dict) and row.get("topic") == topic for row in rows)
+    )
+
+
+def _cold_write_sample_ok(code: int, output: object) -> bool:
+    if not isinstance(output, dict):
+        return False
+    return bool(
+        code == 0
+        and output.get("result") == "OK"
+        and output.get("action") == "capture"
+        and isinstance(output.get("event_id"), str)
+        and output.get("event_id")
+        and isinstance(output.get("event_hash"), str)
+        and output.get("event_hash")
+    )
 
 
 def build_corpus(mod, db_path, n):
@@ -131,6 +273,31 @@ def pct(values, p):
 
 def main():
     results = {"gates": {}, "details": {}}
+    try:
+        primary_root, protected_paths = _protected_paths()
+    except RuntimeError as exc:
+        results["gates"]["protected_paths_resolved"] = False
+        results["details"]["protected_files"] = {
+            "resolution_error": str(exc),
+        }
+        results["all_pass"] = False
+        print(json.dumps(results, ensure_ascii=False, indent=2))
+        return 1
+    results["gates"]["protected_paths_resolved"] = True
+    try:
+        protected_before = _snapshot_files(protected_paths)
+    except OSError as exc:
+        results["gates"]["protected_files_byte_identical"] = False
+        results["details"]["protected_files"] = {
+            "primary_worktree_root": str(primary_root),
+            "paths": {name: str(path) for name, path in protected_paths.items()},
+            "gated": list(GATED_PROTECTED),
+            "snapshot_error": str(exc),
+            "snapshot_stage": "before",
+        }
+        results["all_pass"] = False
+        print(json.dumps(results, ensure_ascii=False, indent=2))
+        return 1
     tmp = tempfile.mkdtemp(prefix="verify_continuity_")
     try:
         mod = _load_module()
@@ -208,13 +375,29 @@ def main():
         corpus_ok = (c == 0 and o["report"]["event_count"] == 10000)
         # cold-CLI read samples
         read_ms, write_ms = [], []
-        for i in range(120):
+        read_codes, write_codes = [], []
+        read_semantics, write_semantics = [], []
+        for i in range(COLD_SAMPLE_COUNT):
             seq = 1 + (i * 83) % 10000
-            _, _, dt = cli(perf_db, "recall", "--topic", f"topic-{seq}", stdin="")
+            topic = f"topic-{seq}"
+            code, output, dt = cli(
+                perf_db, "recall", "--topic", topic, stdin=""
+            )
+            read_codes.append(code)
+            read_semantics.append(_cold_read_sample_ok(code, output, topic))
             read_ms.append(dt)
-        for i in range(120):
-            _, _, dt = cli(perf_db, "capture", "--topic", f"perf-w-{i}",
-                           "--idempotency-key", f"pw-{i}", stdin=f"perf write {i}")
+        for i in range(COLD_SAMPLE_COUNT):
+            code, output, dt = cli(
+                perf_db,
+                "capture",
+                "--topic",
+                f"perf-w-{i}",
+                "--idempotency-key",
+                f"pw-{i}",
+                stdin=f"perf write {i}",
+            )
+            write_codes.append(code)
+            write_semantics.append(_cold_write_sample_ok(code, output))
             write_ms.append(dt)
         # Interpreter+import start floor (same interpreter, no DB work).
         start_samples = []
@@ -259,23 +442,77 @@ def main():
         }
         results["details"]["performance"] = perf
         results["gates"]["corpus_10k_verifies"] = corpus_ok
-        # Budget gate: the ledger's OWN overhead (in-process, spawn excluded) must
-        # meet 250ms p95 / 500ms p99. Cold-CLI figures are reported for context;
-        # their tail is dominated by Python process spawn + Windows AV, not the ledger.
+        # The ledger's own in-process overhead gates at p95/p99. The real adapter
+        # path also gates cold-CLI p95 and semantic success; cold p99 remains
+        # contextual because Python process spawn and host AV dominate its tail.
         results["gates"]["read_p95_within_250ms"] = perf["read_inproc_p95"] <= 250
         results["gates"]["read_p99_within_500ms"] = perf["read_inproc_p99"] <= 500
         results["gates"]["write_p95_within_250ms"] = perf["write_inproc_p95"] <= 250
         results["gates"]["write_p99_within_500ms"] = perf["write_inproc_p99"] <= 500
+        results["gates"].update(
+            _cold_cli_gates(
+                perf,
+                read_codes,
+                write_codes,
+                read_semantics,
+                write_semantics,
+            )
+        )
         results["details"]["cold_cli_context"] = {
-            "gating": False,
-            "read_p95_within_250ms": perf["read_cold_p95"] <= 250,
-            "write_p95_within_250ms": perf["write_cold_p95"] <= 250,
-            "note": "Reported context; Python startup and host AV dominate this tail.",
+            "p95_gating": True,
+            "p99_gating": False,
+            "expected_samples_per_operation": COLD_SAMPLE_COUNT,
+            "read_sample_count": len(read_codes),
+            "read_exit_zero_count": sum(code == 0 for code in read_codes),
+            "read_semantic_success_count": sum(read_semantics),
+            "read_success_count": sum(
+                code == 0 and semantic
+                for code, semantic in zip(read_codes, read_semantics)
+            ),
+            "write_sample_count": len(write_codes),
+            "write_exit_zero_count": sum(code == 0 for code in write_codes),
+            "write_semantic_success_count": sum(write_semantics),
+            "write_success_count": sum(
+                code == 0 and semantic
+                for code, semantic in zip(write_codes, write_semantics)
+            ),
+            "read_p99_ms": perf["read_cold_p99"],
+            "write_p99_ms": perf["write_cold_p99"],
+            "note": "Cold-CLI p95 gates the adapter path; p99 remains contextual because Python startup and host AV dominate its tail.",
         }
 
-        # --- Gate 5: protected files unchanged ---------------------------------
-        results["details"]["protected_file_hashes"] = {
-            name: _sha256_file(p) for name, p in PROTECTED_FILES.items()}
+        # --- Gate 5: protected files have identical start/end bytes ------------
+        try:
+            protected_after = _snapshot_files(protected_paths)
+        except OSError as exc:
+            results["gates"]["protected_files_byte_identical"] = False
+            results["details"]["protected_files"] = {
+                "primary_worktree_root": str(primary_root),
+                "paths": {
+                    name: str(path) for name, path in protected_paths.items()
+                },
+                "gated": list(GATED_PROTECTED),
+                "before": protected_before,
+                "snapshot_error": str(exc),
+                "snapshot_stage": "after",
+            }
+            results["all_pass"] = False
+            print(json.dumps(results, ensure_ascii=False, indent=2))
+            return 1
+        comparison = _compare_protected(protected_before, protected_after)
+        results["gates"]["protected_files_byte_identical"] = bool(
+            comparison["ok"]
+        )
+        results["details"]["protected_files"] = {
+            "primary_worktree_root": str(primary_root),
+            "paths": {name: str(path) for name, path in protected_paths.items()},
+            "gated": list(GATED_PROTECTED),
+            "observed_only": list(OBSERVED_ONLY),
+            "before": protected_before,
+            "after": protected_after,
+            **comparison,
+            "claim": "At the start and end of the gated workload, each required gated file was present and its SHA-256 byte content was identical. This does not prove the file was never touched between snapshots, and does not cover metadata or SQLite sidecar files.",
+        }
 
         results["all_pass"] = all(results["gates"].values())
         print(json.dumps(results, ensure_ascii=False, indent=2))

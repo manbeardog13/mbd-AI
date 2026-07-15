@@ -30,6 +30,7 @@ automatic transcript copier, or provider-to-provider runtime.
 | `continuity/schema.sql` | ledger schema v1 |
 | `continuity/policy.json` | limits, secret patterns, exit codes (auditable) |
 | `continuity/tests/test_continuity.py` | adversarial suite (drives the public CLI) |
+| `continuity/tests/test_verifier_guards.py` | verifier-gate and linked-worktree regression suite |
 | `data/continuity/continuity.db` | the live ledger (git-ignored, created by `init`) |
 | `verify/verify_nero_continuity.py` | deterministic verifier + 10k-event benchmark |
 | `.claude/skills/nero-continuity/SKILL.md` | Claude on-demand adapter |
@@ -97,5 +98,5 @@ operation prints JSON and returns a stable exit code:
 - Retrieval is deterministic exact + lexical only. No embeddings, no model.
 - Retrieved payloads are fenced as untrusted data and are inert.
 
-Run the suite: `python -m unittest continuity.tests.test_continuity`
+Run the suites: `python -m unittest continuity.tests.test_continuity continuity.tests.test_verifier_guards`
 Run the verifier: `python verify/verify_nero_continuity.py`

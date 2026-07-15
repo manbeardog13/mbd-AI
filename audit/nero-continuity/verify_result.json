@@ -1,5 +1,6 @@
 {
   "gates": {
+    "protected_paths_resolved": true,
     "functional_roundtrip_simulated": true,
     "integrity_blocks_recall": true,
     "unavailable_fail_closed": true,
@@ -8,8 +9,11 @@
     "read_p99_within_500ms": true,
     "write_p95_within_250ms": true,
     "write_p99_within_500ms": true,
+    "cold_cli_read_samples_succeeded": true,
+    "cold_cli_write_samples_succeeded": true,
     "cold_cli_read_p95_within_250ms": true,
-    "cold_cli_write_p95_within_250ms": true
+    "cold_cli_write_p95_within_250ms": true,
+    "protected_files_byte_identical": true
   },
   "details": {
     "functional": {
@@ -24,25 +28,69 @@
     },
     "performance": {
       "corpus_events": 10000,
-      "interpreter_start_median_ms": 36.02,
-      "read_cold_p50": 136.64,
-      "read_cold_p95": 173.3,
-      "read_cold_p99": 195.71,
-      "write_cold_p50": 134.24,
-      "write_cold_p95": 179.22,
-      "write_cold_p99": 218.99,
-      "read_inproc_p50": 6.45,
-      "read_inproc_p95": 9.53,
-      "read_inproc_p99": 10.26,
-      "write_inproc_p50": 11.68,
-      "write_inproc_p95": 26.96,
-      "write_inproc_p99": 72.88
+      "interpreter_start_median_ms": 33.12,
+      "read_cold_p50": 118.79,
+      "read_cold_p95": 181.81,
+      "read_cold_p99": 216.79,
+      "write_cold_p50": 116.56,
+      "write_cold_p95": 175.13,
+      "write_cold_p99": 221.96,
+      "read_inproc_p50": 6.43,
+      "read_inproc_p95": 6.99,
+      "read_inproc_p99": 8.51,
+      "write_inproc_p50": 13.97,
+      "write_inproc_p95": 28.47,
+      "write_inproc_p99": 50.72
     },
-    "protected_file_hashes": {
-      "data/memory.db": "9dcfcac419325a73e8473889c3f7bffc84091f5105b687096bec0fdddabfb946",
-      "global_claude_md": "579d453abb52547f86977530236b1b59f47ba59b032440ba2ad654b8f89755f0",
-      "codex_agents_md": "d598491101e06d3d5566004417c51d1bd76685248d849fa403e524d3e38b12d3",
-      "codex_config_toml": "0acd0aa6639c1d14968100e108fbe3b25125c7bffd19f7210af552d02c01c80e"
+    "cold_cli_context": {
+      "p95_gating": true,
+      "p99_gating": false,
+      "expected_samples_per_operation": 120,
+      "read_sample_count": 120,
+      "read_exit_zero_count": 120,
+      "read_semantic_success_count": 120,
+      "read_success_count": 120,
+      "write_sample_count": 120,
+      "write_exit_zero_count": 120,
+      "write_semantic_success_count": 120,
+      "write_success_count": 120,
+      "read_p99_ms": 216.79,
+      "write_p99_ms": 221.96,
+      "note": "Cold-CLI p95 gates the adapter path; p99 remains contextual because Python startup and host AV dominate its tail."
+    },
+    "protected_files": {
+      "primary_worktree_root": "D:\\mbd AI",
+      "paths": {
+        "data/memory.db": "D:\\mbd AI\\data\\memory.db",
+        "global_claude_md": "C:\\Users\\tonij\\.claude\\CLAUDE.md",
+        "codex_agents_md": "C:\\Users\\tonij\\.codex\\AGENTS.md",
+        "codex_config_toml": "C:\\Users\\tonij\\.codex\\config.toml"
+      },
+      "gated": [
+        "data/memory.db",
+        "global_claude_md",
+        "codex_agents_md",
+        "codex_config_toml"
+      ],
+      "observed_only": [],
+      "before": {
+        "data/memory.db": "9dcfcac419325a73e8473889c3f7bffc84091f5105b687096bec0fdddabfb946",
+        "global_claude_md": "579d453abb52547f86977530236b1b59f47ba59b032440ba2ad654b8f89755f0",
+        "codex_agents_md": "d598491101e06d3d5566004417c51d1bd76685248d849fa403e524d3e38b12d3",
+        "codex_config_toml": "69d2b24a1441dd39b5de0feeadf1f3c5f2efcd228fed5bf7586f114d0742ef5c"
+      },
+      "after": {
+        "data/memory.db": "9dcfcac419325a73e8473889c3f7bffc84091f5105b687096bec0fdddabfb946",
+        "global_claude_md": "579d453abb52547f86977530236b1b59f47ba59b032440ba2ad654b8f89755f0",
+        "codex_agents_md": "d598491101e06d3d5566004417c51d1bd76685248d849fa403e524d3e38b12d3",
+        "codex_config_toml": "69d2b24a1441dd39b5de0feeadf1f3c5f2efcd228fed5bf7586f114d0742ef5c"
+      },
+      "ok": true,
+      "changed": [],
+      "absent": [],
+      "absent_unchanged": [],
+      "observed_only_changed": [],
+      "claim": "At the start and end of the gated workload, each required gated file was present and its SHA-256 byte content was identical. This does not prove the file was never touched between snapshots, and does not cover metadata or SQLite sidecar files."
     }
   },
   "all_pass": true

@@ -62,10 +62,16 @@ Codex's own background activity. See `global-drift-evidence.json`. This is exact
 the "claimed vs genuine provenance / shared Windows account" reality the task's
 truth boundary anticipates.
 
+The hardened rerun now gates `~/.codex/config.toml` at both snapshots as well.
+Its bytes were identical in this run. A future external rewrite will fail the
+gate safely, but the hash comparison alone will not attribute which process
+caused that drift.
+
 ## Automated test results (see `test-evidence.json`)
 
 - `python -m unittest continuity.tests.test_continuity` → **exit 0, Ran 36 tests, OK**
-- `python verify/verify_nero_continuity.py` → **exit 0, all_pass=true** (`verify_result.json`)
+- `python -m unittest continuity.tests.test_verifier_guards` → **exit 0, Ran 14 tests, OK**
+- `python verify/verify_nero_continuity.py` → **exit 0, all_pass=true, 14/14 gates** (`verify_result.json`)
 
 Adversarial coverage (all via the public CLI against isolated temp DBs): Unicode/
 Croatian roundtrip; canonical serialization + UTC format; event & receipt chain
@@ -94,17 +100,16 @@ Corpus: **10,000 bounded events**, verify OK.
 
 | metric | value | budget |
 |---|---|---|
-| in-process read overhead p95 / p99 | **10.0 / 10.6 ms** | ≤250 / ≤500 ms ✓ |
-| in-process write overhead p95 / p99 | **25.5 / 60.6 ms** | ≤250 / ≤500 ms ✓ |
-| cold-CLI read p50/p95/p99 | 137 / 203 / 238 ms | context |
-| cold-CLI write p50/p95/p99 | 135 / 180 / 203 ms | context |
-| interpreter+import start (median) | ~36 ms | — |
+| in-process read overhead p95 / p99 | **6.99 / 8.51 ms** | ≤250 / ≤500 ms ✓ |
+| in-process write overhead p95 / p99 | **28.47 / 50.72 ms** | ≤250 / ≤500 ms ✓ |
+| cold-CLI read p50/p95/p99 | 118.79 / **181.81** / 216.79 ms | p95 ≤250 ms ✓; p99 context |
+| cold-CLI write p50/p95/p99 | 116.56 / **175.13** / 221.96 ms | p95 ≤250 ms ✓; p99 context |
+| interpreter+import start (median) | 33.12 ms | — |
 
-Continuity overhead is measured separately from process spawn: the ledger's own
-read/write cost is ~10–25 ms p95. Cold-CLI figures include Python spawn + Windows
-AV; a single earlier write sample spiked to 586 ms (process-launch/fsync tail),
-which is why the budget gate is asserted on in-process overhead, with cold-CLI
-reported for context.
+Continuity overhead is measured separately from process spawn. The ledger's own
+in-process p95 and p99 remain gated. The actual adapter path also gates cold-CLI
+p95 plus exit and semantic success for all 240 timed samples. Cold p99 remains
+contextual because Python spawn and Windows AV dominate that tail.
 
 **Zero-resident:** after the full run — 0 lingering `continuityctl` processes,
 0 new continuity scheduled tasks, 0 new services, 0 new Run-keys, listening-port
