@@ -1,0 +1,64 @@
+{
+  "checks": [
+    {
+      "expected": [
+        "use ValueError",
+        "do not expose raw input",
+        "parse signature is stable",
+        "add malformed-input tests"
+      ],
+      "file": "brief.json",
+      "id": "facts",
+      "path": "facts",
+      "type": "json_contains_all",
+      "weight": 4
+    },
+    {
+      "expected": [
+        "current.md",
+        "parser_contract.md"
+      ],
+      "file": "brief.json",
+      "id": "sources",
+      "path": "sources",
+      "type": "json_contains_all",
+      "weight": 2
+    },
+    {
+      "expected": [
+        "use RuntimeError",
+        "log raw input",
+        "purple"
+      ],
+      "file": "brief.json",
+      "id": "exclude",
+      "path": "facts",
+      "type": "json_excludes_all",
+      "weight": 3
+    },
+    {
+      "expected": 6,
+      "file": "brief.json",
+      "id": "bounded",
+      "path": "fact_count",
+      "type": "json_max",
+      "weight": 1
+    }
+  ],
+  "department": "08_Context_Memory_and_Learning",
+  "difficulty": 2,
+  "id": "NS-CONTEXT-001",
+  "max_attempts": 3,
+  "objective": "Build a small task brief from relevant files while rejecting stale and unrelated material.",
+  "output": "brief.json",
+  "pass_grade": 8.7,
+  "schema_version": 1,
+  "status": "DRAFT_PENDING_CLAUDE_REVIEW",
+  "title": "Select relevant context without contamination",
+  "virtue_weights": {
+    "context": 0.45,
+    "efficiency": 0.15,
+    "instruction_fidelity": 0.15,
+    "learning": 0.25
+  }
+}

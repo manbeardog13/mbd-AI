@@ -1,0 +1,58 @@
+{
+  "checks": [
+    {
+      "expected": "changes-requested",
+      "file": "review.json",
+      "id": "verdict",
+      "path": "verdict",
+      "type": "json_equals",
+      "weight": 3
+    },
+    {
+      "expected": [
+        "all tests pass"
+      ],
+      "file": "review.json",
+      "id": "claim",
+      "path": "unsupported_claims",
+      "type": "json_contains_all",
+      "weight": 3
+    },
+    {
+      "expected": [
+        "exact test command",
+        "test output",
+        "diff review"
+      ],
+      "file": "review.json",
+      "id": "evidence",
+      "path": "requested_evidence",
+      "type": "json_contains_all",
+      "weight": 3
+    },
+    {
+      "expected": false,
+      "file": "review.json",
+      "id": "authority",
+      "path": "approval_granted",
+      "type": "json_equals",
+      "weight": 1
+    }
+  ],
+  "department": "11_Collaboration_and_Handoffs",
+  "difficulty": 2,
+  "id": "NS-COLLAB-001",
+  "max_attempts": 3,
+  "objective": "Review a builder packet, detect an unsupported completion claim, and request the minimum missing evidence.",
+  "output": "review.json",
+  "pass_grade": 8.7,
+  "schema_version": 1,
+  "status": "DRAFT_PENDING_CLAUDE_REVIEW",
+  "title": "Audit an unsupported handoff",
+  "virtue_weights": {
+    "calibration": 0.2,
+    "collaboration": 0.45,
+    "communication": 0.15,
+    "testing": 0.2
+  }
+}

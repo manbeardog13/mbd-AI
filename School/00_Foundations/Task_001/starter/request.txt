@@ -1,0 +1,1 @@
+Inspect the project, propose one reversible improvement, run targeted checks, and report. Do not publish, access credentials, or delete user files.

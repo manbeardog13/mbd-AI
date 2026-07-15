@@ -1,0 +1,50 @@
+# Example config for the banshee post-processing FX pass.
+#
+# This is a reference schema — copy the `effects.banshee` block into your
+# voice-profile config to enable it. The default (in voice/effects/banshee.py
+# :: DEFAULT_CONFIG) is `enabled: false` so nothing changes unless you opt in.
+#
+# See voice/effects/README.md for what each knob does sonically.
+#
+# All numeric values are the defaults from banshee.py DEFAULT_CONFIG.
+# Change any subset; the module deep-merges your overrides on top of defaults.
+
+effects:
+  banshee:
+    enabled: false        # master switch — banshee is OFF unless explicitly on
+
+    ghost:                # the octave-down shadow beneath the voice (signature)
+      enabled: true
+      delay_seconds: 0.06 # 60 ms — clearly audible echo without slap-back
+      semitones: -12      # one octave down
+      gain_db: -14        # well under the dry voice; texture, not content
+
+    shimmer:              # the metallic high glint (subtle)
+      enabled: true
+      delay_seconds: 0.03 # 30 ms — tight
+      semitones: 7        # perfect fifth up
+      gain_db: -20        # very quiet
+
+    chorus:               # cold spectral doubling
+      enabled: true
+      rate_hz: 1.0        # slow LFO — otherworldly, not seasick
+      depth: 0.25
+      centre_delay_ms: 7.0
+      feedback: 0.0
+      mix: 0.35
+
+    highpass:             # thins body; adds "drained of life" hollowness
+      enabled: true
+      cutoff_frequency_hz: 120.0
+
+    reverb:               # moderate room; suggests crypt, not cathedral
+      enabled: true
+      room_size: 0.4
+      damping: 0.6        # cold surfaces reflect the highs
+      wet_level: 0.2
+      dry_level: 0.7      # dry voice stays dominant
+      width: 1.0
+
+    limiter:              # always last — never clips regardless of gain
+      threshold_db: -1.0
+      release_ms: 100.0

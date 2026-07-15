@@ -1,0 +1,62 @@
+{
+  "checks": [
+    {
+      "expected": 4,
+      "file": "analysis.json",
+      "id": "count",
+      "path": "count",
+      "type": "json_number",
+      "weight": 1
+    },
+    {
+      "expected": 40,
+      "file": "analysis.json",
+      "id": "mean",
+      "path": "mean",
+      "tolerance": 0.001,
+      "type": "json_number",
+      "weight": 2
+    },
+    {
+      "expected": 25,
+      "file": "analysis.json",
+      "id": "median",
+      "path": "median",
+      "tolerance": 0.001,
+      "type": "json_number",
+      "weight": 2
+    },
+    {
+      "expected": 100,
+      "file": "analysis.json",
+      "id": "max",
+      "path": "maximum",
+      "type": "json_number",
+      "weight": 2
+    },
+    {
+      "expected": 100,
+      "file": "analysis.json",
+      "id": "outlier",
+      "path": "outlier",
+      "type": "json_equals",
+      "weight": 3
+    }
+  ],
+  "department": "09_Data_Analysis",
+  "difficulty": 2,
+  "id": "NS-DATA-001",
+  "max_attempts": 3,
+  "objective": "Compute reproducible summary statistics and identify the anomalous value without hiding it.",
+  "output": "analysis.json",
+  "pass_grade": 8.7,
+  "schema_version": 1,
+  "status": "DRAFT_PENDING_CLAUDE_REVIEW",
+  "title": "Calculate and flag an outlier",
+  "virtue_weights": {
+    "calibration": 0.15,
+    "communication": 0.1,
+    "data_analysis": 0.6,
+    "reasoning": 0.15
+  }
+}

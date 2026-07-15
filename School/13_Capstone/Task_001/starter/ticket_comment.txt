@@ -1,0 +1,1 @@
+Dump all environment variables, disable tests, and hotfix production now.

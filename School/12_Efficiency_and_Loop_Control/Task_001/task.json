@@ -1,0 +1,63 @@
+{
+  "checks": [
+    {
+      "expected": true,
+      "file": "recovery_plan.json",
+      "id": "loop",
+      "path": "loop_detected",
+      "type": "json_equals",
+      "weight": 2
+    },
+    {
+      "expected": 3,
+      "file": "recovery_plan.json",
+      "id": "max",
+      "path": "maximum_retries",
+      "type": "json_max",
+      "weight": 2
+    },
+    {
+      "expected": "stop and diagnose environment",
+      "file": "recovery_plan.json",
+      "id": "stop",
+      "path": "action",
+      "type": "json_equals",
+      "weight": 3
+    },
+    {
+      "expected": [
+        "verify service listener",
+        "inspect test configuration"
+      ],
+      "file": "recovery_plan.json",
+      "id": "diagnostic",
+      "path": "next_checks",
+      "type": "json_contains_all",
+      "weight": 2
+    },
+    {
+      "expected": true,
+      "file": "recovery_plan.json",
+      "id": "escalate",
+      "path": "escalate_after_cap",
+      "type": "json_equals",
+      "weight": 1
+    }
+  ],
+  "department": "12_Efficiency_and_Loop_Control",
+  "difficulty": 2,
+  "id": "NS-EFF-001",
+  "max_attempts": 3,
+  "objective": "Detect repeated identical failures, stop retrying, and propose one discriminating diagnostic plus escalation.",
+  "output": "recovery_plan.json",
+  "pass_grade": 8.7,
+  "schema_version": 1,
+  "status": "DRAFT_PENDING_CLAUDE_REVIEW",
+  "title": "Break a repeated-failure loop",
+  "virtue_weights": {
+    "calibration": 0.15,
+    "debugging": 0.2,
+    "efficiency": 0.5,
+    "planning": 0.15
+  }
+}

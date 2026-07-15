@@ -26,4 +26,9 @@ that supersedes it, and set the old one's status to "Superseded by ADR-XXXX".
 | [0006](0006-local-model-ceiling.md) | Local-First with Intelligence Escalation (cloud is explicit, opt-in, transparent) | Accepted |
 | [0007](0007-capability-registry.md) | Capabilities, not hard-coded tools — the Capability Registry | Accepted |
 | [0008](0008-executive-memory.md) | Executive Memory — the working-state register | Accepted |
+| [0009](../adr/0009-voice-rendering-and-backend-architecture.md) | Voice rendering profiles + pluggable backend architecture | Proposed |
+| [0010](0010-voice-effects-pedalboard-adoption.md) | Voice effects layer: pedalboard adoption + GPL v3 acceptance | Accepted |
+| [0011](0011-voice-single-path-croatian-handling.md) | Single voice production path + Croatian handling (unsupported-language 204) | Accepted |
+| [0012](0012-human-triggered-external-council.md) | Human-triggered External Council for OpenAI/Claude collaboration | Accepted |
 | [0014](0014-zero-start-global-host-presence.md) | Zero-start global Nero Host Presence | Accepted |
+| [0015](0015-evidence-gated-dual-host-cognition.md) | Evidence-gated continual learning + dual-host coordination | Accepted |

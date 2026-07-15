@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "chroma_key": {
+    "hex": "#FF00FF",
+    "rgb": [
+      255,
+      0,
+      255
+    ],
+    "threshold": 96.0
+  },
+  "rows": [
+    {
+      "state": "waving",
+      "frames": [
+        "D:\\mbd AI\\output\\hatch-pet\\iskra-v2\\qa\\rows\\waving\\frames\\waving\\00.png",
+        "D:\\mbd AI\\output\\hatch-pet\\iskra-v2\\qa\\rows\\waving\\frames\\waving\\01.png",
+        "D:\\mbd AI\\output\\hatch-pet\\iskra-v2\\qa\\rows\\waving\\frames\\waving\\02.png",
+        "D:\\mbd AI\\output\\hatch-pet\\iskra-v2\\qa\\rows\\waving\\frames\\waving\\03.png"
+      ],
+      "method": "components"
+    }
+  ]
+}

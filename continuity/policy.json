@@ -1,0 +1,59 @@
+{
+  "policy_version": 1,
+  "schema_version": 1,
+  "supported_schema_version": 1,
+  "genesis_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "limits": {
+    "max_payload_bytes": 8192,
+    "max_topic_bytes": 256,
+    "max_statement_bytes": 4096,
+    "max_metadata_bytes": 2048,
+    "max_results": 50,
+    "default_results": 10
+  },
+  "handoff_default_expiry_hours": 24,
+  "durable_default_expiry_hours": null,
+  "database": {
+    "busy_timeout_ms": 4000,
+    "lock_retries": 3,
+    "lock_retry_base_ms": 40,
+    "lock_retry_jitter_ms": 60
+  },
+  "exit_codes": {
+    "OK": 0,
+    "USAGE_ERROR": 2,
+    "UNAVAILABLE": 3,
+    "NOT_FOUND": 4,
+    "INTEGRITY_FAILED": 5,
+    "BUSY": 6,
+    "AMBIGUOUS": 7,
+    "VERSION_UNSUPPORTED": 8,
+    "DENIED_SENSITIVE": 9,
+    "IDEMPOTENCY_CONFLICT": 10,
+    "DENIED_OVERSIZED": 11
+  },
+  "allowed_scopes": ["handoff", "durable"],
+  "allowed_kinds": ["fact", "preference", "procedure", "lesson", "identity", "correction"],
+  "secret_patterns": [
+    {"name": "pem_private_key", "regex": "-----BEGIN[ A-Z]*PRIVATE KEY-----"},
+    {"name": "openssh_private_key", "regex": "-----BEGIN OPENSSH PRIVATE KEY-----"},
+    {"name": "ssh_public_key", "regex": "ssh-(rsa|ed25519|dss) AAAA[0-9A-Za-z+/]{20,}"},
+    {"name": "aws_access_key_id", "regex": "\\b(AKIA|ASIA|AGPA|AIDA|AROA|ANPA)[0-9A-Z]{16}\\b"},
+    {"name": "aws_secret_access_key", "regex": "(?i)aws_secret_access_key\\s*[:=]\\s*[0-9A-Za-z/+]{30,}"},
+    {"name": "google_api_key", "regex": "\\bAIza[0-9A-Za-z_\\-]{35}\\b"},
+    {"name": "slack_token", "regex": "\\bxox[baprs]-[0-9A-Za-z-]{10,}\\b"},
+    {"name": "github_token", "regex": "\\bgh[posru]_[0-9A-Za-z]{20,}\\b"},
+    {"name": "openai_key", "regex": "\\bsk-[A-Za-z0-9]{20,}\\b"},
+    {"name": "anthropic_key", "regex": "\\bsk-ant-[A-Za-z0-9_\\-]{20,}\\b"},
+    {"name": "jwt", "regex": "\\beyJ[A-Za-z0-9_\\-]{8,}\\.[A-Za-z0-9_\\-]{8,}\\.[A-Za-z0-9_\\-]{8,}\\b"},
+    {"name": "bearer_header", "regex": "(?i)\\b(authorization|bearer)\\b\\s*[:=]?\\s*[A-Za-z0-9._\\-]{20,}"},
+    {"name": "labeled_secret", "regex": "(?i)\\b(password|passwd|passphrase|api[_-]?key|secret[_-]?key|client[_-]?secret|private[_-]?key|access[_-]?token|refresh[_-]?token)\\b\\s*[:=]\\s*\\S{6,}"},
+    {"name": "db_conn_credential", "regex": "(?i)\\b(postgres|postgresql|mysql|mongodb|redis|amqp)://[^\\s:/@]+:[^\\s:/@]+@"},
+    {"name": "credit_card_candidate", "regex": "\\b(?:\\d[ -]?){13,19}\\b"}
+  ],
+  "secret_policy_note": "Detection is PATTERN-based (labeled credentials, key material, tokens, credit-card-shaped digit runs) — deliberately NOT raw-entropy-based, so a deliberately-shared random challenge nonce can be stored while credentials are refused. credit_card_candidate is Luhn-validated before it denies.",
+  "privacy_defaults": {
+    "privacy_class": "user_shared",
+    "capture_method": "cli_explicit"
+  }
+}

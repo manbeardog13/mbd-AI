@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-07-14T00:00:00Z",
+  "scale": {
+    "meaning": "Evidence-backed experience estimate, not a guarantee of correctness",
+    "rookie": 1,
+    "master": 100,
+    "level_formula": "round(100 * sqrt(xp / 10000)), capped at 100"
+  },
+  "awards": {},
+  "virtues": {
+    "autonomy": {"name": "Bounded autonomy", "xp": 2500, "evidence_count": 2, "confidence": "medium", "basis": "Implemented scoped repository tasks with confirmation boundaries."},
+    "calibration": {"name": "Calibration and uncertainty", "xp": 2500, "evidence_count": 2, "confidence": "medium", "basis": "Honest capability boundaries and provisional scoring are present; diverse calibration trials remain."},
+    "change_safety": {"name": "Change safety and rollback", "xp": 3844, "evidence_count": 4, "confidence": "medium", "basis": "Atomic ledgers, reversible skills, verifiers, and preservation of dirty worktrees."},
+    "coding": {"name": "Software implementation", "xp": 4489, "evidence_count": 5, "confidence": "medium", "basis": "Cross-host skills, deterministic CLIs, tests, and deployment verifiers completed."},
+    "collaboration": {"name": "Cross-agent collaboration", "xp": 1225, "evidence_count": 1, "confidence": "low", "basis": "Dual-host protocol exists; independent Claude review is still pending."},
+    "communication": {"name": "Communication and handoff", "xp": 4624, "evidence_count": 5, "confidence": "medium", "basis": "Structured handoffs, concise reports, and explicit limits demonstrated."},
+    "computer_use": {"name": "Computer and interface use", "xp": 900, "evidence_count": 0, "confidence": "low", "basis": "No controlled OS interaction benchmark has been completed."},
+    "context": {"name": "Context acquisition and focus", "xp": 3600, "evidence_count": 3, "confidence": "medium", "basis": "Task-specific context routing exists; long-horizon trials remain."},
+    "creativity": {"name": "Creative adaptation", "xp": 3025, "evidence_count": 2, "confidence": "low", "basis": "Novel protocol synthesis demonstrated, with limited comparative evaluation."},
+    "data_analysis": {"name": "Data analysis", "xp": 1764, "evidence_count": 0, "confidence": "low", "basis": "No School data-analysis task has been audited."},
+    "debugging": {"name": "Debugging and recovery", "xp": 3364, "evidence_count": 3, "confidence": "medium", "basis": "Implementation faults were identified and corrected under tests; adversarial trials remain."},
+    "domain_transfer": {"name": "Domain transfer", "xp": 1764, "evidence_count": 1, "confidence": "low", "basis": "Some cross-platform adaptation exists; broad transfer is untested."},
+    "efficiency": {"name": "Efficiency and latency discipline", "xp": 1600, "evidence_count": 1, "confidence": "low", "basis": "Cold-start boundaries exist, but Toni reported unacceptable prior response latency."},
+    "instruction_fidelity": {"name": "Instruction fidelity", "xp": 2704, "evidence_count": 3, "confidence": "medium", "basis": "Complex requirements were implemented with explicit boundary handling; controlled trials remain."},
+    "learning": {"name": "Continual learning discipline", "xp": 1444, "evidence_count": 1, "confidence": "low", "basis": "EGCSE is implemented and tested, but no lesson has completed its full multi-context lifecycle."},
+    "planning": {"name": "Planning and decomposition", "xp": 3364, "evidence_count": 3, "confidence": "medium", "basis": "Multi-stage implementations and bounded task packets demonstrated."},
+    "reasoning": {"name": "Reasoning and synthesis", "xp": 3025, "evidence_count": 3, "confidence": "medium", "basis": "Research and architecture synthesis demonstrated; hidden reasoning is never treated as evidence."},
+    "research": {"name": "Research and source judgment", "xp": 3364, "evidence_count": 2, "confidence": "medium", "basis": "Primary and community source research performed; repeatable source-conflict trials remain."},
+    "security": {"name": "Security, privacy, permissions", "xp": 3969, "evidence_count": 4, "confidence": "medium", "basis": "No-bypass, no-secret, hosted-only, and explicit approval boundaries are implemented."},
+    "testing": {"name": "Testing and verification", "xp": 4225, "evidence_count": 5, "confidence": "medium", "basis": "Behavioral tests, structural validators, integrity checks, and smoke tests pass."},
+    "tool_selection": {"name": "Tool, skill, plugin and MCP use", "xp": 3025, "evidence_count": 2, "confidence": "low", "basis": "Capability routing exists; breadth across live connectors is not yet audited."}
+  }
+}

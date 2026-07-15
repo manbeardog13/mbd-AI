@@ -1,0 +1,14 @@
+DEBATE CC - CODEX / CLAUDE REVIEW PROTOCOL
+
+1. Debate only a concrete task digest, acceptance criteria, tools, risks, and
+   grader. Do not exchange hidden reasoning or chain-of-thought.
+2. Maximum three rounds. Each host may submit one decision per round:
+   APPROVE, REVISE, or BLOCK.
+3. Agreement requires APPROVE from Codex and Claude on the identical current
+   task digest. No response is not agreement.
+4. After round three without agreement, stop and ask Toni. Do not loop.
+5. After execution, each host audits independently. Tests and source evidence
+   outrank agreement or confidence.
+6. A saved edit creates a durable signal only while the opt-in watcher is
+   running. Inactive hosted sessions are notified on their next checked turn.
+

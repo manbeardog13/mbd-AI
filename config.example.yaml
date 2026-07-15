@@ -156,6 +156,102 @@ agent_max_seconds: 60
 # from. Use a full path to point her at a specific project.
 agent_project_dir: ""
 
+# ---- External Council (optional cloud escalation) ----
+#
+# Nero is local-first. This is OFF by default, and the browser asks for a
+# confirmation on every Council request. A run has a fixed, visible sequence:
+# OpenAI (architect) -> Claude (builder) -> OpenAI (reviewer).
+#
+# Only the task you type and the immediately preceding council handoff leave
+# Nero. Your memories, normal chat history, local files, and API keys are never
+# sent as part of a Council request. API use is billed separately from consumer
+# ChatGPT / Claude subscriptions.
+collaboration:
+  enabled: false
+
+  # Keep real keys only in your private config.yaml. Never put keys in a chat,
+  # screenshot, or this example file.
+  openai:
+    api_key: ""
+    # Enter a model ID available in your OpenAI API account.
+    model: ""
+
+  anthropic:
+    api_key: ""
+    # Enter a model ID available in your Anthropic API account.
+    model: ""
+
+  # Guardrails for one Council run: 2 requests in plan-build mode, or 3 in the
+  # default plan-build-review mode. Values are clamped to safe bounds by Nero.
+  timeout_seconds: 90
+  max_output_tokens: 1800
+  max_handoff_chars: 12000
+
+# ---- Presence (visual counterpart to the voice) ----
+# Nero's Presence Director is a renderer-agnostic subsystem: the "brain" only
+# expresses intent (state + emotion + intensity); the active runtime decides
+# what visible motion supports that intent. Today the built-in runtimes are
+# `null` (no visual, silent) and `log` (prints intent flow — useful for
+# development). Live2D / Godot / Unreal runtimes are future additions.
+#
+# Runtime-specific settings (Live2D WebSocket URL, Godot binary path) belong
+# INSIDE each runtime's own configuration — NOT here at the app level. That
+# keeps this block stable when new runtimes ship.
+presence:
+  # Master switch. `false` skips creating the Presence Director entirely.
+  enabled: true
+
+  # Which runtime to instantiate. "null" | "log" | future runtimes.
+  # Recommended: "log" during development, "null" for a truly silent pipeline.
+  runtime: "log"
+
+  # Requested max Presence Level (0..5). Capped at the active runtime's ceiling.
+  #   0 = voice only, no visual manifestation
+  #   1 = minimal manifestation (eyes, particles, ambient glow)
+  #   2 = animated portrait (breathing, eye movement)
+  #   3 = half-body companion
+  #   4 = full-body companion
+  #   5 = immersive (VR / AR / mixed reality)
+  level: 0
+
+  # Verbose per-event logging. Off by default.
+  debug: false
+
+  # Runtime-specific settings, opaque to the app. Each runtime interprets
+  # its own keys per its own schema. Below is the schema Live2DRuntime reads;
+  # LogRuntime and NullRuntime ignore this block entirely.
+  #
+  # Full documentation: presence/runtime_bridge/live2d_protocol.md
+  settings:
+    # WebSocket URL of the Cubism viewer process. Local-only by default.
+    websocket_url: "ws://127.0.0.1:3939/nero"
+
+    # Exponential backoff between reconnect attempts, in seconds. The last
+    # value repeats forever. Nero NEVER blocks voice/chat on presence — the
+    # runtime keeps trying to reconnect in the background.
+    reconnect_backoff_s: [1.0, 2.0, 5.0, 10.0, 30.0]
+
+    # Max reconnect attempts before giving up. 0 = forever.
+    max_reconnect_attempts: 0
+
+    # Send-queue depth. If the viewer stalls, the queue fills and the oldest
+    # parameter frame is dropped (stale intent is worse than dropped intent).
+    send_queue_max: 256
+
+    # WebSocket keepalive.
+    connect_timeout_s: 5.0
+    ping_interval_s: 20.0
+    ping_timeout_s: 20.0
+
+    # Default parameter blend duration (ms) sent with each `params` message.
+    # Zero = snap. Viewer may override per-message.
+    param_blend_ms: 100
+
+    # If the loaded Cubism model uses different parameter names than the
+    # Nero convention (ParamNero*), override them here. Empty = use defaults.
+    # Example:  {overall_visibility: "ParamNeroVisible"}
+    cubism_param_overrides: {}
+
 # ---- Server ----
 
 # 0.0.0.0 lets your other devices (via Tailscale) reach the AI.
