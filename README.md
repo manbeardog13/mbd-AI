@@ -6,6 +6,13 @@
 > below is retained as historical architecture only; do not run it. Nero's
 > active interface is zero-start Codex Host Presence from the global capsule.
 
+> [!NOTE]
+> **Mission Control M1:** this branch also contains a separate, explicitly
+> launched deterministic control plane. It does not unlock the legacy local
+> model/runtime and never starts from Host Presence. See
+> [docs/MISSION_CONTROL.md](docs/MISSION_CONTROL.md). Remote Git mutations are
+> unavailable in M1.
+
 A private AI companion that runs **entirely on your own machine**, remembers
 you, has its own personality, and is reachable from anywhere on any network —
 without your data ever touching the cloud.

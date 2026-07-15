@@ -1,4 +1,4 @@
-"""Offline tests for typed Core state, adapters, events, and write leases."""
+"""Offline tests for typed Core state, CAS tasks, adapters, and event safety."""
 from __future__ import annotations
 
 import json
@@ -8,7 +8,7 @@ import tempfile
 import threading
 import unittest
 from contextlib import closing
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
 
 
@@ -24,7 +24,7 @@ from app.core.contracts import (
     RiskLevel,
     TaskStatus,
 )
-from app.core.store import CoreStore
+from app.core.store import CoreStore, SafeModeError, StoreConflict
 
 
 class MutableClock:
@@ -71,14 +71,18 @@ class NeroCoreTests(unittest.TestCase):
             adapter_id="codex",
             branch="main",
             worktree=str(self.root),
+            expected_version=task.version,
         )
         completed = self.store.transition_task(
             task.task_id,
             TaskStatus.COMPLETE,
-            result=AgentResult(summary="verified"),
+            expected_status=assigned.status,
+            expected_version=assigned.version,
+            result=AgentResult(summary="verified", tests_run=("unit",)),
         )
         self.assertEqual(assigned.status, TaskStatus.PREPARING)
-        self.assertEqual(completed.status, TaskStatus.COMPLETE)
+        self.assertEqual(assigned.version, 1)
+        self.assertEqual(completed.version, 2)
         self.assertEqual(completed.last_result.summary, "verified")
         self.assertEqual(
             [event.event_type for event in reversed(self.store.list_events())],
@@ -95,6 +99,29 @@ class NeroCoreTests(unittest.TestCase):
                     (event.sequence,),
                 )
         self.assertTrue(self.store.verify_event_chain()[0])
+
+    def test_corrupt_event_chain_enforces_read_only_safe_mode(self) -> None:
+        self.store.record_event("test.event", payload={"ok": True})
+        with closing(sqlite3.connect(self.store.db_path)) as conn:
+            conn.execute("DROP TRIGGER core_events_no_update")
+            conn.execute("UPDATE core_events SET event_hash = 'tampered'")
+            conn.commit()
+        self.assertFalse(self.store.verify_event_chain()[0])
+        with self.assertRaisesRegex(SafeModeError, "read-only safe mode"):
+            self.store.create_task(objective="must not write", repository=self.root)
+        self.assertEqual(self.store.list_tasks(), [])
+
+    def test_malformed_event_payload_is_reported_without_read_crash(self) -> None:
+        self.store.record_event("test.event", payload={"ok": True})
+        with closing(sqlite3.connect(self.store.db_path)) as conn:
+            conn.execute("DROP TRIGGER core_events_no_update")
+            conn.execute("UPDATE core_events SET payload_json = '{bad json'")
+            conn.commit()
+        valid, message = self.store.verify_event_chain()
+        self.assertFalse(valid)
+        self.assertIn("payload invalid", message)
+        event = self.store.list_events()[0]
+        self.assertIn("_integrity_error", event.payload)
 
     def test_approval_records_decision_without_operation(self) -> None:
         approval = self.store.request_approval(
@@ -113,57 +140,64 @@ class NeroCoreTests(unittest.TestCase):
         event = self.store.list_events(event_type="approval.decided")[0]
         self.assertFalse(event.payload["remote_operation_executed"])
 
-    def test_exactly_one_concurrent_write_lease(self) -> None:
-        barrier = threading.Barrier(8)
-        grants: list[object] = []
+    def test_concurrent_same_task_assignment_is_compare_and_set(self) -> None:
+        task = self.store.create_task(
+            objective="Claim once", repository=self.root
+        )
+        barrier = threading.Barrier(2)
+        outcomes: list[str] = []
         lock = threading.Lock()
 
-        def contender(index: int) -> None:
-            contender_store = CoreStore(self.store.db_path, clock=self.clock)
-            contender_store.initialize()
+        def contender(adapter: str) -> None:
+            store = CoreStore(self.store.db_path, clock=self.clock)
+            store.initialize()
             barrier.wait()
-            grant = contender_store.acquire_lease(
-                "repo-common-dir", owner=f"worker-{index}", task_id=f"t-{index}"
-            )
+            try:
+                store.assign_task(
+                    task.task_id,
+                    adapter_id=adapter,
+                    branch="main",
+                    worktree=str(self.root),
+                    expected_version=task.version,
+                )
+                result = "assigned"
+            except StoreConflict:
+                result = "conflict"
             with lock:
-                grants.append(grant)
+                outcomes.append(result)
 
-        threads = [threading.Thread(target=contender, args=(i,)) for i in range(8)]
+        threads = [
+            threading.Thread(target=contender, args=("claude",)),
+            threading.Thread(target=contender, args=("codex",)),
+        ]
         for thread in threads:
             thread.start()
         for thread in threads:
             thread.join(timeout=10)
-        self.assertTrue(all(not thread.is_alive() for thread in threads))
-        self.assertEqual(sum(grant is not None for grant in grants), 1)
-        self.assertEqual(len(self.store.list_events(event_type="lease.acquired")), 1)
-        self.assertEqual(len(self.store.list_events(event_type="lease.denied")), 7)
-
-    def test_lease_survives_restart_then_expires_predictably(self) -> None:
-        grant = self.store.acquire_lease(
-            "repo-common-dir", owner="codex:t1", task_id="t1", ttl_seconds=10
+        self.assertEqual(sorted(outcomes), ["assigned", "conflict"])
+        self.assertEqual(
+            len(self.store.list_events(event_type="task.assigned")), 1
         )
-        self.assertIsNotNone(grant)
-        restarted = CoreStore(self.store.db_path, clock=self.clock)
-        restarted.initialize()
-        self.assertEqual(restarted.current_lease("repo-common-dir").owner, "codex:t1")
-        self.clock.value += timedelta(seconds=11)
-        self.assertIsNone(restarted.current_lease("repo-common-dir"))
-        self.assertEqual(len(restarted.list_events(event_type="lease.expired")), 1)
+        self.assertEqual(self.store.get_task(task.task_id).version, 1)
 
-    def test_lease_token_is_hashed_and_required(self) -> None:
-        grant = self.store.acquire_lease(
-            "repo-common-dir", owner="codex:t1", task_id="t1"
+    def test_stale_transition_version_cannot_overwrite_new_state(self) -> None:
+        task = self.store.create_task(objective="Versioned", repository=self.root)
+        paused = self.store.transition_task(
+            task.task_id,
+            TaskStatus.PAUSED,
+            expected_status=task.status,
+            expected_version=task.version,
         )
-        self.assertIsNotNone(grant)
-        with closing(sqlite3.connect(self.store.db_path)) as conn:
-            persisted = conn.execute(
-                "SELECT token_hash FROM core_write_leases"
-            ).fetchone()[0]
-        self.assertNotEqual(persisted, grant.token)
-        self.assertFalse(self.store.release_lease("repo-common-dir", "wrong"))
-        self.assertTrue(self.store.release_lease("repo-common-dir", grant.token))
+        with self.assertRaises(StoreConflict):
+            self.store.transition_task(
+                task.task_id,
+                TaskStatus.CANCELLED,
+                expected_status=task.status,
+                expected_version=task.version,
+            )
+        self.assertEqual(self.store.get_task(task.task_id), paused)
 
-    def test_worker_adapters_are_workers_not_remote_writers(self) -> None:
+    def test_worker_adapters_reject_nested_secrets_without_echoing_values(self) -> None:
         task = self.store.create_task(
             objective="Review patch",
             repository=self.root,
@@ -175,23 +209,30 @@ class NeroCoreTests(unittest.TestCase):
             adapter_id="claude",
             branch="main",
             worktree=str(self.root),
+            expected_version=task.version,
         )
         claude = ClaudeAdapter()
         codex = CodexAdapter()
         packet = claude.prepare_packet(task, lease_owner=None)
         self.assertFalse(packet.write_allowed)
+        self.assertTrue(packet.requires_action_time_lease_validation)
         self.assertFalse(claude.descriptor().remote_writes)
         self.assertFalse(codex.descriptor().remote_writes)
         result = codex.normalize_result(
             {"summary": "checked", "tests_run": ["unit"]}
         )
         self.assertEqual(result.tests_run, ("unit",))
-        with self.assertRaises(AdapterError):
+        secret_value = "do-not-echo-this"
+        with self.assertRaises(AdapterError) as caught:
             claude.prepare_packet(
                 task,
                 lease_owner="claude:t1",
-                bounded_context={"credentials": "secret"},
+                bounded_context={
+                    "safe": [{"clientSecret": secret_value}],
+                    "nested": {"api_token": secret_value},
+                },
             )
+        self.assertNotIn(secret_value, str(caught.exception))
 
 
 if __name__ == "__main__":

@@ -53,12 +53,17 @@ capabilities, one PR each: `fs.list`, `git.log`, then the human-in-the-loop
 terminal (the confirmation Approve/Deny UX lands with the first MEDIUM+
 capability).*
 
-*Mission Control Milestone 1 is now the approved integration direction. Under
-[ADR-0017](adr/0017-authoritative-core-and-host-boundaries.md), a manually
-launched, model-independent Nero Core will own measured Git state, tasks,
-repository-global leases, approvals, and events. Claude and Codex are bounded,
-replaceable workers; neither owns planning, identity, memory, merges, or push
-authority. The Core is not yet implemented at this integration-baseline commit.*
+*Mission Control Milestone 1 is implemented and verified locally on
+`codex/nero-mission-control-m1`; it has not been pushed. Under
+[ADR-0017](adr/0017-authoritative-core-and-host-boundaries.md), the manually
+launched, model-independent Nero Core owns measured Git state, tasks, a
+repository-global lease, approvals, and hash-chained events. Claude and Codex
+are bounded, replaceable worker definitions; M1 does not call either provider
+and never invents a reply. The dashboard exposes explicit fetch, exact
+branch/upstream wording, the task queue, workers, approvals, timeline, and
+health. Commit/merge/pull/rebase/reset/checkout/push have no execution route.
+See [the M1 design](DESIGN-mission-control-m1.md) and
+[operator guide](MISSION_CONTROL.md).*
 
 *In progress — **the Action Journal (Nero's accountability spine)**, the third
 leg of the **executive control layer**: Capability Registry (*what can I do?*) ·

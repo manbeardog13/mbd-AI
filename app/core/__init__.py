@@ -15,6 +15,8 @@ from .contracts import (
     WorkerDescriptor,
     WorkerStatus,
 )
+from .git_service import FetchReceipt, GitService
+from .lease_registry import RepositoryLeaseRegistry
 
 __all__ = [
     "AgentResult",
@@ -30,4 +32,7 @@ __all__ = [
     "TaskStatus",
     "WorkerDescriptor",
     "WorkerStatus",
+    "FetchReceipt",
+    "GitService",
+    "RepositoryLeaseRegistry",
 ]

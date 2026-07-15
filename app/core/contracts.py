@@ -91,6 +91,7 @@ class Task:
     context_version: str
     created_at: str
     updated_at: str
+    version: int = 0
     last_result: AgentResult | None = None
     blocker: str | None = None
 
@@ -111,6 +112,10 @@ class TaskPacket:
     worktree: str | None
     write_allowed: bool
     lease_owner: str | None
+    lease_id: str | None
+    lease_fencing_token: int | None
+    lease_expires_at: str | None
+    requires_action_time_lease_validation: bool
     bounded_context: dict[str, Any] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, Any]:
@@ -131,6 +136,8 @@ class GitState:
     authentication: str
     push_permission: str
     last_fetch_at: str | None
+    last_fetch_attempt_at: str | None
+    fetch_receipt: dict[str, Any] | None
     remote_state_fresh: bool
     ahead: int | None
     behind: int | None
@@ -210,6 +217,8 @@ class MemoryRecord:
 @dataclass(frozen=True, slots=True)
 class Lease:
     repository_key: str
+    lease_id: str
+    fencing_token: int
     owner: str
     task_id: str | None
     acquired_at: str

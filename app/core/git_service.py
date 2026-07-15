@@ -1,16 +1,20 @@
-"""Deterministic read-only Git intelligence for Mission Control.
+"""Deterministic Git intelligence with tracked-remote-bound fetch receipts.
 
-The only metadata mutation supported here is an explicit ``git fetch --prune``.
-There are no commit, merge, rebase, pull, reset, checkout, or push methods.
+The only Git metadata mutation supported here is an explicit
+``git fetch --prune <tracked-remote>``. There are no commit, merge, rebase,
+pull, reset, checkout, or push methods.
 """
 from __future__ import annotations
 
+import json
 import os
+import re
 import subprocess
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Callable, Sequence
+from typing import Any, Callable, Mapping, Sequence
+from urllib.parse import urlsplit, urlunsplit
 
 from .contracts import GitState
 
@@ -22,6 +26,42 @@ class CommandResult:
     stderr: str
 
 
+@dataclass(frozen=True, slots=True)
+class FetchReceipt:
+    version: int
+    repository_key: str
+    tracking_remote: str | None
+    remote_url: str | None
+    upstream: str | None
+    attempted_at: str
+    succeeded: bool
+    fetched_at: str | None
+    authentication: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def parse(cls, value: Mapping[str, Any] | str | None) -> FetchReceipt | None:
+        if value is None:
+            return None
+        try:
+            raw = json.loads(value) if isinstance(value, str) else dict(value)
+            return cls(
+                version=int(raw["version"]),
+                repository_key=str(raw["repository_key"]),
+                tracking_remote=_optional_text(raw.get("tracking_remote")),
+                remote_url=_optional_text(raw.get("remote_url")),
+                upstream=_optional_text(raw.get("upstream")),
+                attempted_at=str(raw["attempted_at"]),
+                succeeded=bool(raw["succeeded"]),
+                fetched_at=_optional_text(raw.get("fetched_at")),
+                authentication=str(raw["authentication"]),
+            )
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            return None
+
+
 Runner = Callable[[Sequence[str], str, float], CommandResult]
 
 
@@ -30,6 +70,9 @@ class GitInspectionError(RuntimeError):
 
 
 def _default_runner(args: Sequence[str], cwd: str, timeout: float) -> CommandResult:
+    environment = os.environ.copy()
+    environment["GIT_TERMINAL_PROMPT"] = "0"
+    environment["GCM_INTERACTIVE"] = "Never"
     try:
         result = subprocess.run(
             list(args),
@@ -40,6 +83,7 @@ def _default_runner(args: Sequence[str], cwd: str, timeout: float) -> CommandRes
             errors="replace",
             timeout=timeout,
             check=False,
+            env=environment,
         )
         return CommandResult(result.returncode, result.stdout, result.stderr)
     except (OSError, subprocess.TimeoutExpired) as exc:
@@ -48,6 +92,49 @@ def _default_runner(args: Sequence[str], cwd: str, timeout: float) -> CommandRes
 
 def _now_iso() -> str:
     return datetime.now(UTC).isoformat(timespec="milliseconds")
+
+
+def _optional_text(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def redact_remote_url(value: str | None) -> str | None:
+    """Remove credentials, query strings, and fragments from a Git remote URL."""
+    if value is None:
+        return None
+    text = value.strip()
+    if not text:
+        return None
+    if "://" in text:
+        try:
+            parts = urlsplit(text)
+            host = parts.hostname or ""
+            if parts.port is not None:
+                host = f"{host}:{parts.port}"
+            return urlunsplit((parts.scheme, host, parts.path, "", ""))
+        except (ValueError, TypeError):
+            return "[redacted remote URL]"
+    scp = re.fullmatch(r"[^@/\s]+@([^:\s]+):(.+)", text)
+    if scp:
+        return f"{scp.group(1)}:{scp.group(2)}"
+    return text.split("?", 1)[0].split("#", 1)[0]
+
+
+_URL_PATTERN = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^\s'\"<>]+")
+_SCP_PATTERN = re.compile(r"(?<![\w.-])[^@/\s]+@[^:\s]+:[^\s'\"<>]+")
+
+
+def redact_git_text(value: str) -> str:
+    """Best-effort redaction for remote URLs echoed by Git diagnostics."""
+
+    def safe_url(match: re.Match[str]) -> str:
+        return redact_remote_url(match.group(0)) or "[redacted remote URL]"
+
+    text = _URL_PATTERN.sub(safe_url, value)
+    return _SCP_PATTERN.sub(safe_url, text)
 
 
 class GitService:
@@ -67,8 +154,8 @@ class GitService:
         repository: str | Path,
         *,
         fetch_remote: bool = False,
-        remote_name: str = "origin",
-        last_fetch_at: str | None = None,
+        preferred_remote: str = "origin",
+        fetch_receipt: FetchReceipt | Mapping[str, Any] | str | None = None,
         active_write_lease: dict | None = None,
     ) -> GitState:
         requested = str(Path(repository).resolve())
@@ -86,40 +173,9 @@ class GitService:
         worktree = str(Path(root.strip()).resolve())
         errors: list[str] = []
 
-        remotes = self._lines(self._git(worktree, "remote").stdout)
-        chosen_remote = remote_name if remote_name in remotes else (remotes[0] if remotes else None)
-        remote_url = None
-        if chosen_remote:
-            remote_url_result = self._git(worktree, "remote", "get-url", chosen_remote)
-            if remote_url_result.returncode == 0:
-                remote_url = remote_url_result.stdout.strip() or None
-
-        fetched_at = last_fetch_at
-        remote_available: bool | None = None
-        authentication = "not_checked"
-        fresh = self._is_fresh(last_fetch_at)
-        if fetch_remote:
-            if not chosen_remote:
-                fresh = False
-                remote_available = False
-                authentication = "not_configured"
-                errors.append("no Git remote is configured")
-            else:
-                fetch = self._git(
-                    worktree, "fetch", "--prune", chosen_remote, timeout=45.0
-                )
-                if fetch.returncode == 0:
-                    fetched_at = self.clock()
-                    fresh = True
-                    remote_available = True
-                    authentication = "fetch_authenticated"
-                else:
-                    fresh = False
-                    remote_available = False
-                    authentication = self._classify_fetch_failure(fetch)
-                    errors.append(f"fetch failed: {self._message(fetch)}")
-
-        branch_result = self._git(worktree, "symbolic-ref", "--quiet", "--short", "HEAD")
+        branch_result = self._git(
+            worktree, "symbolic-ref", "--quiet", "--short", "HEAD"
+        )
         branch = branch_result.stdout.strip() if branch_result.returncode == 0 else None
         detached = branch is None
         head = self._optional(worktree, "rev-parse", "--short=12", "HEAD")
@@ -135,6 +191,94 @@ class GitService:
             if upstream_result.returncode == 0:
                 upstream = upstream_result.stdout.strip() or None
 
+        remotes = self._lines(self._git(worktree, "remote").stdout)
+        tracked_remote = self._tracking_remote(
+            worktree, branch=branch, upstream=upstream, remotes=remotes
+        )
+        chosen_remote = (
+            tracked_remote
+            or (preferred_remote if preferred_remote in remotes else None)
+            or (remotes[0] if remotes else None)
+        )
+        raw_remote_url = None
+        if chosen_remote:
+            remote_url_result = self._git(
+                worktree, "remote", "get-url", chosen_remote
+            )
+            if remote_url_result.returncode == 0:
+                raw_remote_url = remote_url_result.stdout.strip() or None
+        remote_url = redact_remote_url(raw_remote_url)
+
+        receipt = (
+            fetch_receipt
+            if isinstance(fetch_receipt, FetchReceipt)
+            else FetchReceipt.parse(fetch_receipt)
+        )
+        receipt_matches = bool(
+            receipt
+            and receipt.version == 1
+            and receipt.repository_key == common
+            and receipt.tracking_remote == chosen_remote
+            and receipt.remote_url == remote_url
+            and receipt.upstream == upstream
+        )
+        if receipt and not receipt_matches:
+            errors.append(
+                "stored fetch receipt does not match the current repository, "
+                "tracked remote, remote URL, or upstream"
+            )
+
+        attempted_at = receipt.attempted_at if receipt_matches and receipt else None
+        fetched_at = receipt.fetched_at if receipt_matches and receipt else None
+        authentication = (
+            receipt.authentication if receipt_matches and receipt else "not_checked"
+        )
+        remote_available: bool | None = (
+            receipt.succeeded if receipt_matches and receipt else None
+        )
+        fresh = bool(
+            receipt_matches
+            and receipt
+            and receipt.succeeded
+            and self._is_fresh(receipt.fetched_at)
+        )
+        current_receipt = receipt if receipt_matches else None
+
+        if fetch_remote:
+            attempted_at = self.clock()
+            if not chosen_remote:
+                fresh = False
+                fetched_at = None
+                remote_available = False
+                authentication = "not_configured"
+                errors.append("no Git remote is configured")
+            else:
+                fetch = self._git(
+                    worktree, "fetch", "--prune", chosen_remote, timeout=45.0
+                )
+                if fetch.returncode == 0:
+                    fetched_at = attempted_at
+                    fresh = True
+                    remote_available = True
+                    authentication = "fetch_authenticated"
+                else:
+                    fetched_at = None
+                    fresh = False
+                    remote_available = False
+                    authentication = self._classify_fetch_failure(fetch)
+                    errors.append(f"fetch failed: {self._message(fetch)}")
+            current_receipt = FetchReceipt(
+                version=1,
+                repository_key=common,
+                tracking_remote=chosen_remote,
+                remote_url=remote_url,
+                upstream=upstream,
+                attempted_at=attempted_at,
+                succeeded=fresh,
+                fetched_at=fetched_at,
+                authentication=authentication,
+            )
+
         status = self._git(
             worktree, "status", "--porcelain=v1", "-z", "--untracked-files=all"
         )
@@ -142,7 +286,9 @@ class GitService:
             errors.append(f"status failed: {self._message(status)}")
         entries = self._status_entries(status.stdout if status.returncode == 0 else "")
         untracked = sum(1 for code, _ in entries if code == "??")
-        staged = sum(1 for code, _ in entries if code != "??" and code[0] not in (" ", "?"))
+        staged = sum(
+            1 for code, _ in entries if code != "??" and code[0] not in (" ", "?")
+        )
         modified = sum(1 for code, _ in entries if code != "??")
         conflict_codes = {"DD", "AU", "UD", "UA", "DU", "AA", "UU"}
         conflicts = tuple(path for code, path in entries if code in conflict_codes)
@@ -198,7 +344,9 @@ class GitService:
                 for item in remote_refs
                 if item.startswith(f"{chosen_remote}/")
             }
-            local_only = tuple(sorted(item for item in local_branches if item not in remote_short))
+            local_only = tuple(
+                sorted(item for item in local_branches if item not in remote_short)
+            )
             remote_only = tuple(
                 sorted(
                     item
@@ -214,7 +362,11 @@ class GitService:
         last_commit = self._optional(
             worktree, "log", "-1", "--format=%h %s (%cI)"
         )
-        worktrees = tuple(self._parse_worktrees(self._git(worktree, "worktree", "list", "--porcelain").stdout))
+        worktrees = tuple(
+            self._parse_worktrees(
+                self._git(worktree, "worktree", "list", "--porcelain").stdout
+            )
+        )
 
         return GitState(
             repository=worktree,
@@ -229,6 +381,8 @@ class GitService:
             authentication=authentication,
             push_permission="untested",
             last_fetch_at=fetched_at,
+            last_fetch_attempt_at=attempted_at,
+            fetch_receipt=current_receipt.as_dict() if current_receipt else None,
             remote_state_fresh=fresh,
             ahead=ahead,
             behind=behind,
@@ -261,7 +415,10 @@ class GitService:
         fresh: bool,
     ) -> str:
         if detached:
-            return f"Detached HEAD at {head or 'unknown commit'}; no local branch is checked out."
+            return (
+                f"Detached HEAD at {head or 'unknown commit'}; "
+                "no local branch is checked out."
+            )
         if not branch:
             return "No local branch could be identified."
         if not upstream:
@@ -273,8 +430,31 @@ class GitService:
             )
         return (
             f"Local branch {branch} is {ahead} {GitService._commits(ahead)} ahead "
-            f"and {behind} {GitService._commits(behind)} behind upstream branch {upstream}."
+            f"and {behind} {GitService._commits(behind)} behind upstream branch "
+            f"{upstream}."
         )
+
+    def _tracking_remote(
+        self,
+        worktree: str,
+        *,
+        branch: str | None,
+        upstream: str | None,
+        remotes: list[str],
+    ) -> str | None:
+        if branch:
+            configured = self._optional(
+                worktree, "config", "--get", f"branch.{branch}.remote"
+            )
+            if configured and configured != "." and configured in remotes:
+                return configured
+        if upstream:
+            matches = [
+                remote for remote in remotes if upstream.startswith(f"{remote}/")
+            ]
+            if matches:
+                return max(matches, key=len)
+        return None
 
     def _git(self, cwd: str, *args: str, timeout: float = 15.0) -> CommandResult:
         return self.runner(("git", "-C", cwd, *args), cwd, timeout)
@@ -341,7 +521,12 @@ class GitService:
 
     @staticmethod
     def _message(result: CommandResult) -> str:
-        return (result.stderr or result.stdout or f"git exited {result.returncode}").strip()
+        raw = (
+            result.stderr
+            or result.stdout
+            or f"git exited {result.returncode}"
+        ).strip()
+        return redact_git_text(raw)
 
     @staticmethod
     def _classify_fetch_failure(result: CommandResult) -> str:

@@ -30,18 +30,24 @@ violate ADR-0014.
    not own identity, memory, scheduling, approval, Git truth, or push authority.
 5. **One repository-global write lease.** The lease key is Git's canonical
    common directory, so separate worktrees cannot acquire simultaneous managed
-   write authority. Ownership uses an unguessable token, expiry, heartbeat, and
-   restart recovery. It coordinates Nero-managed workers, not unrelated manual
-   Git clients.
+   write authority. The coordination database also spans separate Core state
+   databases and processes. Ownership uses an opaque lease ID, monotonically
+   increasing fencing number, unguessable credential, explicit heartbeat,
+   expiry, and fail-closed restart behavior. A second Core process may observe
+   a valid lease but cannot renew, revoke, or use it without the process-local
+   credential; after owner loss, canonical expiry blocks the task. The lease
+   coordinates Nero-managed workers, not unrelated manual Git clients.
 6. **Remote truth is measured and writes fail closed.** Core fetches before
    calculating remote state, records freshness, and never asks a model to
    describe Git. Milestone 1 exposes no remote mutation. Future commit/push
    operations must pass the Capability Registry, Security Gate, verification,
    remote-freshness checks, a dry-run preview, and explicit human approval.
-7. **Audit and memory stay distinct.** Core records every action and transition
-   through the Action Journal service. The continuity ledger remains a separate,
-   deliberate cross-host transport; the standalone memory database is not
-   silently merged into either store.
+7. **Audit and memory stay distinct.** Core records control-plane mutations and
+   the principal assignment, transition, fetch, approval, and lease events in
+   its namespaced, append-only event ledger. The Stage-1 standalone Action
+   Journal, continuity ledger, and standalone memory database remain separate
+   and are not silently merged. A future Action Journal adapter requires its own
+   approved migration after the wider journal service exists.
 8. **Absence fails closed.** Without a running Core or adapter, hosted Nero
    remains ordinary hosted identity. No host may invent shared memory, a lease,
    worker completion, or remote state.

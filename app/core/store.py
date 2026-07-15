@@ -3,11 +3,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-import secrets
 import sqlite3
 import uuid
-from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Callable
 
@@ -16,7 +14,6 @@ from .contracts import (
     Approval,
     ApprovalStatus,
     Event,
-    Lease,
     RiskLevel,
     Task,
     TaskStatus,
@@ -47,6 +44,7 @@ CREATE TABLE IF NOT EXISTS core_tasks (
     context_version TEXT NOT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
+    version INTEGER NOT NULL DEFAULT 0,
     result_json TEXT,
     blocker TEXT
 );
@@ -64,16 +62,6 @@ CREATE TABLE IF NOT EXISTS core_approvals (
     decided_at TEXT,
     decided_by TEXT,
     decision_note TEXT
-);
-
-CREATE TABLE IF NOT EXISTS core_write_leases (
-    repository_key TEXT PRIMARY KEY,
-    owner TEXT NOT NULL,
-    task_id TEXT,
-    token_hash TEXT NOT NULL,
-    acquired_at TEXT NOT NULL,
-    heartbeat_at TEXT NOT NULL,
-    expires_at TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS core_events (
@@ -103,14 +91,16 @@ END;
 """
 
 
-@dataclass(frozen=True, slots=True)
-class LeaseGrant:
-    lease: Lease
-    token: str
-
-
 class StoreError(RuntimeError):
     """Raised when durable Core state cannot satisfy a requested operation."""
+
+
+class SafeModeError(StoreError):
+    """Raised when event integrity forces Core into read-only safe mode."""
+
+
+class StoreConflict(StoreError):
+    """Raised when a task changed after the caller observed it."""
 
 
 class _ClosingConnection(sqlite3.Connection):
@@ -137,16 +127,8 @@ def _iso(value: datetime) -> str:
     return _as_utc(value).isoformat(timespec="milliseconds")
 
 
-def _parse_time(value: str) -> datetime:
-    return datetime.fromisoformat(value).astimezone(UTC)
-
-
 def _canonical_json(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-
-
-def _token_hash(token: str) -> str:
-    return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
 class CoreStore:
@@ -155,11 +137,20 @@ class CoreStore:
     def __init__(self, db_path: str | Path, *, clock: Clock = _utc_now) -> None:
         self.db_path = Path(db_path).resolve()
         self.clock = clock
+        self._safe_mode_reason: str | None = None
 
     def initialize(self) -> None:
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as conn:
             conn.executescript(SCHEMA)
+            columns = {
+                row["name"]
+                for row in conn.execute("PRAGMA table_info(core_tasks)").fetchall()
+            }
+            if "version" not in columns:
+                conn.execute(
+                    "ALTER TABLE core_tasks ADD COLUMN version INTEGER NOT NULL DEFAULT 0"
+                )
 
     def _connect(self) -> sqlite3.Connection:
         conn = sqlite3.connect(
@@ -245,6 +236,7 @@ class CoreStore:
     ) -> Event:
         with self._connect() as conn:
             self._begin(conn)
+            self._assert_writable(conn)
             event = self._record_event(
                 conn, event_type, actor=actor, task_id=task_id, payload=payload
             )
@@ -276,11 +268,27 @@ class CoreStore:
         return [self._event_from_row(row) for row in rows]
 
     def verify_event_chain(self) -> tuple[bool, str]:
-        with self._connect() as conn:
-            rows = conn.execute("SELECT * FROM core_events ORDER BY sequence ASC").fetchall()
+        if self._safe_mode_reason:
+            return False, self._safe_mode_reason
+        try:
+            with self._connect() as conn:
+                result = self._verify_event_chain_conn(conn)
+        except (sqlite3.Error, ValueError, TypeError, json.JSONDecodeError) as exc:
+            result = False, f"event chain unreadable: {type(exc).__name__}"
+        if not result[0]:
+            self._safe_mode_reason = result[1]
+        return result
+
+    def _verify_event_chain_conn(
+        self, conn: sqlite3.Connection
+    ) -> tuple[bool, str]:
+        rows = conn.execute("SELECT * FROM core_events ORDER BY sequence ASC").fetchall()
         previous_hash = "GENESIS"
         for row in rows:
-            payload = json.loads(row["payload_json"])
+            try:
+                payload = json.loads(row["payload_json"])
+            except (TypeError, ValueError, json.JSONDecodeError):
+                return False, f"event payload invalid at sequence {row['sequence']}"
             material = _canonical_json(
                 {
                     "event_id": row["event_id"],
@@ -297,6 +305,19 @@ class CoreStore:
                 return False, f"event chain failed at sequence {row['sequence']}"
             previous_hash = row["event_hash"]
         return True, f"event chain valid ({len(rows)} events)"
+
+    def _assert_writable(self, conn: sqlite3.Connection) -> None:
+        if self._safe_mode_reason:
+            raise SafeModeError(
+                "event integrity failed; read-only safe mode: "
+                + self._safe_mode_reason
+            )
+        valid, message = self._verify_event_chain_conn(conn)
+        if not valid:
+            self._safe_mode_reason = message
+            raise SafeModeError(
+                f"event integrity failed; read-only safe mode: {message}"
+            )
 
     def create_task(
         self,
@@ -319,14 +340,15 @@ class CoreStore:
         now = _iso(self.clock())
         with self._connect() as conn:
             self._begin(conn)
+            self._assert_writable(conn)
             conn.execute(
                 """
                 INSERT INTO core_tasks(
                     task_id, objective, status, priority, dependencies_json,
                     acceptance_json, write_required, repository, branch,
                     worktree, assigned_adapter, context_version, created_at,
-                    updated_at, result_json, blocker
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, NULL)
+                    updated_at, version, result_json, blocker
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, 0, NULL, NULL)
                 """,
                 (
                     task_id,
@@ -391,21 +413,32 @@ class CoreStore:
         adapter_id: str,
         branch: str | None,
         worktree: str | None,
+        expected_version: int,
         actor: str = "nero-core",
     ) -> Task:
         now = _iso(self.clock())
         with self._connect() as conn:
             self._begin(conn)
+            self._assert_writable(conn)
             row = conn.execute(
-                "SELECT status FROM core_tasks WHERE task_id = ?", (task_id,)
+                "SELECT status, version FROM core_tasks WHERE task_id = ?", (task_id,)
             ).fetchone()
             if row is None:
                 raise StoreError(f"unknown task: {task_id}")
-            conn.execute(
+            if row["status"] != TaskStatus.QUEUED.value:
+                raise StoreConflict(
+                    f"task {task_id} is {row['status']}, not queued"
+                )
+            if int(row["version"]) != int(expected_version):
+                raise StoreConflict(
+                    f"task version changed: expected {expected_version}, "
+                    f"found {row['version']}"
+                )
+            updated = conn.execute(
                 """UPDATE core_tasks
                    SET status = ?, assigned_adapter = ?, branch = ?, worktree = ?,
-                       blocker = NULL, updated_at = ?
-                   WHERE task_id = ?""",
+                       blocker = NULL, updated_at = ?, version = version + 1
+                   WHERE task_id = ? AND status = ? AND version = ?""",
                 (
                     TaskStatus.PREPARING.value,
                     adapter_id,
@@ -413,8 +446,12 @@ class CoreStore:
                     worktree,
                     now,
                     task_id,
+                    TaskStatus.QUEUED.value,
+                    int(expected_version),
                 ),
             )
+            if updated.rowcount != 1:  # pragma: no cover - transaction invariant
+                raise StoreConflict("task assignment lost an atomic status race")
             self._record_event(
                 conn,
                 "task.assigned",
@@ -426,20 +463,26 @@ class CoreStore:
                     "adapter": adapter_id,
                     "branch": branch,
                     "worktree": worktree,
+                    "from_version": int(expected_version),
+                    "to_version": int(expected_version) + 1,
                 },
                 created_at=now,
             )
+            assigned_row = conn.execute(
+                "SELECT * FROM core_tasks WHERE task_id = ?", (task_id,)
+            ).fetchone()
             conn.commit()
-        task = self.get_task(task_id)
-        if task is None:  # pragma: no cover
+        if assigned_row is None:  # pragma: no cover
             raise StoreError("assigned task could not be reloaded")
-        return task
+        return self._task_from_row(assigned_row)
 
     def transition_task(
         self,
         task_id: str,
         status: TaskStatus,
         *,
+        expected_status: TaskStatus,
+        expected_version: int,
         blocker: str | None = None,
         result: AgentResult | None = None,
         actor: str = "nero-core",
@@ -447,18 +490,40 @@ class CoreStore:
         now = _iso(self.clock())
         with self._connect() as conn:
             self._begin(conn)
+            self._assert_writable(conn)
             row = conn.execute(
-                "SELECT status FROM core_tasks WHERE task_id = ?", (task_id,)
+                "SELECT status, version FROM core_tasks WHERE task_id = ?", (task_id,)
             ).fetchone()
             if row is None:
                 raise StoreError(f"unknown task: {task_id}")
+            if row["status"] != expected_status.value:
+                raise StoreConflict(
+                    f"task status changed: expected {expected_status.value}, "
+                    f"found {row['status']}"
+                )
+            if int(row["version"]) != int(expected_version):
+                raise StoreConflict(
+                    f"task version changed: expected {expected_version}, "
+                    f"found {row['version']}"
+                )
             result_json = _canonical_json(result.as_dict()) if result else None
-            conn.execute(
+            updated = conn.execute(
                 """UPDATE core_tasks
                    SET status = ?, blocker = ?, result_json = COALESCE(?, result_json),
-                       updated_at = ? WHERE task_id = ?""",
-                (status.value, blocker, result_json, now, task_id),
+                       updated_at = ?, version = version + 1
+                   WHERE task_id = ? AND status = ? AND version = ?""",
+                (
+                    status.value,
+                    blocker,
+                    result_json,
+                    now,
+                    task_id,
+                    expected_status.value,
+                    int(expected_version),
+                ),
             )
+            if updated.rowcount != 1:  # pragma: no cover - transaction invariant
+                raise StoreConflict("task transition lost an atomic status race")
             self._record_event(
                 conn,
                 "task.transitioned",
@@ -469,14 +534,18 @@ class CoreStore:
                     "to": status.value,
                     "blocker": blocker,
                     "result": result.as_dict() if result else None,
+                    "from_version": int(expected_version),
+                    "to_version": int(expected_version) + 1,
                 },
                 created_at=now,
             )
+            transitioned_row = conn.execute(
+                "SELECT * FROM core_tasks WHERE task_id = ?", (task_id,)
+            ).fetchone()
             conn.commit()
-        task = self.get_task(task_id)
-        if task is None:  # pragma: no cover
+        if transitioned_row is None:  # pragma: no cover
             raise StoreError("transitioned task could not be reloaded")
-        return task
+        return self._task_from_row(transitioned_row)
 
     def request_approval(
         self,
@@ -490,6 +559,7 @@ class CoreStore:
         now = _iso(self.clock())
         with self._connect() as conn:
             self._begin(conn)
+            self._assert_writable(conn)
             conn.execute(
                 """INSERT INTO core_approvals(
                        approval_id, action, summary, risk, status, requested_by,
@@ -535,6 +605,7 @@ class CoreStore:
         status = ApprovalStatus.APPROVED if approved else ApprovalStatus.DENIED
         with self._connect() as conn:
             self._begin(conn)
+            self._assert_writable(conn)
             row = conn.execute(
                 "SELECT status FROM core_approvals WHERE approval_id = ?",
                 (approval_id,),
@@ -588,206 +659,35 @@ class CoreStore:
                 ).fetchall()
         return [self._approval_from_row(row) for row in rows]
 
-    def acquire_lease(
-        self,
-        repository_key: str,
-        *,
-        owner: str,
-        task_id: str | None,
-        ttl_seconds: int = 120,
-        actor: str = "nero-core",
-    ) -> LeaseGrant | None:
-        ttl = max(5, min(int(ttl_seconds), 3600))
-        now_dt = _as_utc(self.clock())
-        now = _iso(now_dt)
-        expires = _iso(now_dt + timedelta(seconds=ttl))
-        token = secrets.token_urlsafe(32)
-        with self._connect() as conn:
-            self._begin(conn)
-            self._expire_lease_if_needed(conn, repository_key, now_dt, actor=actor)
-            row = conn.execute(
-                "SELECT * FROM core_write_leases WHERE repository_key = ?",
-                (repository_key,),
-            ).fetchone()
-            if row is not None:
-                self._record_event(
-                    conn,
-                    "lease.denied",
-                    actor=actor,
-                    task_id=task_id,
-                    payload={
-                        "repository_key": repository_key,
-                        "requested_owner": owner,
-                        "active_owner": row["owner"],
-                        "expires_at": row["expires_at"],
-                    },
-                    created_at=now,
-                )
-                conn.commit()
-                return None
-            conn.execute(
-                """INSERT INTO core_write_leases(
-                       repository_key, owner, task_id, token_hash, acquired_at,
-                       heartbeat_at, expires_at
-                   ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (
-                    repository_key,
-                    owner,
-                    task_id,
-                    _token_hash(token),
-                    now,
-                    now,
-                    expires,
-                ),
-            )
-            self._record_event(
-                conn,
-                "lease.acquired",
-                actor=actor,
-                task_id=task_id,
-                payload={
-                    "repository_key": repository_key,
-                    "owner": owner,
-                    "expires_at": expires,
-                },
-                created_at=now,
-            )
-            conn.commit()
-        return LeaseGrant(
-            lease=Lease(repository_key, owner, task_id, now, now, expires),
-            token=token,
-        )
-
-    def current_lease(self, repository_key: str) -> Lease | None:
-        now_dt = _as_utc(self.clock())
-        with self._connect() as conn:
-            self._begin(conn)
-            self._expire_lease_if_needed(conn, repository_key, now_dt, actor="nero-core")
-            row = conn.execute(
-                "SELECT * FROM core_write_leases WHERE repository_key = ?",
-                (repository_key,),
-            ).fetchone()
-            conn.commit()
-        return self._lease_from_row(row) if row else None
-
-    def heartbeat_lease(
-        self,
-        repository_key: str,
-        token: str,
-        *,
-        ttl_seconds: int = 120,
-        actor: str = "nero-core",
-    ) -> Lease:
-        ttl = max(5, min(int(ttl_seconds), 3600))
-        now_dt = _as_utc(self.clock())
-        now = _iso(now_dt)
-        expires = _iso(now_dt + timedelta(seconds=ttl))
-        with self._connect() as conn:
-            self._begin(conn)
-            self._expire_lease_if_needed(conn, repository_key, now_dt, actor=actor)
-            row = conn.execute(
-                "SELECT * FROM core_write_leases WHERE repository_key = ?",
-                (repository_key,),
-            ).fetchone()
-            if row is None or not secrets.compare_digest(row["token_hash"], _token_hash(token)):
-                raise StoreError("lease token is invalid or expired")
-            conn.execute(
-                """UPDATE core_write_leases SET heartbeat_at = ?, expires_at = ?
-                   WHERE repository_key = ?""",
-                (now, expires, repository_key),
-            )
-            self._record_event(
-                conn,
-                "lease.heartbeat",
-                actor=actor,
-                task_id=row["task_id"],
-                payload={"repository_key": repository_key, "expires_at": expires},
-                created_at=now,
-            )
-            conn.commit()
-        lease = self.current_lease(repository_key)
-        if lease is None:  # pragma: no cover
-            raise StoreError("lease disappeared after heartbeat")
-        return lease
-
-    def release_lease(
-        self,
-        repository_key: str,
-        token: str,
-        *,
-        actor: str = "nero-core",
-    ) -> bool:
-        now = _iso(self.clock())
-        with self._connect() as conn:
-            self._begin(conn)
-            row = conn.execute(
-                "SELECT * FROM core_write_leases WHERE repository_key = ?",
-                (repository_key,),
-            ).fetchone()
-            if row is None or not secrets.compare_digest(row["token_hash"], _token_hash(token)):
-                self._record_event(
-                    conn,
-                    "lease.release_denied",
-                    actor=actor,
-                    payload={"repository_key": repository_key},
-                    created_at=now,
-                )
-                conn.commit()
-                return False
-            conn.execute(
-                "DELETE FROM core_write_leases WHERE repository_key = ?",
-                (repository_key,),
-            )
-            self._record_event(
-                conn,
-                "lease.released",
-                actor=actor,
-                task_id=row["task_id"],
-                payload={"repository_key": repository_key, "owner": row["owner"]},
-                created_at=now,
-            )
-            conn.commit()
-            return True
-
     def get_meta(self, key: str) -> str | None:
         with self._connect() as conn:
             row = conn.execute("SELECT value FROM core_meta WHERE key = ?", (key,)).fetchone()
         return str(row["value"]) if row else None
 
-    def set_meta(self, key: str, value: str) -> None:
+    def set_meta(
+        self,
+        key: str,
+        value: str,
+        *,
+        event_type: str,
+        actor: str,
+        payload: dict[str, Any],
+    ) -> None:
         with self._connect() as conn:
+            self._begin(conn)
+            self._assert_writable(conn)
             conn.execute(
                 """INSERT INTO core_meta(key, value) VALUES (?, ?)
                    ON CONFLICT(key) DO UPDATE SET value = excluded.value""",
                 (key, value),
             )
-
-    def _expire_lease_if_needed(
-        self,
-        conn: sqlite3.Connection,
-        repository_key: str,
-        now: datetime,
-        *,
-        actor: str,
-    ) -> None:
-        row = conn.execute(
-            "SELECT * FROM core_write_leases WHERE repository_key = ?",
-            (repository_key,),
-        ).fetchone()
-        if row is None or _parse_time(row["expires_at"]) > now:
-            return
-        conn.execute(
-            "DELETE FROM core_write_leases WHERE repository_key = ?",
-            (repository_key,),
-        )
-        self._record_event(
-            conn,
-            "lease.expired",
-            actor=actor,
-            task_id=row["task_id"],
-            payload={"repository_key": repository_key, "owner": row["owner"]},
-            created_at=_iso(now),
-        )
+            self._record_event(
+                conn,
+                event_type,
+                actor=actor,
+                payload=payload,
+            )
+            conn.commit()
 
     @staticmethod
     def _task_from_row(row: sqlite3.Row) -> Task:
@@ -816,6 +716,7 @@ class CoreStore:
             context_version=row["context_version"],
             created_at=row["created_at"],
             updated_at=row["updated_at"],
+            version=int(row["version"]),
             last_result=result,
             blocker=row["blocker"],
         )
@@ -837,25 +738,18 @@ class CoreStore:
 
     @staticmethod
     def _event_from_row(row: sqlite3.Row) -> Event:
+        try:
+            payload = json.loads(row["payload_json"])
+        except (TypeError, ValueError, json.JSONDecodeError):
+            payload = {"_integrity_error": "payload is unreadable"}
         return Event(
             sequence=int(row["sequence"]),
             event_id=row["event_id"],
             event_type=row["event_type"],
             actor=row["actor"],
             task_id=row["task_id"],
-            payload=json.loads(row["payload_json"]),
+            payload=payload,
             created_at=row["created_at"],
             previous_hash=row["previous_hash"],
             event_hash=row["event_hash"],
-        )
-
-    @staticmethod
-    def _lease_from_row(row: sqlite3.Row) -> Lease:
-        return Lease(
-            repository_key=row["repository_key"],
-            owner=row["owner"],
-            task_id=row["task_id"],
-            acquired_at=row["acquired_at"],
-            heartbeat_at=row["heartbeat_at"],
-            expires_at=row["expires_at"],
         )

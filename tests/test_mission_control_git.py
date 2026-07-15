@@ -77,10 +77,12 @@ class MissionControlGitTests(unittest.TestCase):
         self.temp.cleanup()
 
     def inspect(self, *, fetch: bool = True):
+        state = self.service.inspect(self.fixture.local, fetch_remote=fetch)
+        if fetch:
+            self.receipt = state.fetch_receipt
+            return state
         return self.service.inspect(
-            self.fixture.local,
-            fetch_remote=fetch,
-            last_fetch_at=NOW if not fetch else None,
+            self.fixture.local, fetch_receipt=getattr(self, "receipt", None)
         )
 
     def test_clean_relationship_names_both_branches(self) -> None:
@@ -179,7 +181,9 @@ class MissionControlGitTests(unittest.TestCase):
         self.fixture._git(
             self.fixture.local, "worktree", "add", "-b", "extra", str(extra)
         )
-        extra_state = self.service.inspect(extra, last_fetch_at=NOW)
+        extra_state = self.service.inspect(
+            extra, fetch_receipt=state.fetch_receipt
+        )
         self.assertEqual(state.common_directory, extra_state.common_directory)
         self.assertGreaterEqual(len(extra_state.worktrees), 2)
 
@@ -189,6 +193,99 @@ class MissionControlGitTests(unittest.TestCase):
         self.assertIsNone(state.behind)
         self.assertFalse(state.remote_state_fresh)
         self.assertIn("until a successful fresh fetch", state.relationship)
+
+    def test_fetch_uses_current_branch_tracking_remote_not_origin(self) -> None:
+        upstream = self.root / "upstream.git"
+        self.fixture._run(
+            self.root, "init", "--bare", "--initial-branch=main", str(upstream)
+        )
+        self.fixture._git(self.fixture.seed, "remote", "add", "upstream", str(upstream))
+        self.fixture._git(self.fixture.seed, "push", "upstream", "main")
+        self.fixture._git(self.fixture.local, "remote", "add", "upstream", str(upstream))
+        self.fixture._git(self.fixture.local, "fetch", "upstream")
+        self.fixture._git(
+            self.fixture.local,
+            "branch",
+            "--set-upstream-to=upstream/main",
+            "main",
+        )
+        state = self.service.inspect(self.fixture.local, fetch_remote=True)
+        self.assertEqual(state.remote_name, "upstream")
+        self.assertEqual(state.upstream, "upstream/main")
+        self.assertTrue(state.remote_state_fresh)
+        self.assertEqual(state.fetch_receipt["tracking_remote"], "upstream")
+
+    def test_receipt_is_rejected_when_remote_url_changes(self) -> None:
+        fresh = self.inspect()
+        replacement = self.root / "replacement.git"
+        self.fixture._run(
+            self.root, "init", "--bare", "--initial-branch=main", str(replacement)
+        )
+        self.fixture._git(
+            self.fixture.local, "remote", "set-url", "origin", str(replacement)
+        )
+        state = self.service.inspect(
+            self.fixture.local, fetch_receipt=fresh.fetch_receipt
+        )
+        self.assertFalse(state.remote_state_fresh)
+        self.assertIsNone(state.ahead)
+        self.assertTrue(any("does not match" in error for error in state.errors))
+
+    def test_failed_fetch_receipt_invalidates_previous_success(self) -> None:
+        fresh = self.inspect()
+        self.fixture._git(
+            self.fixture.local,
+            "remote",
+            "set-url",
+            "origin",
+            str(self.root / "missing.git"),
+        )
+        failed = self.service.inspect(
+            self.fixture.local,
+            fetch_remote=True,
+            fetch_receipt=fresh.fetch_receipt,
+        )
+        self.assertFalse(failed.remote_state_fresh)
+        self.assertFalse(failed.fetch_receipt["succeeded"])
+        later = self.service.inspect(
+            self.fixture.local, fetch_receipt=failed.fetch_receipt
+        )
+        self.assertFalse(later.remote_state_fresh)
+        self.assertIsNone(later.ahead)
+        self.assertEqual(later.authentication, "remote_unavailable")
+
+    def test_authentication_result_survives_non_refresh_inspection(self) -> None:
+        fresh = self.inspect()
+        later = self.service.inspect(
+            self.fixture.local, fetch_receipt=fresh.fetch_receipt
+        )
+        self.assertEqual(later.authentication, "fetch_authenticated")
+        self.assertTrue(later.remote_state_fresh)
+
+    def test_remote_url_credentials_are_redacted_from_state_and_errors(self) -> None:
+        secret_url = (
+            "https://alice:secret@example.invalid/repo.git?token=second#fragment"
+        )
+        self.fixture._git(
+            self.fixture.local, "remote", "set-url", "origin", secret_url
+        )
+        real_runner = self.service.runner
+
+        def failing_runner(args, cwd, timeout):
+            if "fetch" in args:
+                return CommandResult(
+                    128, "", f"fatal: Authentication failed for '{secret_url}'"
+                )
+            return real_runner(args, cwd, timeout)
+
+        state = GitService(runner=failing_runner, clock=lambda: NOW).inspect(
+            self.fixture.local, fetch_remote=True
+        )
+        serialized = str(state.as_dict())
+        self.assertEqual(state.remote_url, "https://example.invalid/repo.git")
+        self.assertNotIn("alice", serialized)
+        self.assertNotIn("secret", serialized)
+        self.assertNotIn("second", serialized)
 
 
 if __name__ == "__main__":

@@ -10,11 +10,21 @@ not preload project context.
 
 ---
 
+## ✅ Verified locally (not pushed)
+- **Mission Control Milestone 1** on `codex/nero-mission-control-m1`:
+  authoritative model-independent Core, deterministic Git state, task queue,
+  repository-global write lease, bounded Claude/Codex worker adapters,
+  approval-safe read-only UI, and hash-chained event recording under ADR-0017.
+  Focused Core/Git/service/API/interface tests and the existing Host Presence,
+  continuity, journal, agent, memory, voice-policy, and security regressions are
+  the merge gate. GitHub remains unchanged until Toni explicitly approves a
+  push.
+
 ## ⏭️ Next
-- **Mission Control Milestone 1:** authoritative model-independent Core,
-  deterministic Git state, task queue, repository-global write lease,
-  Claude/Codex worker adapters, approval-safe read-only UI, and complete event
-  recording under ADR-0017.
+- Review the local M1 branch, then decide whether to publish it for review.
+- A later milestone may add real worker invocation and a guarded local commit /
+  remote push capability, but only through the Capability Registry, Security
+  Gate, verification, and fresh human approval.
 - **Phase 1 — more capabilities, one PR each:** `fs.list`, `git.log` (read-only),
   then the **human-in-the-loop terminal**, then the Approve/Deny **confirmation
   UX** with the first MEDIUM+ (write) capability.
