@@ -1,0 +1,19 @@
+{
+  "note": "Honest provenance record. This drift was NOT caused by the Claude continuity build. Evidence preserved per the task's stop-and-preserve rule.",
+  "files_this_task_is_responsible_for": {
+    "data/memory.db":        {"pre": "9dcfcac419325a73e8473889c3f7bffc84091f5105b687096bec0fdddabfb946", "post": "9dcfcac419325a73e8473889c3f7bffc84091f5105b687096bec0fdddabfb946", "changed": false},
+    "global ~/.claude/CLAUDE.md": {"pre": "579d453abb52547f86977530236b1b59f47ba59b032440ba2ad654b8f89755f0", "post": "579d453abb52547f86977530236b1b59f47ba59b032440ba2ad654b8f89755f0", "changed": false},
+    "~/.codex/AGENTS.md":    {"pre": "d598491101e06d3d5566004417c51d1bd76685248d849fa403e524d3e38b12d3", "post": "d598491101e06d3d5566004417c51d1bd76685248d849fa403e524d3e38b12d3", "changed": false}
+  },
+  "external_codex_owned_drift": {
+    "~/.codex/config.toml": {
+      "pre": "16a39e47deeb38b191e7631def319a8ddc148ebb21d4ae8d0cf95a8a8d32a0b7",
+      "post": "0acd0aa6639c1d14968100e108fbe3b25125c7bffd19f7210af552d02c01c80e",
+      "changed": true,
+      "mtime_utc_local": "2026-07-15T00:41:27+02:00",
+      "attribution": "Live Codex desktop app background activity. In the same window Codex also rewrote .codex-global-state.json(.bak), .codex/cache/* (app directory, tools, plugin catalog), .codex/browser/config.toml, and bundled-marketplace plugin.json files.",
+      "claude_wrote_it": false,
+      "claude_write_targets_under_dot_codex": "none"
+    }
+  }
+}

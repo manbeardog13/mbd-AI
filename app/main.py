@@ -17,8 +17,8 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, Response, StreamingResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -29,6 +29,11 @@ from .capabilities.builtin import register_builtins
 from .config import ROOT, load_config, set_override
 from .llm import check_ollama, embed_text, stream_chat
 from .prompt import build_system_prompt
+
+HOSTED_ONLY_HARD_DISABLED = True
+HOSTED_ONLY_MESSAGE = (
+    "The standalone local Nero API is hard-disabled. Use zero-start Codex Host Presence."
+)
 
 # One Capability Registry for the process, populated with the built-in provider
 # at import (ADR-0007). MCP / Skills register here later, no loop changes needed.
@@ -54,8 +59,21 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 app = FastAPI(title="Your Personal AI")
 
 
+@app.middleware("http")
+async def hosted_only_lock(request: Request, call_next):
+    """Reject every legacy local API/UI request before it can do local work."""
+    if HOSTED_ONLY_HARD_DISABLED:
+        return JSONResponse(
+            status_code=410,
+            content={"detail": HOSTED_ONLY_MESSAGE},
+        )
+    return await call_next(request)
+
+
 @app.on_event("startup")
 def _startup() -> None:
+    if HOSTED_ONLY_HARD_DISABLED:
+        return
     db.init_db()
 
 

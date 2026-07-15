@@ -1,5 +1,11 @@
 # 🧠 mbd-AI — Your Personal, Local AI
 
+> [!IMPORTANT]
+> **Hosted-only lock (2026-07-14):** the standalone local Nero runtime and all
+> launch paths are hard-disabled under ADR-0014. The local-runtime material
+> below is retained as historical architecture only; do not run it. Nero's
+> active interface is zero-start Codex Host Presence from the global capsule.
+
 A private AI companion that runs **entirely on your own machine**, remembers
 you, has its own personality, and is reachable from anywhere on any network —
 without your data ever touching the cloud.

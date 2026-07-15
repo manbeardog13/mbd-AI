@@ -7,9 +7,9 @@ failed with "cannot execute binary file". This is pure Python + git, invoked the
 same way on every OS.
 
 When Claude stops with nothing left to do, if the project's source has changed
-since PROJECT_BRIEF.md was last updated, remind Claude (exit 2 -> stderr) to
-refresh the brief, commit+push it, and say so in chat. On turns that changed
-nothing, exit 0 silently.
+since PROJECT_BRIEF.md was last updated, report the stale brief as a worker
+result (exit 2 -> stderr). This advisory never authorizes edits, commits,
+merges, or pushes. On turns that changed nothing, exit 0 silently.
 """
 from __future__ import annotations
 
@@ -71,11 +71,11 @@ def main() -> int:
 
     if _commit_epoch(root, SOURCE_PATHS) > brief_t:
         sys.stderr.write(
-            "Standing rule (keep the brief current): the project's source has "
-            "changed since docs/PROJECT_BRIEF.md was last updated. Update "
-            "docs/PROJECT_BRIEF.md to reflect the current state, commit and push "
-            "it (merge to main), then tell Toni in chat that you've updated the "
-            "brief.\n"
+            "PROJECT_BRIEF_STALE: the project's source has changed since "
+            "docs/PROJECT_BRIEF.md was last updated. Report this as a worker "
+            "result. Do not edit, commit, merge, or push unless Nero Core has "
+            "granted the active repository write lease and the required human "
+            "approval.\n"
         )
         return 2
 
