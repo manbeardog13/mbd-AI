@@ -28,3 +28,4 @@ that supersedes it, and set the old one's status to "Superseded by ADR-XXXX".
 | [0008](0008-executive-memory.md) | Executive Memory — the working-state register | Accepted |
 | [0014](0014-zero-start-global-host-presence.md) | Zero-start global Nero Host Presence | Accepted |
 | [0016](0016-cross-host-continuity-ledger.md) | Cross-host continuity ledger | Accepted; final live control pending |
+| [0017](0017-authoritative-core-and-host-boundaries.md) | Authoritative Core and hosted-worker boundaries | Accepted |

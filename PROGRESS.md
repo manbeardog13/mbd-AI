@@ -2,15 +2,19 @@
 
 The single place to see where things stand. I update this every increment.
 For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
-**Rebuilding context?** Start at
-[docs/ARCHITECT_MEMORY.md](docs/ARCHITECT_MEMORY.md) — the project's durable memory
-and session-continuity entry point.
+**Doing repository architecture work?** Use the task-scoped read order in
+[docs/ARCHITECT_MEMORY.md](docs/ARCHITECT_MEMORY.md). Hosted conversation does
+not preload project context.
 
 **Legend:** ✅ shipped · 🔨 building now · 🧪 in review (PR) · ⏭️ next · 🗓️ planned
 
 ---
 
 ## ⏭️ Next
+- **Mission Control Milestone 1:** authoritative model-independent Core,
+  deterministic Git state, task queue, repository-global write lease,
+  Claude/Codex worker adapters, approval-safe read-only UI, and complete event
+  recording under ADR-0017.
 - **Phase 1 — more capabilities, one PR each:** `fs.list`, `git.log` (read-only),
   then the **human-in-the-loop terminal**, then the Approve/Deny **confirmation
   UX** with the first MEDIUM+ (write) capability.

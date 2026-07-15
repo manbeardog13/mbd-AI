@@ -53,9 +53,12 @@ capabilities, one PR each: `fs.list`, `git.log`, then the human-in-the-loop
 terminal (the confirmation Approve/Deny UX lands with the first MEDIUM+
 capability).*
 
-*Toni now also runs a **local Claude Code instance** on the PC (repo at
-`D:\mbd AI`) that verifies and drives things directly on the 4070 — the cloud
-session owns planning + merges; the local instance is the hands on the machine.*
+*Mission Control Milestone 1 is now the approved integration direction. Under
+[ADR-0017](adr/0017-authoritative-core-and-host-boundaries.md), a manually
+launched, model-independent Nero Core will own measured Git state, tasks,
+repository-global leases, approvals, and events. Claude and Codex are bounded,
+replaceable workers; neither owns planning, identity, memory, merges, or push
+authority. The Core is not yet implemented at this integration-baseline commit.*
 
 *In progress — **the Action Journal (Nero's accountability spine)**, the third
 leg of the **executive control layer**: Capability Registry (*what can I do?*) ·
@@ -77,9 +80,11 @@ the Journal), whose GPU milestones run on the local instance.*
 
 ## 1. What Nero is
 
-A **personal AI companion** named **Nero** (she/her) that runs **100% locally**
-on the owner's own PC. Private, offline inference — nothing leaves the machine.
-Reachable from anywhere over a private encrypted network (Tailscale).
+A **local-first personal AI companion** named **Nero** (she/her). The standalone
+application and its private memory run on the owner's PC and remain reachable
+over a private encrypted network (Tailscale). Hosted Claude/Codex interfaces are
+explicit adapters under the cloud-escalation policy; they do not receive local
+databases or private context by default.
 
 The explicit goal is to grow from "a chatbot" into a **cognitive companion**.
 **North Star: continuity** — she should wake up already knowing what the owner

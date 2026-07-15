@@ -1,17 +1,17 @@
 # Nero — Architect Memory
 
 **This is the project's long-term architectural memory and the single entry point
-for rebuilding context.** Read it first, every session, before recommending or
-building anything.
+for repository-specific context.** Read it before architectural work on Nero;
+ordinary hosted conversation does not preload it.
 
 > **Documentation is the project's memory. Conversations are only discussions
 > about that memory.** No part of Nero depends on any AI conversation. If a new
 > session starts weeks or months from now, it must rebuild an accurate
 > understanding of the project *from this repository alone*.
 
-**When documentation and a conversation disagree, the repository wins** — until
-the documentation is intentionally updated. Never rely on chat history for an
-architectural decision; rely on the repo.
+Toni's current instruction and the Constitution take precedence. After those,
+current repository evidence outranks stale conversational history or dated
+summaries; update this document deliberately when the architecture changes.
 
 This document changes **rarely and deliberately** (it holds the *stable* memory).
 Volatile status — what's shipped, in flight, or next — lives in the living docs it
@@ -19,10 +19,10 @@ points to, so this file does not drift.
 
 ---
 
-## 0. Startup procedure — rebuild context from the repo
+## 0. Task-scoped procedure — rebuild project context from the repo
 
-At the start of every session, before architectural decisions or code, review
-(when present), in this order:
+Before a repository-specific architectural decision or implementation, review
+only the relevant items below (when present), in this order:
 
 1. **`docs/ARCHITECT_MEMORY.md`** — this file (vision, principles, rules, standards, the map).
 2. **`docs/PROJECT_BRIEF.md`** — the current honest snapshot (what exists today, gaps).
@@ -35,17 +35,20 @@ At the start of every session, before architectural decisions or code, review
 8. **The existing tests** for it (`tests/`, `verify/`).
 9. **The latest commits** touching it (`git log --oneline` on the relevant paths).
 
-Only after this should implementation begin. *(A SessionStart hook surfaces this
-reminder automatically — `.claude/hooks/session_context.py`.)*
+Only after this scoped evidence review should implementation begin. Host
+Presence must not execute a SessionStart hook or preload repository context just
+because a hosted task opened (ADR-0014).
 
 ---
 
 ## 1. Project vision & North Star
 
-**Nero** is a **local-first cognitive companion** (she/her) that runs 100% on
-Toni's own PC (Windows 11 · RTX 4070 12 GB · 64 GB RAM), private and offline,
-reachable anywhere over Tailscale. She is bilingual (English + Croatian), has a
-TARS-style humor dial, and a voice.
+**Nero** is a **local-first cognitive companion** (she/her). Her standalone
+application runs on Toni's own PC (Windows 11 · RTX 4070 12 GB · 64 GB RAM),
+private and offline, reachable over Tailscale. Hosted Claude/Codex interfaces
+are explicit execution or presentation adapters; they do not silently receive
+the standalone application's private databases. She is bilingual (English +
+Croatian), has a TARS-style humor dial, and a voice.
 
 **North Star: continuity.** She should wake up already knowing what Toni was doing
 and quietly help without being asked — growing from "a chatbot" into an assistant
@@ -95,6 +98,13 @@ feels instant.
 
 - **Modular monolith** — one process, strict interfaces; extraction into a service
   is *possible* later, never *required* now (ADR-0001).
+- **Three explicit surfaces:** zero-start hosted identity (ADR-0014), the dormant
+  standalone local application, and the manually launched authoritative Core /
+  Mission Control (ADR-0017). None silently starts another.
+- **Nero Core owns orchestration:** measured Git state, tasks, repository-global
+  leases, approvals, and events are deterministic Core records. Claude and Codex
+  are replaceable workers returning bounded, normalized results; neither owns
+  identity, memory, scheduling, Git truth, or push authority.
 - **The executive control layer (Track A)** is one trust boundary, met at the
   single dispatch choke point, in this order, unbypassably:
   **Capability Registry** (*what can I do?* — ADR-0007) → **Trust Engine / security
@@ -104,8 +114,10 @@ feels instant.
 - **The agent/tool loop** is the core execution primitive (reason → tool → observe
   → repeat, bounded, never hangs — ADR-0003). Every capability is a *tool* behind
   it, not a new service.
-- **One resident model**; larger/vision/speech models swap in on demand at an
-  honest, visible cost (ADR-0002). MCP is the plugin standard (ADR-0004).
+- **Model-independent Core; one resident local model** when the standalone app
+  runs. Larger/vision/speech models swap in on demand at an honest, visible
+  cost; hosted workers are explicit bounded escalations (ADR-0002, ADR-0017).
+  MCP is the plugin standard (ADR-0004).
 - **Voice (Track B) is an output interface only.** It presents responses produced
   by the Brain and **never** touches the executive path — no dispatch, no
   authorize, no Journal entries, no execution, no cognition. Voice telemetry ≠ the
@@ -174,9 +186,10 @@ authoritative, not this paragraph.*
   Journal is on a hot path (background/pooled write for the SAFE best-effort path).
 - **Brief divergence across isolated branches** — `PROJECT_BRIEF.md` is edited on
   each feature branch, so it needs reconciliation when branches merge to `main`.
-- **Coordination is manual** — the cloud session (planning/architecture/merges)
-  and the local RTX-4070 instance (GPU work) share branches by convention; keep
-  them off each other's branch to avoid conflicts.
+- **Core coordination is not shipped yet.** Until Milestone 1 is verified,
+  Claude/Codex work remains manually coordinated. Afterward, exactly one
+  Nero-managed writer may hold the repository-global lease; this does not lock
+  out unrelated manual Git clients.
 - **Phase-1 gaps still open:** `fs.list` / `git.log` not built; the non-streaming
   `/api/agent` auto-denies `MEDIUM`+ until the confirmation UX (streaming Approve/
   Deny) ships; the terminal and `fs.write` are later, gated PRs.
