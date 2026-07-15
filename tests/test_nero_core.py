@@ -24,7 +24,7 @@ from app.core.contracts import (
     RiskLevel,
     TaskStatus,
 )
-from app.core.store import CoreStore, SafeModeError, StoreConflict
+from app.core.store import CoreStore, SafeModeError, StoreConflict, StoreError
 
 
 class MutableClock:
@@ -73,22 +73,40 @@ class NeroCoreTests(unittest.TestCase):
             worktree=str(self.root),
             expected_version=task.version,
         )
-        completed = self.store.transition_task(
+        paused = self.store.transition_task(
             task.task_id,
-            TaskStatus.COMPLETE,
+            TaskStatus.PAUSED,
             expected_status=assigned.status,
             expected_version=assigned.version,
             result=AgentResult(summary="verified", tests_run=("unit",)),
         )
         self.assertEqual(assigned.status, TaskStatus.PREPARING)
         self.assertEqual(assigned.version, 1)
-        self.assertEqual(completed.version, 2)
-        self.assertEqual(completed.last_result.summary, "verified")
+        self.assertEqual(paused.version, 2)
+        self.assertEqual(paused.last_result.summary, "verified")
         self.assertEqual(
             [event.event_type for event in reversed(self.store.list_events())],
             ["task.queued", "task.assigned", "task.transitioned"],
         )
         self.assertTrue(self.store.verify_event_chain()[0])
+
+    def test_store_cannot_bypass_core_owned_completion(self) -> None:
+        task = self.store.create_task(
+            objective="Do not trust manual evidence",
+            repository=self.root,
+        )
+        with self.assertRaisesRegex(StoreError, "completion is owned by Core"):
+            self.store.transition_task(
+                task.task_id,
+                TaskStatus.COMPLETE,
+                expected_status=task.status,
+                expected_version=task.version,
+                result=AgentResult(
+                    summary="worker claim",
+                    tests_run=("free-form claim",),
+                ),
+            )
+        self.assertEqual(self.store.get_task(task.task_id), task)
 
     def test_event_rows_are_append_only(self) -> None:
         event = self.store.record_event("test.event", payload={"ok": True})
@@ -105,6 +123,14 @@ class NeroCoreTests(unittest.TestCase):
         with closing(sqlite3.connect(self.store.db_path)) as conn:
             conn.execute("DROP TRIGGER core_events_no_update")
             conn.execute("UPDATE core_events SET event_hash = 'tampered'")
+            conn.executescript(
+                """
+                CREATE TRIGGER core_events_no_update
+                BEFORE UPDATE ON core_events BEGIN
+                    SELECT RAISE(ABORT, 'core events are append-only');
+                END;
+                """
+            )
             conn.commit()
         self.assertFalse(self.store.verify_event_chain()[0])
         with self.assertRaisesRegex(SafeModeError, "read-only safe mode"):
@@ -116,6 +142,14 @@ class NeroCoreTests(unittest.TestCase):
         with closing(sqlite3.connect(self.store.db_path)) as conn:
             conn.execute("DROP TRIGGER core_events_no_update")
             conn.execute("UPDATE core_events SET payload_json = '{bad json'")
+            conn.executescript(
+                """
+                CREATE TRIGGER core_events_no_update
+                BEFORE UPDATE ON core_events BEGIN
+                    SELECT RAISE(ABORT, 'core events are append-only');
+                END;
+                """
+            )
             conn.commit()
         valid, message = self.store.verify_event_chain()
         self.assertFalse(valid)
@@ -204,6 +238,7 @@ class NeroCoreTests(unittest.TestCase):
             acceptance_criteria=("return normalized result",),
             write_required=True,
         )
+        self.assertEqual(task.context_version, "mission-control-m2")
         task = self.store.assign_task(
             task.task_id,
             adapter_id="claude",
@@ -218,6 +253,8 @@ class NeroCoreTests(unittest.TestCase):
         self.assertTrue(packet.requires_action_time_lease_validation)
         self.assertFalse(claude.descriptor().remote_writes)
         self.assertFalse(codex.descriptor().remote_writes)
+        self.assertEqual(claude.descriptor().display_name, "Claude packet adapter")
+        self.assertEqual(codex.descriptor().display_name, "Codex packet adapter")
         result = codex.normalize_result(
             {"summary": "checked", "tests_run": ["unit"]}
         )

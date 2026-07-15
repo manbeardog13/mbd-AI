@@ -49,6 +49,18 @@ class RiskLevel(StrEnum):
     CRITICAL = "critical"
 
 
+class VerificationStatus(StrEnum):
+    RUNNING = "running"
+    PASSED = "passed"
+    FAILED = "failed"
+    BLOCKED = "blocked"
+    BACKEND_UNAVAILABLE = "backend_unavailable"
+    TIMED_OUT = "timed_out"
+    STALE = "stale"
+    ERROR = "error"
+    INTERRUPTED = "interrupted"
+
+
 def _jsonable(value: Any) -> Any:
     if isinstance(value, StrEnum):
         return value.value
@@ -70,6 +82,8 @@ class AgentResult:
     unresolved_questions: tuple[str, ...] = ()
     recommended_next_action: str = ""
     raw_reference: str | None = None
+    source: str = "operator_supplied_unverified"
+    provider_contacted: bool = False
 
     def as_dict(self) -> dict[str, Any]:
         return _jsonable(asdict(self))
@@ -94,6 +108,10 @@ class Task:
     version: int = 0
     last_result: AgentResult | None = None
     blocker: str | None = None
+    verification_profile_id: str | None = None
+    verification_profile_version: int | None = None
+    verification_profile_digest: str | None = None
+    verified_run_id: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return _jsonable(asdict(self))
@@ -116,6 +134,9 @@ class TaskPacket:
     lease_fencing_token: int | None
     lease_expires_at: str | None
     requires_action_time_lease_validation: bool
+    verification_profile_id: str | None
+    verification_profile_version: int | None
+    verification_profile_digest: str | None
     bounded_context: dict[str, Any] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, Any]:
@@ -130,6 +151,7 @@ class GitState:
     branch: str | None
     detached_head: bool
     upstream: str | None
+    tracked_merge_ref: str | None
     remote_name: str | None
     remote_url: str | None
     remote_available: bool | None
@@ -151,10 +173,12 @@ class GitState:
     last_commit: str | None
     local_only_branches: tuple[str, ...]
     remote_only_branches: tuple[str, ...]
+    branch_inventory_scope: str
     worktrees: tuple[dict[str, str | None], ...]
     active_write_lease: dict[str, Any] | None
     pending_commit: bool
     pending_push: bool | None
+    inspection_ok: bool
     errors: tuple[str, ...] = ()
 
     @property
@@ -239,6 +263,106 @@ class WorkerDescriptor:
     local_repository_access: bool
     assigned_task: str | None = None
     last_result: AgentResult | None = None
+
+    def as_dict(self) -> dict[str, Any]:
+        return _jsonable(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
+class VerificationBackendCapabilities:
+    backend_id: str
+    backend_version: str
+    execution_available: bool
+    isolation_level: str
+    os_family: str
+    network_disabled: bool
+    rootfs_readonly: bool
+    snapshot_readonly: bool
+    runs_as_nonroot: bool
+    host_credentials_unavailable: bool
+    host_devices_unavailable: bool
+    docker_socket_unavailable: bool
+    child_process_limit: bool
+    memory_limit_supported: bool
+    cpu_limit_supported: bool
+    timeout_supported: bool
+    output_limit_supported: bool
+    no_new_privileges: bool
+    capabilities_dropped: bool
+    test_only: bool = False
+
+    def as_dict(self) -> dict[str, Any]:
+        return _jsonable(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
+class VerificationProfile:
+    profile_id: str
+    version: int
+    display_name: str
+    description: str
+    command_label: str
+    harness_relative_path: str
+    harness_sha256: str
+    harness_files: tuple[dict[str, str], ...]
+    required_os_family: str
+    required_capabilities: tuple[str, ...]
+    timeout_seconds: int
+    manifest_digest: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return _jsonable(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
+class VerificationRun:
+    run_id: str
+    task_id: str
+    task_version: int
+    attempt: int
+    profile_id: str
+    profile_version: int
+    profile_digest: str
+    status: VerificationStatus
+    authoritative: bool
+    backend_id: str
+    backend_version: str
+    backend_capabilities: dict[str, Any]
+    repository_key: str
+    repository: str
+    worktree: str
+    branch: str | None
+    head_before: str | None
+    head_after: str | None
+    clean_before: bool
+    clean_after: bool
+    lease_id: str | None
+    lease_fencing_token: int | None
+    requested_at: str
+    started_at: str
+    completed_at: str | None
+    evidence: dict[str, Any]
+    evidence_hash: str | None
+    error_code: str | None
+    version: int = 0
+
+    def as_dict(self) -> dict[str, Any]:
+        return _jsonable(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
+class AttentionItem:
+    sequence: int
+    event_id: str
+    event_hash: str
+    kind: str
+    status: str
+    title: str
+    summary: str
+    requires_action: bool
+    task_id: str | None
+    verification_run_id: str | None
+    created_at: str
 
     def as_dict(self) -> dict[str, Any]:
         return _jsonable(asdict(self))

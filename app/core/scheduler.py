@@ -1,9 +1,10 @@
 """Deterministic scheduler with CAS tasks and a repository-global write lease."""
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping
 
 from .adapters import (
     AdapterError,
@@ -75,11 +76,9 @@ ALLOWED_TRANSITIONS: dict[TaskStatus, set[TaskStatus]] = {
         TaskStatus.PAUSED,
         TaskStatus.CANCELLED,
     },
-    TaskStatus.VERIFYING: {
-        TaskStatus.COMPLETE,
-        TaskStatus.FAILED,
-        TaskStatus.BLOCKED,
-    },
+    # Core-owned verification is the only authority allowed to leave this
+    # state. Its atomic store finalizer does not use this public map.
+    TaskStatus.VERIFYING: set(),
     TaskStatus.BLOCKED: {TaskStatus.QUEUED, TaskStatus.PAUSED, TaskStatus.CANCELLED},
     TaskStatus.PAUSED: {TaskStatus.QUEUED, TaskStatus.CANCELLED},
     TaskStatus.FAILED: {TaskStatus.QUEUED, TaskStatus.CANCELLED},
@@ -110,6 +109,12 @@ RESERVED_CONTEXT_KEYS = {
     "leaseid",
     "leasefencingtoken",
     "leaseexpiresat",
+    "verificationprofileid",
+    "verificationprofileversion",
+    "verificationprofiledigest",
+    "verifiedrunid",
+    "inspectionok",
+    "gitobservationerrors",
 }
 
 
@@ -184,6 +189,20 @@ class Scheduler:
                 raise ScheduleError(blocker)
 
             state = self._git_state(task.repository)
+            if not state.inspection_ok:
+                blocker = (
+                    "task packet blocked because required Git state could not be "
+                    "measured safely"
+                )
+                self.store.transition_task(
+                    task_id,
+                    TaskStatus.BLOCKED,
+                    expected_status=task.status,
+                    expected_version=task.version,
+                    blocker=blocker,
+                    actor="nero-scheduler",
+                )
+                raise ScheduleError(blocker)
             if task.write_required:
                 blocker = self._write_blocker(state)
                 if blocker:
@@ -239,6 +258,7 @@ class Scheduler:
                 credential = acquisition.grant
                 self._lease_event("lease.acquired", credential.lease)
 
+            claimed_repository_key = state.common_directory
             claimed = self.store.assign_task(
                 task_id,
                 adapter_id=adapter_id,
@@ -248,23 +268,41 @@ class Scheduler:
                 actor="nero-scheduler",
             )
 
-            if credential:
-                # Re-check after the cross-database claim. Any policy drift
-                # compensates by releasing the canonical lease and blocking.
-                state = self._git_state(task.repository)
-                blocker = self._write_blocker(state)
-                if blocker:
+            # Re-check after the task/lease claim. A branch or worktree switch
+            # between observations must never yield a packet with mixed
+            # bindings, even if both individual snapshots look clean.
+            state = self._git_state(task.repository)
+            binding_changed = bool(
+                RepositoryLeaseRegistry.canonical_key(state.common_directory)
+                != RepositoryLeaseRegistry.canonical_key(claimed_repository_key)
+                or RepositoryLeaseRegistry.canonical_key(state.worktree)
+                != RepositoryLeaseRegistry.canonical_key(claimed.worktree or "")
+                or state.branch != claimed.branch
+            )
+            blocker = (
+                "task packet blocked because required Git state could not be "
+                "measured safely"
+                if not state.inspection_ok
+                else (
+                    "task packet blocked because repository, worktree, or branch "
+                    "changed during assignment"
+                    if binding_changed
+                    else (self._write_blocker(state) if credential else None)
+                )
+            )
+            if blocker:
+                if credential:
                     self._release_credential(task_id, credential)
                     credential = None
-                    claimed = self.store.transition_task(
-                        task_id,
-                        TaskStatus.BLOCKED,
-                        expected_status=claimed.status,
-                        expected_version=claimed.version,
-                        blocker=blocker,
-                        actor="nero-scheduler",
-                    )
-                    raise ScheduleError(blocker)
+                claimed = self.store.transition_task(
+                    task_id,
+                    TaskStatus.BLOCKED,
+                    expected_status=claimed.status,
+                    expected_version=claimed.version,
+                    blocker=blocker,
+                    actor="nero-scheduler",
+                )
+                raise ScheduleError(blocker)
 
             lease = credential.lease if credential else None
             context = {
@@ -272,6 +310,8 @@ class Scheduler:
                 "git_relationship": state.relationship,
                 "remote_state_fresh": state.remote_state_fresh,
                 "clean": state.clean,
+                "inspection_ok": state.inspection_ok,
+                "git_observation_errors": list(state.errors),
                 "remote_writes_allowed": False,
             }
             packet = adapter.prepare_packet(
@@ -363,6 +403,11 @@ class Scheduler:
                     f"task version changed: expected {expected_version}, "
                     f"found {task.version}"
                 )
+            if status is TaskStatus.COMPLETE:
+                raise ScheduleError(
+                    "task completion is owned by Core verification; "
+                    "worker-reported evidence is advisory only"
+                )
             if status not in ALLOWED_TRANSITIONS[task.status]:
                 raise ScheduleError(
                     f"invalid task transition: {task.status.value} -> {status.value}"
@@ -378,31 +423,19 @@ class Scheduler:
                 if adapter is None:
                     raise ScheduleError("assigned adapter is unavailable")
                 result = adapter.normalize_result(result_payload)
-            if status is TaskStatus.COMPLETE:
-                if result is None:
-                    raise ScheduleError(
-                        "verified completion requires a normalized worker result"
-                    )
-                if not result.tests_run:
-                    raise ScheduleError(
-                        "verified completion requires explicit verification evidence"
-                    )
+            if status is TaskStatus.VERIFYING and not all(
+                (
+                    task.verification_profile_id,
+                    task.verification_profile_version is not None,
+                    task.verification_profile_digest,
+                )
+            ):
+                raise ScheduleError(
+                    "Core verification requires a pinned verification profile"
+                )
 
-            if task.write_required and status in ACTIVE_WRITE_STATUSES | {
-                TaskStatus.COMPLETE
-            }:
+            if task.write_required and status in ACTIVE_WRITE_STATUSES:
                 self._validate_task_lease(task)
-                if status is TaskStatus.COMPLETE:
-                    state = self._git_state(task.repository)
-                    if (
-                        state.branch != task.branch
-                        or state.worktree != task.worktree
-                        or state.conflict_count
-                    ):
-                        raise ScheduleError(
-                            "write-task completion rejected because branch, "
-                            "worktree, or conflict state changed"
-                        )
 
             transitioned = self.store.transition_task(
                 task_id,
@@ -413,16 +446,6 @@ class Scheduler:
                 result=result,
                 actor="nero-scheduler",
             )
-            if status is TaskStatus.COMPLETE:
-                self.store.record_event(
-                    "task.verification.completed",
-                    actor="nero-scheduler",
-                    task_id=task_id,
-                    payload={
-                        "evidence": list(result.tests_run),
-                        "summary": result.summary,
-                    },
-                )
             if task.write_required and status in RELEASE_STATUSES:
                 self._release_known_lease(task_id)
             return transitioned
@@ -534,7 +557,54 @@ class Scheduler:
             self._lease_event("lease.expired", observation.expired)
         return observation.active
 
+    def verification_git_state(self, task: Task) -> GitState:
+        """Return Core's current Git observation for a verification binding."""
+        return self._git_state(task.repository)
+
+    def validate_verification_lease(self, task: Task) -> Lease | None:
+        """Validate the exact process-local fenced lease for a write task."""
+        if not task.write_required:
+            return None
+        if task.status is not TaskStatus.VERIFYING:
+            raise ScheduleError("write-task verification requires VERIFYING state")
+        return self._validate_task_lease(task)
+
+    @contextmanager
+    def fence_verification_completion(self, task: Task) -> Iterator[Lease | None]:
+        """Hold the exact process-local lease fence through Core completion."""
+
+        if not task.write_required:
+            yield None
+            return
+        if task.status is not TaskStatus.VERIFYING:
+            raise ScheduleError("write-task verification requires VERIFYING state")
+        credential = self._task_credentials.get(task.task_id)
+        if credential is None:
+            raise ScheduleError("write lease credential is unavailable")
+        lease = credential.lease
+        try:
+            with self.lease_registry.completion_fence(
+                lease.repository_key,
+                lease.lease_id,
+                lease.fencing_token,
+                credential.token,
+            ) as fenced:
+                if fenced.task_id != task.task_id:
+                    raise LeaseRegistryError("lease task binding changed")
+                yield fenced
+        except LeaseRegistryError as exc:
+            raise ScheduleError(str(exc)) from exc
+
+    def release_verification_lease(self, task_id: str) -> None:
+        """Release a known lease only after an atomic verification terminal state."""
+        self._release_known_lease(task_id)
+
     def _git_state(self, repository: str) -> GitState:
+        chain_ok, message = self.store.verify_event_chain()
+        if not chain_ok:
+            raise SafeModeError(
+                "event integrity failed; read-only safe mode: " + message
+            )
         discovery = self.git.inspect(repository)
         raw = self.store.get_meta(fetch_metadata_key(discovery.common_directory))
         receipt = FetchReceipt.parse(raw)
@@ -651,6 +721,8 @@ class Scheduler:
 
     @staticmethod
     def _write_blocker(state: GitState) -> str | None:
+        if not state.inspection_ok or state.errors:
+            return "write task blocked because required Git state could not be measured safely"
         if not state.remote_state_fresh:
             return "write task blocked until a successful fresh fetch"
         if state.detached_head:
@@ -668,6 +740,8 @@ class Scheduler:
                 f"write task blocked because {state.branch} is {state.behind} commits "
                 f"behind {state.upstream}"
             )
+        if state.ahead is None or state.behind is None:
+            return "write task blocked because ahead/behind could not be measured"
         return None
 
     @staticmethod

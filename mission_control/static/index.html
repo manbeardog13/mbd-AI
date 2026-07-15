@@ -26,6 +26,8 @@
         <a class="nav-item" href="#git"><span aria-hidden="true">⑂</span> Git intelligence</a>
         <a class="nav-item" href="#workers"><span aria-hidden="true">◇</span> Workers</a>
         <a class="nav-item" href="#planner"><span aria-hidden="true">☷</span> Planner</a>
+        <a class="nav-item" href="#verification"><span aria-hidden="true">◎</span> Verification</a>
+        <a class="nav-item" href="#attention"><span aria-hidden="true">!</span> Needs attention</a>
         <a class="nav-item" href="#approvals"><span aria-hidden="true">✓</span> Approvals</a>
         <a class="nav-item" href="#timeline"><span aria-hidden="true">⌁</span> Timeline</a>
       </nav>
@@ -63,7 +65,7 @@
         </div>
         <div class="read-only-banner" role="note">
           <span aria-hidden="true">⌾</span>
-          <span><strong>Milestone 1 guard:</strong> fetch and inspection are available; commit, merge, pull, rebase, and push are not.</span>
+          <span><strong>Milestone 2 guard:</strong> a Core-owned receipt is required for trusted completion; caller identity is not authenticated. Remote repository writes are unavailable.</span>
         </div>
       </section>
 
@@ -94,20 +96,21 @@
             <div><span>Worktree</span><code id="git-worktree">—</code></div>
             <div><span>Remote</span><code id="git-remote">—</code></div>
             <div><span>Last fetch</span><strong id="git-fetch">Never by Core</strong></div>
-            <div><span>Authentication</span><strong id="git-auth">Not checked</strong></div>
-            <div><span>Remote evidence</span><strong id="git-fresh">Not fresh</strong></div>
+            <div><span>Fetch access</span><strong id="git-auth">Not checked</strong></div>
+            <div><span>Tracked-branch evidence</span><strong id="git-fresh">Not fresh</strong></div>
             <div><span>Write lease</span><strong id="git-lease">Available</strong></div>
             <div><span>Pending state</span><strong id="git-pending">Unknown</strong></div>
             <div><span>Last commit</span><strong id="git-commit">—</strong></div>
           </div>
+          <p id="git-errors" class="helper" role="status">Checking required Git probes.</p>
           <p id="remote-write-note" class="helper">Remote mutation requires a future verified capability plus a visible approval. Approval evidence alone never executes it.</p>
         </section>
 
         <section id="workers" class="panel" aria-labelledby="workers-title">
           <div class="panel-head">
             <div>
-          <p class="eyebrow">Replaceable engines</p>
-              <h2 id="workers-title">Worker adapters</h2>
+          <p class="eyebrow">Provider not contacted</p>
+              <h2 id="workers-title">Packet adapters</h2>
             </div>
             <span class="count-chip" id="worker-count">2</span>
           </div>
@@ -125,13 +128,49 @@
           <div id="task-list" class="task-list" aria-live="polite"></div>
         </section>
 
+        <section id="attention" class="panel" aria-labelledby="attention-title">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Actionable evidence</p>
+              <h2 id="attention-title">Needs attention</h2>
+            </div>
+            <span class="count-chip" id="attention-count">0</span>
+          </div>
+          <div id="attention-list" class="attention-list" aria-live="polite"></div>
+        </section>
+
+        <section id="verification" class="panel panel-wide" aria-labelledby="verification-title">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Core-owned evidence</p>
+              <h2 id="verification-title">Verification authority</h2>
+            </div>
+            <div class="panel-statuses">
+              <span class="count-chip" id="verification-backend-state">Checking backend</span>
+              <span class="count-chip" id="verification-run-count">0 runs</span>
+            </div>
+          </div>
+          <p class="helper verification-intro">Profiles are code-owned and content-addressed. A task's pinned profile digest cannot be replaced; changed harness content fails closed.</p>
+          <div class="verification-layout">
+            <div>
+              <h3>Available profiles</h3>
+              <div id="verification-profile-list" class="verification-list" aria-live="polite"></div>
+            </div>
+            <div>
+              <h3>Recent evidence</h3>
+              <div id="verification-run-list" class="verification-list" aria-live="polite"></div>
+            </div>
+          </div>
+        </section>
+
         <section id="approvals" class="panel" aria-labelledby="approvals-title">
           <div class="panel-head">
             <div>
-              <p class="eyebrow">Human authority</p>
+              <p class="eyebrow">Local approval records</p>
               <h2 id="approvals-title">Pending approvals</h2>
             </div>
           </div>
+          <p class="helper">Caller identity is not authenticated. Loopback access reduces exposure but is not authorization.</p>
           <div id="approval-list" class="approval-list" aria-live="polite"></div>
         </section>
 
@@ -148,6 +187,7 @@
                 <option value="lease.">Leases</option>
                 <option value="git.">Git</option>
                 <option value="approval.">Approvals</option>
+                <option value="verification.">Verification</option>
               </select>
             </label>
           </div>
@@ -158,7 +198,7 @@
           <div class="panel-head">
             <div>
           <p class="eyebrow">Fail closed</p>
-              <h2 id="health-title">System health</h2>
+              <h2 id="health-title">Internal state integrity</h2>
             </div>
           </div>
           <dl id="health-list" class="health-list"></dl>
@@ -191,33 +231,15 @@
           <span>Requires repository write lease</span>
         </label>
       </div>
+      <label>Verification profile
+        <select id="task-profile" name="verification_profile_id">
+          <option value="">No profile pinned yet</option>
+        </select>
+        <span class="helper field-helper">A profile fixes what Nero Core is allowed to verify; it never accepts an operator-entered command.</span>
+      </label>
       <div class="dialog-actions">
         <button id="cancel-task" class="button button-secondary" type="button">Cancel</button>
         <button class="button button-primary" type="submit">Queue task</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="complete-dialog" aria-labelledby="complete-dialog-title">
-    <form id="complete-form" method="dialog">
-      <div class="dialog-head">
-        <div>
-          <p class="eyebrow">Verified completion</p>
-          <h2 id="complete-dialog-title">Record verification</h2>
-        </div>
-        <button id="close-complete" class="icon-button" type="button" aria-label="Close">×</button>
-      </div>
-      <input name="task_id" type="hidden">
-      <input name="expected_version" type="hidden">
-      <label>Verified outcome
-        <textarea name="summary" rows="3" maxlength="2000" required placeholder="What was verified?"></textarea>
-      </label>
-      <label>Verification evidence <span class="muted">one check per line</span>
-        <textarea name="evidence" rows="4" required placeholder="Unit tests passed&#10;Acceptance criteria reviewed"></textarea>
-      </label>
-      <div class="dialog-actions">
-        <button id="cancel-complete" class="button button-secondary" type="button">Cancel</button>
-        <button class="button button-primary" type="submit">Complete verified task</button>
       </div>
     </form>
   </dialog>

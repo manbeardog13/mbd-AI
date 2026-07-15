@@ -54,7 +54,11 @@ class MissionControlApiTests(unittest.TestCase):
         git(self.repo, "remote", "add", "origin", str(self.remote))
         git(self.repo, "push", "-u", "origin", "main")
         self.app = create_app(self.repo, self.root / "mission-control.db")
-        self.client_context = TestClient(self.app)
+        self.client_context = TestClient(
+            self.app,
+            base_url="http://127.0.0.1",
+            headers={"X-Nero-Local": "1"},
+        )
         self.client = self.client_context.__enter__()
 
     def tearDown(self) -> None:
@@ -69,7 +73,9 @@ class MissionControlApiTests(unittest.TestCase):
         self.assertEqual(self.client.get("/assets/app.js").status_code, 200)
 
         health = self.client.get("/api/mc/health").json()
-        self.assertTrue(health["ok"])
+        self.assertTrue(health["internal_state_ok"])
+        self.assertTrue(health["repository_inspection_ok"])
+        self.assertNotIn("ok", health)
         self.assertEqual(health["remote_mutation_capabilities"], [])
         policy = self.client.get("/api/mc/policy").json()
         self.assertEqual(policy["authority"], "Nero Core")
@@ -101,12 +107,16 @@ class MissionControlApiTests(unittest.TestCase):
         self.assertEqual(event_types, ["git.fetch.completed"])
 
     def test_task_worker_and_timeline_contract(self) -> None:
+        profile_id = self.client.get("/api/mc/verification/profiles").json()[
+            "profiles"
+        ][0]["profile_id"]
         queued = self.client.post(
             "/api/mc/tasks",
             json={
                 "objective": "Inspect the repository",
                 "acceptance_criteria": ["return measured evidence"],
                 "write_required": False,
+                "verification_profile_id": profile_id,
             },
         )
         self.assertEqual(queued.status_code, 201)
@@ -116,7 +126,7 @@ class MissionControlApiTests(unittest.TestCase):
             f"/api/mc/tasks/{task_id}/assign",
             json={
                 "adapter_id": "codex",
-                "expected_version": 0,
+                "expected_version": queued.json()["task"]["version"],
                 "bounded_context": {"scope": "tests"},
             },
         )
@@ -129,12 +139,12 @@ class MissionControlApiTests(unittest.TestCase):
         self.assertEqual(codex["assigned_task"], task_id)
 
         version = assignment.json()["assignment"]["task"]["version"]
-        for status in ("running", "verifying", "complete"):
+        for status in ("running", "verifying"):
             payload: dict[str, object] = {
                 "status": status,
                 "expected_version": version,
             }
-            if status == "complete":
+            if status == "verifying":
                 payload["result"] = {
                     "summary": "Measured evidence returned",
                     "tests_run": ["API fixture verified"],
@@ -144,6 +154,25 @@ class MissionControlApiTests(unittest.TestCase):
             )
             self.assertEqual(response.status_code, 200)
             version = response.json()["task"]["version"]
+        manual = self.client.post(
+            f"/api/mc/tasks/{task_id}/transition",
+            json={
+                "status": "complete",
+                "expected_version": version,
+                "result": {
+                    "summary": "manual claim",
+                    "tests_run": ["manual claim"],
+                },
+            },
+        )
+        self.assertEqual(manual.status_code, 409)
+        verified = self.client.post(
+            f"/api/mc/tasks/{task_id}/verify",
+            json={"expected_version": version},
+        )
+        self.assertEqual(verified.status_code, 200)
+        self.assertEqual(verified.json()["run"]["status"], "backend_unavailable")
+        self.assertFalse(verified.json()["run"]["authoritative"])
         events = self.client.get(f"/api/mc/events?task_id={task_id}").json()["events"]
         self.assertGreaterEqual(len(events), 5)
         self.assertTrue(all(event["task_id"] == task_id for event in events))

@@ -29,7 +29,7 @@ def main() -> int:
     app = create_app(args.repo.resolve())
     print(
         f"Nero Mission Control is explicitly running at http://{args.host}:{args.port}\n"
-        "Remote Git mutations are disabled in Milestone 1. Press Ctrl+C to stop."
+        "Remote Git write routes are disabled. Press Ctrl+C to stop."
     )
     run(app, host=args.host, port=args.port, log_level="info")
     return 0

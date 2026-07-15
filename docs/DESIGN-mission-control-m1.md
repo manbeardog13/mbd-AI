@@ -53,18 +53,46 @@ Provider SDK objects never enter Core state.
 `GitService` asks Git directly for the repository root, canonical common
 directory, worktree, branch, upstream, status, conflicts, worktrees, refs, and
 last commit. It discovers the current branch's tracked remote before fetching.
-A successful explicit `git fetch --prune <tracked-remote>` is the only Git
-metadata mutation. Ahead/behind claims require a fresh versioned receipt bound
-to the repository, tracked remote, redacted remote URL, and upstream. A failed
-fetch overwrites the prior receipt and withholds counts. Authentication is not
-confused with push permission.
+A successful explicit refresh is the only Git metadata mutation. It fetches
+only the validated branch merge ref without changing branch, tag, or
+remote-tracking refs. Core first reads the exact merge-ref advertisement,
+fetches without writing `FETCH_HEAD`, and accepts freshness only when that
+advertised commit exists locally afterward. Its writes are limited to fetched
+objects and ordinary Git fetch bookkeeping; an empty command-line refmap ensures
+repository-controlled fetch refspecs are ignored, while tag, prune, submodule,
+and maintenance side effects are disabled. A branch without a safely measured tracked merge
+ref cannot produce a successful refresh receipt. The
+receipt binds the strictly advertised merge-ref object ID as well as the
+repository, tracked remote, exact validated merge source ref, redacted URL plus
+exact raw-URL fingerprint, and upstream. Ahead/behind counts use the receipt-bound object ID only while the
+receipt is fresh. A failed fetch overwrites prior success and withholds counts.
+Changing URL userinfo, query text, or an SCP-style username invalidates the raw
+fingerprint even when the redacted display URL is unchanged. Manual edits to a
+cached remote-tracking ref do not rebind fresh counts. Failed or malformed
+status and ahead/behind output are withheld rather than presented as measured
+truth; local `.` upstreams and unsafe option-like remote names are not invoked.
+`local_only_branches` and `remote_only_branches` remain a comparison against
+cached local `refs/remotes/*`; `branch_inventory_scope` labels that inventory
+as not remotely verified. Freshness applies only to the receipt-bound tracked
+merge ref and its ahead/behind relationship.
+Replacement objects are disabled, commit-graph caches are bypassed, and
+shallow or legacy-grafted topology fails closed for scheduling. Ordinary Git
+inspection can still invoke locally configured clean/filter helpers while
+measuring worktree status; this is a Git installation/repository behavior, not
+the DisabledRunner verification path.
+Git repository/index/object-selection environment overrides are removed from
+child commands. Assume-unchanged and skip-worktree index entries are rejected,
+submodule ignore settings cannot conceal dirtiness, and the starting and ending
+full HEAD, branch, merge ref, tracked remote URL, and worktree identity must
+agree. A second post-claim observation prevents mixed-binding task packets.
 
 Relationship text always identifies both sides, for example:
 
 > Local branch main is 2 commits ahead and 0 commits behind upstream branch
 > origin/main.
 
-Fetch reachability/authentication is reported separately from push permission.
+Fetch reachability is reported separately from unverified credential identity
+and push permission.
 M1 never tests or claims push permission.
 
 ## Scheduling and the write lease
@@ -138,7 +166,8 @@ stores keep their original meanings.
    across separate processes, Core databases, and linked worktrees.
 4. Claude and Codex are provider-labelled workers, not Nero owners.
 5. Remote approval is visible, durable, and non-executing.
-6. Core mutations and transitions are hash-chained and append-only.
+6. Core mutations and transitions atomically append hash-chained, append-only
+   event records; their current-state projections remain guarded mutable rows.
 7. Identity, continuity, memory, voice, and journal boundaries are documented
    and preserved without database mixing.
 8. Automated tests cover clean, dirty, ahead, behind, diverged, conflict,

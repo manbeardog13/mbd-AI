@@ -13,10 +13,11 @@ import os
 import secrets
 import sqlite3
 import uuid
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Iterator
 
 from .contracts import Lease
 
@@ -318,6 +319,59 @@ class RepositoryLeaseRegistry:
             lease = self._from_row(row)
             conn.commit()
         return lease
+
+    @contextmanager
+    def completion_fence(
+        self,
+        common_directory: str | Path,
+        lease_id: str,
+        fencing_token: int,
+        token: str,
+    ) -> Iterator[Lease]:
+        """Hold the canonical lease lock across an authoritative Core commit.
+
+        Validation alone is subject to a validate-then-use race. This guard
+        keeps a write transaction open in the canonical lease database while
+        the caller commits completion in Core state, so an expired lease cannot
+        be replaced by a higher fencing generation during that commit.
+        """
+
+        repository_key = self.canonical_key(common_directory)
+        conn = self._connect(repository_key)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            now = _as_utc(self.clock())
+            self._take_expired(conn, repository_key, now)
+            row = conn.execute(
+                "SELECT * FROM repository_write_lease WHERE repository_key = ?",
+                (repository_key,),
+            ).fetchone()
+            if not self._matches(row, lease_id, fencing_token, token):
+                conn.rollback()
+                raise LeaseRegistryError("lease token is invalid or expired")
+            lease = self._from_row(row)
+            yield lease
+            # BEGIN IMMEDIATE prevents another registry writer from replacing
+            # the row between the validation above and the Core commit.
+            current = conn.execute(
+                "SELECT * FROM repository_write_lease WHERE repository_key = ?",
+                (repository_key,),
+            ).fetchone()
+            if not self._matches(current, lease_id, fencing_token, token):
+                raise LeaseRegistryError("lease fence changed during completion")
+            self._history(
+                conn,
+                "lease.completion_fenced",
+                lease,
+                _iso(self.clock()),
+                {},
+            )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
 
     def release(
         self,

@@ -47,6 +47,33 @@ class MissionControlStaticTests(unittest.TestCase):
     def test_async_form_handlers_do_not_reuse_event_current_target(self) -> None:
         self.assertNotIn("event.currentTarget.reset()", JS)
 
+    def test_m2_removes_manual_completion_evidence(self) -> None:
+        self.assertNotIn('id="complete-dialog"', HTML)
+        self.assertNotIn('id="complete-form"', HTML)
+        self.assertNotIn("tests_run", JS)
+        self.assertIn("Run Core verification", HTML + JS)
+        self.assertNotIn("Immutable verification profile", JS)
+        self.assertIn("Immutable profile binding", JS)
+
+    def test_m2_loads_profiles_evidence_and_attention_without_commands(self) -> None:
+        self.assertIn("/api/mc/verification/profiles", JS)
+        self.assertIn("/api/mc/verification/runs", JS)
+        self.assertIn("/api/mc/attention", JS)
+        self.assertIn("/verify", JS)
+        self.assertIn("Packet/task state", JS)
+        self.assertNotIn("Worker self-report", JS)
+        self.assertIn('"X-Nero-Local": "1"', JS)
+        self.assertIn("/api/mc/reconcile", JS)
+        self.assertIn("Internal state", JS)
+        self.assertIn("last_result.source", JS)
+        self.assertIn("last_result.provider_contacted", JS)
+        for forbidden in ("command:", "args:", "env:", "backend:"):
+            self.assertNotIn(forbidden, JS)
+
+    def test_m2_mobile_actions_and_hashes_remain_legible(self) -> None:
+        self.assertIn("min-height: 44px", CSS)
+        self.assertIn("overflow-wrap: anywhere", CSS)
+
 
 if __name__ == "__main__":
     unittest.main()

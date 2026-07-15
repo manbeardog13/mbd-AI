@@ -1,6 +1,6 @@
 """Provider-neutral worker adapter contracts.
 
-Milestone 1 prepares bounded packets and normalizes results. It intentionally
+Mission Control prepares bounded packets and normalizes results. It intentionally
 does not call Claude/Codex APIs and grants no remote-write capability.
 """
 from __future__ import annotations
@@ -86,6 +86,9 @@ class ManualWorkerAdapter:
             lease_fencing_token=lease_fencing_token,
             lease_expires_at=lease_expires_at,
             requires_action_time_lease_validation=True,
+            verification_profile_id=task.verification_profile_id,
+            verification_profile_version=task.verification_profile_version,
+            verification_profile_digest=task.verification_profile_digest,
             bounded_context=context,
         )
 
@@ -103,6 +106,8 @@ class ManualWorkerAdapter:
                 payload.get("recommended_next_action", "")
             ).strip(),
             raw_reference=_optional_string(payload.get("raw_reference")),
+            source="operator_supplied_unverified",
+            provider_contacted=False,
         )
 
 
@@ -111,7 +116,7 @@ class ClaudeAdapter(ManualWorkerAdapter):
         super().__init__(
             adapter_id="claude",
             provider="Anthropic",
-            display_name="Claude worker",
+            display_name="Claude packet adapter",
         )
 
 
@@ -120,7 +125,7 @@ class CodexAdapter(ManualWorkerAdapter):
         super().__init__(
             adapter_id="codex",
             provider="OpenAI",
-            display_name="Codex worker",
+            display_name="Codex packet adapter",
         )
 
 
