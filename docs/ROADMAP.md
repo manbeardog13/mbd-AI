@@ -1,5 +1,9 @@
 # Nero Roadmap
 
+**Charter:** the authoritative, measurable plan. Increment log:
+[PROGRESS.md](../PROGRESS.md) · snapshot: [PROJECT_BRIEF.md](PROJECT_BRIEF.md).
+Phase *names* are canonical; numbers are era-bound.
+
 The current phases, their dependencies, and the **measurable** bar each must
 clear before the next begins. Governed by [CONSTITUTION.md](CONSTITUTION.md) and
 the [ADRs](adr/README.md). Each phase ends with working software + tests +

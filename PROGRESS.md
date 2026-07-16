@@ -1,5 +1,10 @@
 # Nero — Progress Tracker
 
+**Charter:** the increment log — what shipped, what's in flight. The plan lives in
+[docs/ROADMAP.md](docs/ROADMAP.md); the narrative snapshot in
+[docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md). Phase *names* ("The Hands") are
+canonical; older entries may use two legacy numbering eras.
+
 The single place to see where things stand. I update this every increment.
 For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
 

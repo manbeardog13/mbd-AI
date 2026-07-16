@@ -112,7 +112,7 @@ Approved portrait first. Everything downstream is built on it.
 ## Stage 1 — Identity Lock
 
 **Folder:** `identity/`
-**Details:** [`identity/README.md`](../../C:/Users/tonij/iCloudDrive/Nero%20AI/visual/source/concepts/manbeardog_v1/identity/README.md)
+**Details:** `C:\Users\tonij\iCloudDrive\Nero AI\visual\source\concepts\manbeardog_v1\identity\README.md` (off-repo)
 (open the file at the actual filesystem path — the link above is illustrative)
 
 Goal: find the definitive Manbeardog face and silhouette. No armor
@@ -131,7 +131,7 @@ Do not advance to Stage 2 until `approved_portrait/` has exactly one file.
 ## Stage 2 — Armor Identity Lock
 
 **Folder:** `design/`
-**Details:** [`design/README.md`](../../C:/Users/tonij/iCloudDrive/Nero%20AI/visual/source/concepts/manbeardog_v1/design/README.md)
+**Details:** `C:\Users\tonij\iCloudDrive\Nero AI\visual\source\concepts\manbeardog_v1\design\README.md` (off-repo)
 
 Goal: define the armor language. Ancient weathered black steel, functional
 warrior wear, wolf pauldrons, dormant rune placement, hair-armor
@@ -151,7 +151,7 @@ Do not advance to Stage 3 until one armor direction is approved.
 ## Stage 3 — Presence Identity Lock
 
 **Folder:** `atmosphere/`
-**Details:** [`atmosphere/README.md`](../../C:/Users/tonij/iCloudDrive/Nero%20AI/visual/source/concepts/manbeardog_v1/atmosphere/README.md)
+**Details:** `C:\Users\tonij\iCloudDrive\Nero AI\visual\source\concepts\manbeardog_v1\atmosphere\README.md` (off-repo)
 
 Goal: define the NERO manifestation language. Violet mist, purple energy,
 through-glow, cinematic cool lighting, emergence atmosphere.
@@ -166,7 +166,7 @@ Output:
 ## Stage 4 — Production Reference Set
 
 **Folder:** `production/`
-**Details:** [`production/README.md`](../../C:/Users/tonij/iCloudDrive/Nero%20AI/visual/source/concepts/manbeardog_v1/production/README.md)
+**Details:** `C:\Users\tonij\iCloudDrive\Nero AI\visual\source\concepts\manbeardog_v1\production\README.md` (off-repo)
 
 Goal: multi-view reference set suitable for downstream production (LoRA
 training, Blender modeling, Live2D rigging).

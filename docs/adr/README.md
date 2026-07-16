@@ -26,9 +26,14 @@ that supersedes it, and set the old one's status to "Superseded by ADR-XXXX".
 | [0006](0006-local-model-ceiling.md) | Local-First with Intelligence Escalation (cloud is explicit, opt-in, transparent) | Accepted |
 | [0007](0007-capability-registry.md) | Capabilities, not hard-coded tools — the Capability Registry | Accepted |
 | [0008](0008-executive-memory.md) | Executive Memory — the working-state register | Accepted |
-| [0009](../adr/0009-voice-rendering-and-backend-architecture.md) | Voice rendering profiles + pluggable backend architecture | Proposed |
+| [0009](0009-voice-rendering-and-backend-architecture.md) | Voice rendering profiles + pluggable backend architecture | Proposed (in force via 0010/0011; formal status review pending) |
 | [0010](0010-voice-effects-pedalboard-adoption.md) | Voice effects layer: pedalboard adoption + GPL v3 acceptance | Accepted |
 | [0011](0011-voice-single-path-croatian-handling.md) | Single voice production path + Croatian handling (unsupported-language 204) | Accepted |
 | [0012](0012-human-triggered-external-council.md) | Human-triggered External Council for OpenAI/Claude collaboration | Accepted |
+| [0013](0013-maximum-access-integration-catalog.md) | Maximum-access integration catalog + guarded MCP adapters | Accepted |
 | [0014](0014-zero-start-global-host-presence.md) | Zero-start global Nero Host Presence | Accepted |
 | [0015](0015-evidence-gated-dual-host-cognition.md) | Evidence-gated continual learning + dual-host coordination | Accepted |
+| [0016](0016-cross-host-continuity-ledger.md) | Cross-host continuity ledger (deliberate capture, receipts) | Accepted (pending live Codex verification) |
+| [0017](0017-canonical-knowledge-base.md) | Canonical knowledge base + documentation hierarchy | Proposed |
+| [0018](0018-skill-lifecycle.md) | Skill lifecycle — evidence-gated promotion, versioning, rollback | Proposed |
+| [0019](0019-proxima-retirement.md) | Proxima retirement | Proposed |

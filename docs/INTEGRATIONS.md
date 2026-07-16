@@ -4,6 +4,11 @@ Nero now discovers installed plugin skills and integration manifests at runtime.
 The catalog itself is always active and does not load an Ollama model or start an
 MCP process.
 
+**Boundary:** maximum-access means *discovery breadth*, never permission width —
+every consequential action still passes the Capability Registry, the security
+gate, and the normal confirmation path. This catalog adds no bypass route
+(ADR-0005, ADR-0013).
+
 ## What Nero can do immediately
 
 - `integrations.list` - see installed plugins and their real availability.

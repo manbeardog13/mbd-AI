@@ -1,4 +1,18 @@
+---
+id: docs.vision
+title: Nero — Vision & Architecture
+layer: core
+type: reference
+status: active
+owner: toni
+updated: 2026-07-17
+---
+
 # Nero — Vision & Architecture
+
+> **Status note:** the Constitution (v1.1) supersedes this document's philosophy
+> sections, and the roadmap table near the end is **historical** —
+> [ROADMAP.md](ROADMAP.md) governs sequencing.
 
 > From a chatbot to a **cognitive companion**. The model is just the brain;
 > what makes Nero feel *alive* is the mind we build around it — memory,
@@ -284,6 +298,9 @@ tools, queued tasks, current context, CPU/GPU/RAM, token usage. Debugging a
 ---
 
 ## Roadmap — honest sequencing
+
+> **Historical:** this table predates the V3 phased roadmap. [ROADMAP.md](ROADMAP.md)
+> is authoritative for sequencing and success criteria.
 
 Value/effort are my engineering estimates. We build in phases; each phase is its
 own PR so we stay in control.

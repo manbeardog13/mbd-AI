@@ -1,5 +1,8 @@
 # Nero — Project Status Brief
 
+**Charter:** the living snapshot and external handoff. The plan is
+[ROADMAP.md](ROADMAP.md); the increment log is [PROGRESS.md](../PROGRESS.md).
+
 *A living, honest snapshot of where Nero stands — kept current as she evolves.
 It doubles as a self-contained handoff you can give to an external advisor
 (e.g. ChatGPT) to get sharper guidance: what actually exists today, the known

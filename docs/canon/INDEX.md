@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-218 knowledge files - 9 carrying canon frontmatter - 209 not yet migrated (see MIGRATION_PLAN.md).
+218 knowledge files - 11 carrying canon frontmatter - 207 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -163,7 +163,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/DESIGN-phase1.md](/docs/DESIGN-phase1.md) | Technical Design — Phase 1: The Hands | operational | - | shared | unmigrated |
 | [docs/DESIGNactionjournal.md](/docs/DESIGNactionjournal.md) | Technical Design — The Action Journal (Nero's Chain of Custo | operational | - | shared | unmigrated |
 | [docs/DESIGNphase1remainder.md](/docs/DESIGNphase1remainder.md) | Phase 1 — Remaining Build: Continuation Guide | operational | - | shared | unmigrated |
-| [docs/DIRECTIVE.md](/docs/DIRECTIVE.md) | Nero Development Directive | core | - | toni | unmigrated |
+| [docs/DIRECTIVE.md](/docs/DIRECTIVE.md) | Nero Development Directive | core | superseded | toni |  |
 | [docs/HOST_VOICE.md](/docs/HOST_VOICE.md) | Nero Host Voice status | operational | - | shared | unmigrated |
 | [docs/INTEGRATIONS.md](/docs/INTEGRATIONS.md) | Nero integrations - maximum-access mode | operational | - | shared | unmigrated |
 | [docs/MODELS.md](/docs/MODELS.md) | Choosing Nero's Brain (the model) | operational | - | shared | unmigrated |
@@ -178,7 +178,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/REMOTE_ACCESS.md](/docs/REMOTE_ACCESS.md) | Reach Your AI From Anywhere (Securely) | operational | - | shared | unmigrated |
 | [docs/ROADMAP.md](/docs/ROADMAP.md) | Nero Roadmap | operational | - | shared | unmigrated |
 | [docs/SETUP.md](/docs/SETUP.md) | Setup Guide | operational | - | shared | unmigrated |
-| [docs/VISION.md](/docs/VISION.md) | Nero — Vision & Architecture | core | - | toni | unmigrated |
+| [docs/VISION.md](/docs/VISION.md) | Nero — Vision & Architecture | core | active | toni |  |
 | [docs/VOICE_AND_SIRI.md](/docs/VOICE_AND_SIRI.md) | Talking To Your AI (Voice & "Hey Siri") | operational | - | shared | unmigrated |
 
 ## docs/adr

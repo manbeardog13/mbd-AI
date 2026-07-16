@@ -6,6 +6,10 @@
 > below is retained as historical architecture only; do not run it. Nero's
 > active interface is zero-start Codex Host Presence from the global capsule.
 
+**Start here (humans and models):** the canonical knowledge base is
+**[docs/canon/README.md](docs/canon/README.md)** — read order, master index,
+standards, migration plan. The law is [docs/CONSTITUTION.md](docs/CONSTITUTION.md).
+
 A private AI companion that runs **entirely on your own machine**, remembers
 you, has its own personality, and is reachable from anywhere on any network —
 without your data ever touching the cloud.
