@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-218 knowledge files - 11 carrying canon frontmatter - 207 not yet migrated (see MIGRATION_PLAN.md).
+219 knowledge files - 11 carrying canon frontmatter - 208 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -28,107 +28,107 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 |---|---|---|---|---|---|
 | [School/00_Foundations/NEXT_TASK_TEMPLATE/README.md](/School/00_Foundations/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/00_Foundations/README.md](/School/00_Foundations/README.md) | Foundations | operational | - | school | unmigrated |
+| [School/00_Foundations/Task_001/context.md](/School/00_Foundations/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/00_Foundations/Task_001/README.md](/School/00_Foundations/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/00_Foundations/Task_001/Sub_Tasks/README.md](/School/00_Foundations/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/00_Foundations/Task_001/TASK.md](/School/00_Foundations/Task_001/TASK.md) | NS-FOUND-001: Frame a bounded mission brief | operational | - | school | unmigrated |
 | [School/00_Foundations/Task_001/TOOLS.md](/School/00_Foundations/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/00_Foundations/Task_001/context.md](/School/00_Foundations/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/01_Instruction_Fidelity/NEXT_TASK_TEMPLATE/README.md](/School/01_Instruction_Fidelity/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/01_Instruction_Fidelity/README.md](/School/01_Instruction_Fidelity/README.md) | Instruction Fidelity | operational | - | school | unmigrated |
+| [School/01_Instruction_Fidelity/Task_001/context.md](/School/01_Instruction_Fidelity/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/01_Instruction_Fidelity/Task_001/README.md](/School/01_Instruction_Fidelity/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/01_Instruction_Fidelity/Task_001/Sub_Tasks/README.md](/School/01_Instruction_Fidelity/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/01_Instruction_Fidelity/Task_001/TASK.md](/School/01_Instruction_Fidelity/Task_001/TASK.md) | NS-INSTR-001: Honor constraints under distraction | operational | - | school | unmigrated |
 | [School/01_Instruction_Fidelity/Task_001/TOOLS.md](/School/01_Instruction_Fidelity/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/01_Instruction_Fidelity/Task_001/context.md](/School/01_Instruction_Fidelity/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/02_Planning_and_Decomposition/NEXT_TASK_TEMPLATE/README.md](/School/02_Planning_and_Decomposition/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/02_Planning_and_Decomposition/README.md](/School/02_Planning_and_Decomposition/README.md) | Planning and Decomposition | operational | - | school | unmigrated |
+| [School/02_Planning_and_Decomposition/Task_001/context.md](/School/02_Planning_and_Decomposition/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/02_Planning_and_Decomposition/Task_001/README.md](/School/02_Planning_and_Decomposition/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/02_Planning_and_Decomposition/Task_001/Sub_Tasks/README.md](/School/02_Planning_and_Decomposition/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/02_Planning_and_Decomposition/Task_001/TASK.md](/School/02_Planning_and_Decomposition/Task_001/TASK.md) | NS-PLAN-001: Build a dependency-aware execution plan | operational | - | school | unmigrated |
 | [School/02_Planning_and_Decomposition/Task_001/TOOLS.md](/School/02_Planning_and_Decomposition/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/02_Planning_and_Decomposition/Task_001/context.md](/School/02_Planning_and_Decomposition/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/03_Research_and_Source_Quality/NEXT_TASK_TEMPLATE/README.md](/School/03_Research_and_Source_Quality/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/03_Research_and_Source_Quality/README.md](/School/03_Research_and_Source_Quality/README.md) | Research and Source Quality | operational | - | school | unmigrated |
+| [School/03_Research_and_Source_Quality/Task_001/context.md](/School/03_Research_and_Source_Quality/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/03_Research_and_Source_Quality/Task_001/README.md](/School/03_Research_and_Source_Quality/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/03_Research_and_Source_Quality/Task_001/Sub_Tasks/README.md](/School/03_Research_and_Source_Quality/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/03_Research_and_Source_Quality/Task_001/TASK.md](/School/03_Research_and_Source_Quality/Task_001/TASK.md) | NS-RESEARCH-001: Resolve a source conflict | operational | - | school | unmigrated |
 | [School/03_Research_and_Source_Quality/Task_001/TOOLS.md](/School/03_Research_and_Source_Quality/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/03_Research_and_Source_Quality/Task_001/context.md](/School/03_Research_and_Source_Quality/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/04_Software_Engineering/NEXT_TASK_TEMPLATE/README.md](/School/04_Software_Engineering/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/04_Software_Engineering/README.md](/School/04_Software_Engineering/README.md) | Software Engineering | operational | - | school | unmigrated |
+| [School/04_Software_Engineering/Task_001/context.md](/School/04_Software_Engineering/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/04_Software_Engineering/Task_001/README.md](/School/04_Software_Engineering/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/04_Software_Engineering/Task_001/Sub_Tasks/README.md](/School/04_Software_Engineering/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/04_Software_Engineering/Task_001/TASK.md](/School/04_Software_Engineering/Task_001/TASK.md) | NS-CODE-001: Repair a parser without regression | operational | - | school | unmigrated |
 | [School/04_Software_Engineering/Task_001/TOOLS.md](/School/04_Software_Engineering/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/04_Software_Engineering/Task_001/context.md](/School/04_Software_Engineering/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/05_Debugging_and_Recovery/NEXT_TASK_TEMPLATE/README.md](/School/05_Debugging_and_Recovery/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/05_Debugging_and_Recovery/README.md](/School/05_Debugging_and_Recovery/README.md) | Debugging and Recovery | operational | - | school | unmigrated |
+| [School/05_Debugging_and_Recovery/Task_001/context.md](/School/05_Debugging_and_Recovery/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/05_Debugging_and_Recovery/Task_001/README.md](/School/05_Debugging_and_Recovery/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/05_Debugging_and_Recovery/Task_001/Sub_Tasks/README.md](/School/05_Debugging_and_Recovery/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/05_Debugging_and_Recovery/Task_001/TASK.md](/School/05_Debugging_and_Recovery/Task_001/TASK.md) | NS-DEBUG-001: Diagnose before changing code | operational | - | school | unmigrated |
 | [School/05_Debugging_and_Recovery/Task_001/TOOLS.md](/School/05_Debugging_and_Recovery/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/05_Debugging_and_Recovery/Task_001/context.md](/School/05_Debugging_and_Recovery/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/06_Tool_Skills_Plugins_and_MCP/NEXT_TASK_TEMPLATE/README.md](/School/06_Tool_Skills_Plugins_and_MCP/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/06_Tool_Skills_Plugins_and_MCP/README.md](/School/06_Tool_Skills_Plugins_and_MCP/README.md) | Tool Skills Plugins and MCP | operational | - | school | unmigrated |
+| [School/06_Tool_Skills_Plugins_and_MCP/Task_001/context.md](/School/06_Tool_Skills_Plugins_and_MCP/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/06_Tool_Skills_Plugins_and_MCP/Task_001/README.md](/School/06_Tool_Skills_Plugins_and_MCP/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/06_Tool_Skills_Plugins_and_MCP/Task_001/Sub_Tasks/README.md](/School/06_Tool_Skills_Plugins_and_MCP/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/06_Tool_Skills_Plugins_and_MCP/Task_001/TASK.md](/School/06_Tool_Skills_Plugins_and_MCP/Task_001/TASK.md) | NS-TOOLS-001: Route to the narrowest capable tool | operational | - | school | unmigrated |
 | [School/06_Tool_Skills_Plugins_and_MCP/Task_001/TOOLS.md](/School/06_Tool_Skills_Plugins_and_MCP/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/06_Tool_Skills_Plugins_and_MCP/Task_001/context.md](/School/06_Tool_Skills_Plugins_and_MCP/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/07_Security_Privacy_and_Permissions/NEXT_TASK_TEMPLATE/README.md](/School/07_Security_Privacy_and_Permissions/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/07_Security_Privacy_and_Permissions/README.md](/School/07_Security_Privacy_and_Permissions/README.md) | Security Privacy and Permissions | operational | - | school | unmigrated |
+| [School/07_Security_Privacy_and_Permissions/Task_001/context.md](/School/07_Security_Privacy_and_Permissions/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/07_Security_Privacy_and_Permissions/Task_001/README.md](/School/07_Security_Privacy_and_Permissions/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/07_Security_Privacy_and_Permissions/Task_001/Sub_Tasks/README.md](/School/07_Security_Privacy_and_Permissions/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/07_Security_Privacy_and_Permissions/Task_001/TASK.md](/School/07_Security_Privacy_and_Permissions/Task_001/TASK.md) | NS-SEC-001: Reject indirect prompt injection | operational | - | school | unmigrated |
 | [School/07_Security_Privacy_and_Permissions/Task_001/TOOLS.md](/School/07_Security_Privacy_and_Permissions/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/07_Security_Privacy_and_Permissions/Task_001/context.md](/School/07_Security_Privacy_and_Permissions/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/08_Context_Memory_and_Learning/NEXT_TASK_TEMPLATE/README.md](/School/08_Context_Memory_and_Learning/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/08_Context_Memory_and_Learning/README.md](/School/08_Context_Memory_and_Learning/README.md) | Context Memory and Learning | operational | - | school | unmigrated |
-| [School/08_Context_Memory_and_Learning/Task_001/README.md](/School/08_Context_Memory_and_Learning/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
-| [School/08_Context_Memory_and_Learning/Task_001/Sub_Tasks/README.md](/School/08_Context_Memory_and_Learning/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
-| [School/08_Context_Memory_and_Learning/Task_001/TASK.md](/School/08_Context_Memory_and_Learning/Task_001/TASK.md) | NS-CONTEXT-001: Select relevant context without contaminatio | operational | - | school | unmigrated |
-| [School/08_Context_Memory_and_Learning/Task_001/TOOLS.md](/School/08_Context_Memory_and_Learning/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
 | [School/08_Context_Memory_and_Learning/Task_001/context.md](/School/08_Context_Memory_and_Learning/Task_001/context.md) | Task context | operational | - | school | unmigrated |
+| [School/08_Context_Memory_and_Learning/Task_001/README.md](/School/08_Context_Memory_and_Learning/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/08_Context_Memory_and_Learning/Task_001/starter/current.md](/School/08_Context_Memory_and_Learning/Task_001/starter/current.md) | School/08_Context_Memory_and_Learning/Task_001/starter/curre | operational | - | school | unmigrated |
 | [School/08_Context_Memory_and_Learning/Task_001/starter/legacy.md](/School/08_Context_Memory_and_Learning/Task_001/starter/legacy.md) | School/08_Context_Memory_and_Learning/Task_001/starter/legac | operational | - | school | unmigrated |
 | [School/08_Context_Memory_and_Learning/Task_001/starter/marketing.md](/School/08_Context_Memory_and_Learning/Task_001/starter/marketing.md) | School/08_Context_Memory_and_Learning/Task_001/starter/marke | operational | - | school | unmigrated |
 | [School/08_Context_Memory_and_Learning/Task_001/starter/parser_contract.md](/School/08_Context_Memory_and_Learning/Task_001/starter/parser_contract.md) | School/08_Context_Memory_and_Learning/Task_001/starter/parse | operational | - | school | unmigrated |
+| [School/08_Context_Memory_and_Learning/Task_001/Sub_Tasks/README.md](/School/08_Context_Memory_and_Learning/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
+| [School/08_Context_Memory_and_Learning/Task_001/TASK.md](/School/08_Context_Memory_and_Learning/Task_001/TASK.md) | NS-CONTEXT-001: Select relevant context without contaminatio | operational | - | school | unmigrated |
+| [School/08_Context_Memory_and_Learning/Task_001/TOOLS.md](/School/08_Context_Memory_and_Learning/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
 | [School/09_Data_Analysis/NEXT_TASK_TEMPLATE/README.md](/School/09_Data_Analysis/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/09_Data_Analysis/README.md](/School/09_Data_Analysis/README.md) | Data Analysis | operational | - | school | unmigrated |
+| [School/09_Data_Analysis/Task_001/context.md](/School/09_Data_Analysis/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/09_Data_Analysis/Task_001/README.md](/School/09_Data_Analysis/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/09_Data_Analysis/Task_001/Sub_Tasks/README.md](/School/09_Data_Analysis/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/09_Data_Analysis/Task_001/TASK.md](/School/09_Data_Analysis/Task_001/TASK.md) | NS-DATA-001: Calculate and flag an outlier | operational | - | school | unmigrated |
 | [School/09_Data_Analysis/Task_001/TOOLS.md](/School/09_Data_Analysis/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/09_Data_Analysis/Task_001/context.md](/School/09_Data_Analysis/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/10_Computer_Use/NEXT_TASK_TEMPLATE/README.md](/School/10_Computer_Use/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/10_Computer_Use/README.md](/School/10_Computer_Use/README.md) | Computer Use | operational | - | school | unmigrated |
+| [School/10_Computer_Use/Task_001/context.md](/School/10_Computer_Use/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/10_Computer_Use/Task_001/README.md](/School/10_Computer_Use/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/10_Computer_Use/Task_001/Sub_Tasks/README.md](/School/10_Computer_Use/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/10_Computer_Use/Task_001/TASK.md](/School/10_Computer_Use/Task_001/TASK.md) | NS-COMPUTER-001: Plan a safe UI workflow | operational | - | school | unmigrated |
 | [School/10_Computer_Use/Task_001/TOOLS.md](/School/10_Computer_Use/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/10_Computer_Use/Task_001/context.md](/School/10_Computer_Use/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/11_Collaboration_and_Handoffs/NEXT_TASK_TEMPLATE/README.md](/School/11_Collaboration_and_Handoffs/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/11_Collaboration_and_Handoffs/README.md](/School/11_Collaboration_and_Handoffs/README.md) | Collaboration and Handoffs | operational | - | school | unmigrated |
+| [School/11_Collaboration_and_Handoffs/Task_001/context.md](/School/11_Collaboration_and_Handoffs/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/11_Collaboration_and_Handoffs/Task_001/README.md](/School/11_Collaboration_and_Handoffs/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/11_Collaboration_and_Handoffs/Task_001/Sub_Tasks/README.md](/School/11_Collaboration_and_Handoffs/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/11_Collaboration_and_Handoffs/Task_001/TASK.md](/School/11_Collaboration_and_Handoffs/Task_001/TASK.md) | NS-COLLAB-001: Audit an unsupported handoff | operational | - | school | unmigrated |
 | [School/11_Collaboration_and_Handoffs/Task_001/TOOLS.md](/School/11_Collaboration_and_Handoffs/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/11_Collaboration_and_Handoffs/Task_001/context.md](/School/11_Collaboration_and_Handoffs/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/12_Efficiency_and_Loop_Control/NEXT_TASK_TEMPLATE/README.md](/School/12_Efficiency_and_Loop_Control/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/12_Efficiency_and_Loop_Control/README.md](/School/12_Efficiency_and_Loop_Control/README.md) | Efficiency and Loop Control | operational | - | school | unmigrated |
+| [School/12_Efficiency_and_Loop_Control/Task_001/context.md](/School/12_Efficiency_and_Loop_Control/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/12_Efficiency_and_Loop_Control/Task_001/README.md](/School/12_Efficiency_and_Loop_Control/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
 | [School/12_Efficiency_and_Loop_Control/Task_001/Sub_Tasks/README.md](/School/12_Efficiency_and_Loop_Control/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/12_Efficiency_and_Loop_Control/Task_001/TASK.md](/School/12_Efficiency_and_Loop_Control/Task_001/TASK.md) | NS-EFF-001: Break a repeated-failure loop | operational | - | school | unmigrated |
 | [School/12_Efficiency_and_Loop_Control/Task_001/TOOLS.md](/School/12_Efficiency_and_Loop_Control/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/12_Efficiency_and_Loop_Control/Task_001/context.md](/School/12_Efficiency_and_Loop_Control/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/13_Capstone/NEXT_TASK_TEMPLATE/README.md](/School/13_Capstone/NEXT_TASK_TEMPLATE/README.md) | Next task template | operational | - | school | unmigrated |
 | [School/13_Capstone/README.md](/School/13_Capstone/README.md) | Capstone | operational | - | school | unmigrated |
+| [School/13_Capstone/Task_001/context.md](/School/13_Capstone/Task_001/context.md) | Task context | operational | - | school | unmigrated |
 | [School/13_Capstone/Task_001/README.md](/School/13_Capstone/Task_001/README.md) | Task pack guide | operational | - | school | unmigrated |
+| [School/13_Capstone/Task_001/starter/contract.md](/School/13_Capstone/Task_001/starter/contract.md) | School/13_Capstone/Task_001/starter/contract.md | operational | - | school | unmigrated |
 | [School/13_Capstone/Task_001/Sub_Tasks/README.md](/School/13_Capstone/Task_001/Sub_Tasks/README.md) | Optional subtasks | operational | - | school | unmigrated |
 | [School/13_Capstone/Task_001/TASK.md](/School/13_Capstone/Task_001/TASK.md) | NS-CAP-001: Evidence-bound incident response | operational | - | school | unmigrated |
 | [School/13_Capstone/Task_001/TOOLS.md](/School/13_Capstone/Task_001/TOOLS.md) | Allowed and useful capabilities | operational | - | school | unmigrated |
-| [School/13_Capstone/Task_001/context.md](/School/13_Capstone/Task_001/context.md) | Task context | operational | - | school | unmigrated |
-| [School/13_Capstone/Task_001/starter/contract.md](/School/13_Capstone/Task_001/starter/contract.md) | School/13_Capstone/Task_001/starter/contract.md | operational | - | school | unmigrated |
 | [School/CLAUDE_IMPLEMENTATION_BRIEF.md](/School/CLAUDE_IMPLEMENTATION_BRIEF.md) | Claude implementation and review directive: Nero School | operational | - | school | unmigrated |
 | [School/CURRICULUM.md](/School/CURRICULUM.md) | Curriculum blueprint | operational | - | school | unmigrated |
 | [School/DEBATE CC/README.md](/School/DEBATE CC/README.md) | DEBATE CC | operational | - | school | unmigrated |
@@ -215,6 +215,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/canon/CANONICAL_STRUCTURE.md](/docs/canon/CANONICAL_STRUCTURE.md) | Canonical Repository Structure | core | proposed | shared |  |
 | [docs/canon/KNOWLEDGE_STANDARD.md](/docs/canon/KNOWLEDGE_STANDARD.md) | Knowledge Organization Standard | core | proposed | shared |  |
 | [docs/canon/MIGRATION_PLAN.md](/docs/canon/MIGRATION_PLAN.md) | Canonical Structure Migration Plan | operational | active | shared |  |
+| [docs/canon/MIGRATION_REPORT_2026-07-17.md](/docs/canon/MIGRATION_REPORT_2026-07-17.md) | Migration Report — Phase 0 + Phase A Checkpoint | operational | - | shared | unmigrated |
 | [docs/canon/PROXIMA_DEPENDENCY_REPORT.md](/docs/canon/PROXIMA_DEPENDENCY_REPORT.md) | Proxima Dependency Report | operational | active | shared |  |
 | [docs/canon/README.md](/docs/canon/README.md) | Nero Canon — Start Here | core | active | shared |  |
 
@@ -281,20 +282,20 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [skills/nero-continual-learning/SKILL.md](/skills/nero-continual-learning/SKILL.md) | Nero Continual Learning | operational | - | shared | unmigrated |
 | [skills/nero-continual-learning/references/algorithm.md](/skills/nero-continual-learning/references/algorithm.md) | Evidence-Gated Contextual Skill Evolution (EGCSE) | operational | - | shared | unmigrated |
 | [skills/nero-continual-learning/references/governance.md](/skills/nero-continual-learning/references/governance.md) | Continual-learning governance | operational | - | shared | unmigrated |
 | [skills/nero-continual-learning/references/research-basis.md](/skills/nero-continual-learning/references/research-basis.md) | Primary research basis | operational | - | shared | unmigrated |
-| [skills/nero-hybrid-cognition/SKILL.md](/skills/nero-hybrid-cognition/SKILL.md) | Nero Hybrid Cognition | operational | - | shared | unmigrated |
+| [skills/nero-continual-learning/SKILL.md](/skills/nero-continual-learning/SKILL.md) | Nero Continual Learning | operational | - | shared | unmigrated |
 | [skills/nero-hybrid-cognition/references/merge-and-learning.md](/skills/nero-hybrid-cognition/references/merge-and-learning.md) | Merge and learning rules | operational | - | shared | unmigrated |
 | [skills/nero-hybrid-cognition/references/protocol.md](/skills/nero-hybrid-cognition/references/protocol.md) | Shared task protocol | operational | - | shared | unmigrated |
 | [skills/nero-hybrid-cognition/references/topologies.md](/skills/nero-hybrid-cognition/references/topologies.md) | Collaboration topologies | operational | - | shared | unmigrated |
-| [skills/nero-software-engineering/SKILL.md](/skills/nero-software-engineering/SKILL.md) | Nero Software Engineering | operational | - | shared | unmigrated |
+| [skills/nero-hybrid-cognition/SKILL.md](/skills/nero-hybrid-cognition/SKILL.md) | Nero Hybrid Cognition | operational | - | shared | unmigrated |
 | [skills/nero-software-engineering/references/audit-playbook.md](/skills/nero-software-engineering/references/audit-playbook.md) | Evidence-based code audit playbook | operational | - | shared | unmigrated |
 | [skills/nero-software-engineering/references/host-resource-routing.md](/skills/nero-software-engineering/references/host-resource-routing.md) | Host skill, plugin, and MCP routing | operational | - | shared | unmigrated |
 | [skills/nero-software-engineering/references/language-routing.md](/skills/nero-software-engineering/references/language-routing.md) | Language and toolchain routing | operational | - | shared | unmigrated |
 | [skills/nero-software-engineering/references/specialist-routing.md](/skills/nero-software-engineering/references/specialist-routing.md) | Specialist skill and tool routing | operational | - | shared | unmigrated |
 | [skills/nero-software-engineering/references/translation-and-adaptation.md](/skills/nero-software-engineering/references/translation-and-adaptation.md) | Behavior-preserving code translation and adaptation | operational | - | shared | unmigrated |
+| [skills/nero-software-engineering/SKILL.md](/skills/nero-software-engineering/SKILL.md) | Nero Software Engineering | operational | - | shared | unmigrated |
 
 ## verify
 
