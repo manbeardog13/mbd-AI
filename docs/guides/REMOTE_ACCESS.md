@@ -1,4 +1,5 @@
 ---
+note: historical local-runtime guide - hard-disabled under ADR-0014 hosted-only lock
 id: guides.remote-access
 layer: operational
 type: guide

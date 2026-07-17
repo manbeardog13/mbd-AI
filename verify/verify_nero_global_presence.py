@@ -40,9 +40,9 @@ SHELL_LOCAL_ENTRY_PATHS = (
 )
 HISTORICAL_DOC_PATHS = (
     ROOT / "README.md",
-    ROOT / "docs" / "ALWAYS_ON.md",
-    ROOT / "docs" / "SETUP.md",
-    ROOT / "docs" / "MODELS.md",
+    ROOT / "docs" / "guides" / "ALWAYS_ON.md",
+    ROOT / "docs" / "guides" / "SETUP.md",
+    ROOT / "docs" / "guides" / "MODELS.md",
 )
 TRACKED_REQUIRED_PATHS = (
     ".codex/hooks.json",
