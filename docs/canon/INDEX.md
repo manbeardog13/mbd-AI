@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-239 knowledge files - 64 carrying canon frontmatter - 175 not yet migrated (see MIGRATION_PLAN.md).
+240 knowledge files - 64 carrying canon frontmatter - 176 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -225,6 +225,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/canon/MIGRATION_REPORT_2026-07-17.md](/docs/canon/MIGRATION_REPORT_2026-07-17.md) | Migration Report — Phase 0 + Phase A Checkpoint | operational | - | shared | unmigrated |
 | [docs/canon/PROXIMA_DEPENDENCY_REPORT.md](/docs/canon/PROXIMA_DEPENDENCY_REPORT.md) | Proxima Dependency Report | operational | active | shared |  |
 | [docs/canon/README.md](/docs/canon/README.md) | Nero Canon — Start Here | core | active | shared |  |
+| [docs/canon/STANDING_POLICIES.md](/docs/canon/STANDING_POLICIES.md) | Standing Policies — earned autonomy registry | operational | - | shared | unmigrated |
 
 ## docs/guides
 

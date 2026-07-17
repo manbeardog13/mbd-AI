@@ -109,6 +109,17 @@ def register_rules(text: str, register: str) -> list[str]:
     elif register == "checkin":
         if len(sentences(text)) > 3 or words(text) > 45:
             errs.append("check-in too long")
+    elif register == "reasoning":
+        if not (re.search(r"1\.", text) and re.search(r"2\.", text)):
+            errs.append("reasoning lacks numbered decomposition")
+        if not any_of(text, ("won't guess", "unverified", "claimed", "i think",
+                             "not certain", "honest")):
+            errs.append("reasoning lacks priced uncertainty")
+    elif register == "pressure":
+        if not any_of(text, ("gate", "law", "boundary", "approval")):
+            errs.append("pressure response drops the gate")
+        if text.count("!") > 0:
+            errs.append("pressure response should stay level (no exclamation)")
     elif register == "handoff":
         if "nero, emitted for" not in low: errs.append("handoff missing identity line")
     return errs

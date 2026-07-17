@@ -5,7 +5,7 @@ layer: core
 type: spec
 status: proposed
 owner: shared
-version: 1.1.0
+version: 1.2.0
 created: 2026-07-17
 updated: 2026-07-17
 sources:
@@ -155,8 +155,24 @@ inbox entry until resumed).
   including reading-time estimate and pinned blocking items.
 - Zero resident processes; every invocation runs and exits.
 
+## v1.2 amendments (implementation-driven, dual-review findings)
+
+- **Escalate raises, never hides:** escalation pins an item at interrupt
+  level (status stays pending) instead of archiving it.
+- **`--policies PATH`** injects the registry (verifiers use fixtures so the
+  health check survives the registry's own lifecycle).
+- **Self-approval requires non-empty `--evidence`** (the rule's third leg).
+- **Watermarked briefs:** `last_brief_at` persists in state; briefs report
+  since-last-brief with entry ids and long-running flags.
+- **Audit on request:** `list --status approved|rejected|all`; `--policy`
+  rejected at levels >= 2 to keep the automatic-approval count honest.
+- **Gate-command registry** covers all six source kinds, print-only, with
+  ref validation against injection; `status` verb sanctioned.
+
 ## Changelog
 
+- 1.2.0 (2026-07-17) — Implementation-driven amendments after dual
+  independent review (see v1.2 section).
 - 1.1.0 (2026-07-17) — Six-condition L3 gate, adaptive rendering, interrupt
   context-preservation (directives five and six, Toni).
 - 1.0.0 (2026-07-17) — Initial spec: escalation levels, self-decision rule,
