@@ -5,9 +5,9 @@ layer: core
 type: standard
 status: proposed
 owner: shared
-version: 1.0.0
+version: 1.1.0
 created: 2026-07-16
-updated: 2026-07-16
+updated: 2026-07-17
 sources:
   - docs/CONSTITUTION.md
   - docs/adr/README.md
@@ -78,7 +78,17 @@ Three tiers, matched to weight:
 
 1. **Decisions** — a new ADR in `docs/adr/`, logged in its README table.
    Accepted ADRs are never edited; they are superseded.
-2. **Core docs** (constitution, standards, specs, capsules) — a `## Changelog`
+2. **Core docs** (constitution, standards, specs, capsules) — a `## 6. Reconciliation before evolution (standing rule)
+
+When deployed behavior and the repository differ, first make the repository
+faithfully represent deployed reality — a pure reconciliation change with no
+behavioral edits — and only then introduce intentional change as a new
+version (V3, V4, ...). This preserves clean history, keeps reviews simple,
+and keeps audits unambiguous. Adopted as a standing rule by Toni,
+2026-07-17; candidate for a future Constitution §4 amendment. First
+application: the V2 capsule adoption (MIGRATION_PLAN Phase C).
+
+## Changelog`
    section at the bottom of the file: one line per version, newest first, with
    date and what changed. Version bumps follow semver semantics on the
    document's *contract*, not its prose.
@@ -113,4 +123,5 @@ README must always keep this contract true from its first screen.
 
 ## Changelog
 
+- 1.1.0 (2026-07-17) — Added §6 reconciliation-before-evolution (standing rule, Toni).
 - 1.0.0 (2026-07-16) — Initial standard.
