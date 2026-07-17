@@ -39,3 +39,4 @@ that supersedes it, and set the old one's status to "Superseded by ADR-XXXX".
 | [0019](0019-proxima-retirement.md) | Proxima retirement | Accepted |
 | [0020](0020-identity-plane-and-engine-handoff.md) | Stable identity plane, swappable engines, engine handoff | Accepted |
 | [0021](0021-review-inbox.md) | Attention architecture: escalation levels, review inbox, daily brief | Proposed |
+| [0022](0022-voice-as-canon.md) | Textual voice is canon: one bible, engine-agnostic, test-gated | Proposed |

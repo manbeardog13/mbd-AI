@@ -5,7 +5,7 @@ layer: operational
 type: plan
 status: proposed
 owner: shared
-version: 1.0.0
+version: 1.1.0
 created: 2026-07-17
 updated: 2026-07-17
 sources:
@@ -61,6 +61,20 @@ already do. Requires defining that job first; none has been identified.
 document without a distinct job violates the audit's own duplication
 findings.
 
+## Item 3 — Voice Bible pointer (both capsules)
+
+**Problem:** the capsules carry six voice adjectives; the operational voice
+law now lives in `docs/persona/NERO_VOICE_BIBLE.md` (ADR-0022) with tests.
+Engines should be pointed at the law, not left to improvise from adjectives.
+
+**Proposed addition** (one line, identity sections of both capsule blocks):
+
+> Voice and presentation follow `docs/persona/NERO_VOICE_BIBLE.md` (the
+> operational voice law, test-gated); these adjectives remain the anchor.
+
+**Effect:** style evolves in canon without identity-version events; new
+engines onboard the voice from one pointer.
+
 ## Adoption checklist (when Toni decides)
 
 1. Update the repo canonical source block(s) to V3 markers with the chosen
@@ -72,4 +86,5 @@ findings.
 
 ## Changelog
 
+- 1.1.0 (2026-07-17) — Item 3 added: Voice Bible pointer (ADR-0022).
 - 1.0.0 (2026-07-17) — Initial proposal (Fable, Claude lane; L2 inbox item).

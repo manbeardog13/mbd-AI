@@ -5,7 +5,7 @@ layer: core
 type: standard
 status: proposed
 owner: shared
-version: 1.0.0
+version: 1.1.0
 created: 2026-07-16
 updated: 2026-07-16
 sources:
@@ -71,6 +71,9 @@ D:\mbd AI\
 │  │    HOST_VOICE, TAUGHT_KNOWLEDGE, INTEGRATIONS, COUNCIL…)
 │  ├─ guides/                 user-facing how-to (SETUP, ALWAYS_ON,
 │  │                          REMOTE_ACCESS, VOICE_AND_SIRI, MODELS†)
+│  ├─ persona/                textual voice law (Voice Bible, mined patterns,
+│  │                          golden corpus - ADR-0022)
+│  ├─ handoffs/               engine-handoff artifacts Toni keeps (ADR-0020)
 │  ├─ visual/                 Manbeardog system (internally layered: bible=law,
 │  │                          derived profiles, ops docs; absorbs docs/roadmap/)
 │  ├─ mobile/                 mobile presence experience
@@ -132,4 +135,5 @@ it. When it does, the lower document is wrong — or an amendment is proposed.
 
 ## Changelog
 
+- 1.1.0 (2026-07-17) — Tree gains docs/persona/ and docs/handoffs/.
 - 1.0.0 (2026-07-16) — Initial standard, from the Phase 1 audit.
