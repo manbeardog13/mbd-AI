@@ -37,3 +37,5 @@ that supersedes it, and set the old one's status to "Superseded by ADR-XXXX".
 | [0017](0017-canonical-knowledge-base.md) | Canonical knowledge base + documentation hierarchy | Proposed |
 | [0018](0018-skill-lifecycle.md) | Skill lifecycle — evidence-gated promotion, versioning, rollback | Proposed |
 | [0019](0019-proxima-retirement.md) | Proxima retirement | Accepted |
+| [0020](0020-identity-plane-and-engine-handoff.md) | Stable identity plane, swappable engines, engine handoff | Accepted |
+| [0021](0021-review-inbox.md) | Attention architecture: escalation levels, review inbox, daily brief | Proposed |

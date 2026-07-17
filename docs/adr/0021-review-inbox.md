@@ -33,6 +33,31 @@ Adopt `docs/specs/review-inbox.spec.md` (v1):
    `data/review-inbox.json`), zero-start, stdlib-only. Built through the
    fabric: Codex builds, Claude reviews, Toni approves.
 
+6. **Adaptive rendering:** briefs and all Nero communication adapt to the
+   operator's engagement (depth on request, highlights on request, minimum
+   form on fatigue signals); stated preference beats inference; inference
+   errs toward brevity; interrupts preserve context and offer seamless
+   return.
+7. **The L3 gate is exactly six conditions** (decision required, unresolvable
+   conflict, architecturally significant milestone, repeated failure,
+   security/safety, session ready for review). Everything else queues.
+
+## Constitution amendment (proposed text - awaiting Toni's amendment PR)
+
+Proposed addition to CONSTITUTION.md §4 (How we work):
+
+> **Respect the operator's cognitive bandwidth.** Attention is a finite
+> resource; protect it above all else. Summarize before expanding,
+> prioritize before detailing, and adapt delivery to the operator's current
+> engagement. Interrupt only for a decision genuinely required now, an
+> unresolvable conflict, an architecturally significant milestone, repeated
+> failure, a security or safety issue, or a completed session ready for
+> review - everything else queues. Interruption preserves context and always
+> allows seamless return.
+
+Per the Constitution's own amendment procedure this lands only through a PR
+titled "Constitution amendment" opened by Toni, referencing this ADR.
+
 ## Consequences
 
 - Toni's interrupt rate collapses to genuinely blocking decisions; the rest

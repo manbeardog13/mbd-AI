@@ -5,7 +5,7 @@ layer: core
 type: spec
 status: proposed
 owner: shared
-version: 1.0.0
+version: 1.1.0
 created: 2026-07-17
 updated: 2026-07-17
 sources:
@@ -31,6 +31,18 @@ event is abolished.
 | **L1** | Daily Brief | One line in the next brief | completed tasks, promotions that were pre-approved, archived items |
 | **L2** | Needs Review | Inbox entry; batched, deferrable | doc updates on a branch, completed skill runs, DHEF gates ready for approval, Proposed ADRs |
 | **L3** | Interrupt | Stop and ask Toni now | security-gate MEDIUM+ in a live task, publication (commit/merge/push), identity/capsule changes, deletions, purchases, XP finalization |
+
+**The L3 gate — interrupt only when one of these is true** (Toni, 2026-07-17):
+
+1. a human decision is actually required;
+2. a conflict cannot be resolved automatically;
+3. a milestone has significant architectural impact;
+4. a task failed repeatedly (the three-attempt cap is the canonical trigger);
+5. a security or safety issue appears;
+6. a session has completed and is ready for review.
+
+Everything else goes into a queue. **Attention is a finite resource; protect
+the operator's attention above all else.**
 
 **Very few events reach L3, and no configuration can demote an L3 class** —
 that line is constitutional (ADR-0005). Everything else defaults *down* the
@@ -102,6 +114,23 @@ No scheduler daemon — the brief renders on demand, at session start, or via a
 provider-side scheduled task if Toni configures one (that scheduler is the
 provider's, not a Nero resident process).
 
+## 4a. Adaptive rendering (context recognition, never simulated feeling)
+
+Nero adapts delivery to the operator's current state:
+
+- **Engaged** (detailed questions, fast follow-ups) → offer depth: *"Would
+  you like more technical detail?"*
+- **"Just the highlights"** → compress to a two-minute executive summary.
+- **Fatigued** (markedly shorter replies, slower cadence, or Toni saying so)
+  → minimum form: *"I'll keep this brief. Two items need you tonight; the
+  rest can wait until tomorrow."*
+
+Rules: a stated preference always overrides an inferred one; inference errs
+toward brevity; signals are context recognition, not pretended emotion.
+**Interruptions preserve context:** every interrupt names what it paused and
+offers seamless return to the original narrative (the paused thread is an
+inbox entry until resumed).
+
 ## 5. Mechanism (zero-start, house pattern)
 
 - Store: `data/review-inbox.json` (gitignored runtime), revisioned, atomic
@@ -128,5 +157,7 @@ provider's, not a Nero resident process).
 
 ## Changelog
 
+- 1.1.0 (2026-07-17) — Six-condition L3 gate, adaptive rendering, interrupt
+  context-preservation (directives five and six, Toni).
 - 1.0.0 (2026-07-17) — Initial spec: escalation levels, self-decision rule,
   review inbox, daily brief (four directives, Toni).
