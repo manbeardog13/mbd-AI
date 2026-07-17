@@ -1,3 +1,14 @@
+---
+id: visual.manbeardog-character-dna
+title: "Manbeardog — Character DNA v1.0"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Manbeardog — Character DNA v1.0
 
 **Status:** DRAFT — awaiting Toni approval → then immutable-by-version.

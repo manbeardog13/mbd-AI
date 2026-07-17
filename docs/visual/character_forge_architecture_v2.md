@@ -1,3 +1,14 @@
+---
+id: visual.character-forge-architecture-v2
+title: "Character Forge — Architecture v2 (Design Review Outcome)"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Character Forge — Architecture v2 (Design Review Outcome)
 
 **Supersedes the structural assumptions in `forge_roadmap.md`.**

@@ -1,3 +1,14 @@
+---
+id: visual.comfyui-pipeline
+title: "ComfyUI Pipeline for NERO"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # ComfyUI Pipeline for NERO
 
 **Owner:** Toni.

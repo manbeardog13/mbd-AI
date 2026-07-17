@@ -1,3 +1,14 @@
+---
+id: docs.design-phase1
+title: "Technical Design — Phase 1: The Hands"
+layer: operational
+type: plan
+status: active
+owner: shared
+created: 2026-07-12
+updated: 2026-07-17
+---
+
 # Technical Design — Phase 1: The Hands
 
 *Design-before-code for the foundational phase. Scope: agent/tool loop, the

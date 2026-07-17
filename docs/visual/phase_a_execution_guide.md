@@ -1,3 +1,14 @@
+---
+id: visual.phase-a-execution-guide
+title: "Phase A — Manbeardog Character Genesis — Execution Guide"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Phase A — Manbeardog Character Genesis — Execution Guide
 
 **Owner:** Toni.

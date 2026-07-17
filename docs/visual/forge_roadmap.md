@@ -1,3 +1,14 @@
+---
+id: visual.forge-roadmap
+title: "NERO Visual Forge — Architecture & Roadmap v0.1"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # NERO Visual Forge — Architecture & Roadmap v0.1
 
 **Role:** Technical Art Director · Pipeline Engineer · Character Production Lead.

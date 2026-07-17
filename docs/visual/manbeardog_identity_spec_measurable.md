@@ -1,3 +1,14 @@
+---
+id: visual.manbeardog-identity-spec-measurable
+title: "Manbeardog — Measurable Identity Spec + Measurement Harness v0.1"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Manbeardog — Measurable Identity Spec + Measurement Harness v0.1
 
 **Status:** DRAFT — targets/tolerances are **uncalibrated** until measured against the 6

@@ -1,3 +1,14 @@
+---
+id: continuity.readme
+title: "Nero Cross-Host Continuity Ledger (v1)"
+layer: core
+type: reference
+status: active
+owner: shared
+created: 2026-07-15
+updated: 2026-07-17
+---
+
 # Nero Cross-Host Continuity Ledger (v1)
 
 A cold, deterministic, **same-machine** ledger through which an *active* Claude

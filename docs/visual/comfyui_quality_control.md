@@ -1,3 +1,14 @@
+---
+id: visual.comfyui-quality-control
+title: "ComfyUI Quality Control"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # ComfyUI Quality Control
 
 **Purpose:** the fast-reject and fast-accept criteria applied at the

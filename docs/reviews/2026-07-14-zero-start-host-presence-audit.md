@@ -1,3 +1,14 @@
+---
+id: reviews.zero-start-audit-2026-07-14
+title: "Zero-start Nero Host Presence implementation audit"
+layer: operational
+type: review
+status: active
+owner: shared
+created: 2026-07-14
+updated: 2026-07-17
+---
+
 # Zero-start Nero Host Presence implementation audit
 
 **Date:** 2026-07-14

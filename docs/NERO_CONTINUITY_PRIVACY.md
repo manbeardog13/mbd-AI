@@ -1,3 +1,14 @@
+---
+id: docs.nero-continuity-privacy
+title: "Nero Cross-Host Continuity — Privacy & Limitations"
+layer: core
+type: reference
+status: active
+owner: shared
+created: 2026-07-15
+updated: 2026-07-17
+---
+
 # Nero Cross-Host Continuity — Privacy & Limitations
 
 This document states exactly what the continuity ledger stores, what it refuses,

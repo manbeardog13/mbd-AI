@@ -1,3 +1,14 @@
+---
+id: docs.constitution
+title: "The Nero Constitution"
+layer: core
+type: constitution
+status: active
+owner: toni
+created: 2026-07-12
+updated: 2026-07-17
+---
+
 # The Nero Constitution
 
 *The stable foundation. This document changes rarely and deliberately. Features,

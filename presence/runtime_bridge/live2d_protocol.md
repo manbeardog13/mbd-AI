@@ -1,3 +1,14 @@
+---
+id: presence.live2d-protocol
+title: "Nero ↔ Live2D Viewer — WebSocket Protocol v1"
+layer: operational
+type: spec
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Nero ↔ Live2D Viewer — WebSocket Protocol v1
 
 **Version:** 1

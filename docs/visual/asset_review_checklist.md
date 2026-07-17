@@ -1,3 +1,14 @@
+---
+id: visual.asset-review-checklist
+title: "Asset Arrival Checklist"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Asset Arrival Checklist
 
 **Purpose:** the review gate when a Manbeardog asset arrives from

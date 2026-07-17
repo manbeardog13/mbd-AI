@@ -1,3 +1,14 @@
+---
+id: mobile.presence-experience
+title: "NERO Mobile Presence Experience"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # NERO Mobile Presence Experience
 
 **Scope:** what "Nero is present" looks and feels like on a phone.

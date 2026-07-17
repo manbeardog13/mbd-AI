@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-228 knowledge files - 28 carrying canon frontmatter - 200 not yet migrated (see MIGRATION_PLAN.md).
+228 knowledge files - 64 carrying canon frontmatter - 164 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -12,7 +12,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 |---|---|---|---|---|---|
 | [AGENTS.md](/AGENTS.md) | Nero Host Mode — project instructions | operational | - | shared | unmigrated |
 | [CLAUDE.md](/CLAUDE.md) | Nero Claude Host Mode | operational | - | shared | unmigrated |
-| [PROGRESS.md](/PROGRESS.md) | Nero — Progress Tracker | operational | - | shared | unmigrated |
+| [PROGRESS.md](/PROGRESS.md) | Nero — Progress Tracker | operational | active | toni |  |
 | [README.md](/README.md) | 🧠 mbd-AI — Your Personal, Local AI | operational | - | shared | unmigrated |
 
 ## .claude
@@ -141,33 +141,33 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [audit/nero-continuity/AUDIT.md](/audit/nero-continuity/AUDIT.md) | Nero Cross-Host Continuity — Audit Bundle | operational | - | shared | unmigrated |
-| [audit/nero-continuity/proposed-global-claude-block.md](/audit/nero-continuity/proposed-global-claude-block.md) | PROPOSED (NOT DEPLOYED): global Claude routing block | operational | - | shared | unmigrated |
+| [audit/nero-continuity/AUDIT.md](/audit/nero-continuity/AUDIT.md) | Nero Cross-Host Continuity — Audit Bundle | operational | active | shared |  |
+| [audit/nero-continuity/proposed-global-claude-block.md](/audit/nero-continuity/proposed-global-claude-block.md) | PROPOSED (NOT DEPLOYED): global Claude routing block | operational | proposed | shared |  |
 
 ## continuity
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [continuity/README.md](/continuity/README.md) | Nero Cross-Host Continuity Ledger (v1) | operational | - | shared | unmigrated |
+| [continuity/README.md](/continuity/README.md) | Nero Cross-Host Continuity Ledger (v1) | core | active | shared |  |
 
 ## docs (root)
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
 | [docs/CLAUDE_NERO_HOST_IMPLEMENTATION.md](/docs/CLAUDE_NERO_HOST_IMPLEMENTATION.md) | Claude implementation directive: Nero Hosted Mind / Local Re | operational | - | shared | unmigrated |
-| [docs/CONSTITUTION.md](/docs/CONSTITUTION.md) | The Nero Constitution | core | - | toni | unmigrated |
-| [docs/DESIGN-phase1.md](/docs/DESIGN-phase1.md) | Technical Design — Phase 1: The Hands | operational | - | shared | unmigrated |
-| [docs/DESIGNactionjournal.md](/docs/DESIGNactionjournal.md) | Technical Design — The Action Journal (Nero's Chain of Custo | operational | - | shared | unmigrated |
-| [docs/DESIGNphase1remainder.md](/docs/DESIGNphase1remainder.md) | Phase 1 — Remaining Build: Continuation Guide | operational | - | shared | unmigrated |
+| [docs/CONSTITUTION.md](/docs/CONSTITUTION.md) | The Nero Constitution | core | active | toni |  |
+| [docs/DESIGN-phase1.md](/docs/DESIGN-phase1.md) | Technical Design — Phase 1: The Hands | operational | active | shared |  |
+| [docs/DESIGNactionjournal.md](/docs/DESIGNactionjournal.md) | Technical Design — The Action Journal (Nero's Chain of Custo | operational | active | shared |  |
+| [docs/DESIGNphase1remainder.md](/docs/DESIGNphase1remainder.md) | Phase 1 — Remaining Build: Continuation Guide | operational | active | shared |  |
 | [docs/DIRECTIVE.md](/docs/DIRECTIVE.md) | Nero Development Directive | core | superseded | toni |  |
 | [docs/HOST_VOICE.md](/docs/HOST_VOICE.md) | Nero Host Voice status | operational | - | shared | unmigrated |
 | [docs/NERO_CODEX_MEMORY.md](/docs/NERO_CODEX_MEMORY.md) | Nero Host Mode memory | operational | - | shared | unmigrated |
 | [docs/NERO_CODEX_RUNTIME.md](/docs/NERO_CODEX_RUNTIME.md) | Nero Host Runtime | operational | - | shared | unmigrated |
-| [docs/NERO_CONTINUITY_PRIVACY.md](/docs/NERO_CONTINUITY_PRIVACY.md) | Nero Cross-Host Continuity — Privacy & Limitations | operational | - | shared | unmigrated |
+| [docs/NERO_CONTINUITY_PRIVACY.md](/docs/NERO_CONTINUITY_PRIVACY.md) | Nero Cross-Host Continuity — Privacy & Limitations | core | active | shared |  |
 | [docs/NERO_GLOBAL_CAPSULE.md](/docs/NERO_GLOBAL_CAPSULE.md) | Nero Global Host Presence — NERO_GLOBAL_CAPSULE_V1 | operational | - | shared | unmigrated |
 | [docs/NERO_GLOBAL_PRESENCE_ACCEPTANCE.md](/docs/NERO_GLOBAL_PRESENCE_ACCEPTANCE.md) | Nero Global Host Presence acceptance matrix | operational | - | shared | unmigrated |
-| [docs/PROJECT_BRIEF.md](/docs/PROJECT_BRIEF.md) | Nero — Project Status Brief | operational | - | shared | unmigrated |
-| [docs/ROADMAP.md](/docs/ROADMAP.md) | Nero Roadmap | operational | - | shared | unmigrated |
+| [docs/PROJECT_BRIEF.md](/docs/PROJECT_BRIEF.md) | Nero — Project Status Brief | operational | active | toni |  |
+| [docs/ROADMAP.md](/docs/ROADMAP.md) | Nero Roadmap | operational | active | toni |  |
 | [docs/VISION.md](/docs/VISION.md) | Nero — Vision & Architecture | core | active | toni |  |
 
 ## docs/adr
@@ -253,14 +253,14 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [docs/mobile/presence_experience.md](/docs/mobile/presence_experience.md) | NERO Mobile Presence Experience | operational | - | shared | unmigrated |
+| [docs/mobile/presence_experience.md](/docs/mobile/presence_experience.md) | NERO Mobile Presence Experience | operational | active | shared |  |
 
 ## docs/reviews
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [docs/reviews/2026-07-14-zero-start-host-presence-audit.md](/docs/reviews/2026-07-14-zero-start-host-presence-audit.md) | Zero-start Nero Host Presence implementation audit | operational | - | shared | unmigrated |
-| [docs/reviews/ADR-0009-acceptance-review.md](/docs/reviews/ADR-0009-acceptance-review.md) | ADR-0009 Acceptance Review | operational | - | shared | unmigrated |
+| [docs/reviews/2026-07-14-zero-start-host-presence-audit.md](/docs/reviews/2026-07-14-zero-start-host-presence-audit.md) | Zero-start Nero Host Presence implementation audit | operational | active | shared |  |
+| [docs/reviews/ADR-0009-acceptance-review.md](/docs/reviews/ADR-0009-acceptance-review.md) | ADR-0009 Acceptance Review | operational | active | shared |  |
 
 ## docs/specs
 
@@ -275,23 +275,23 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [docs/visual/asset_contract.md](/docs/visual/asset_contract.md) | Asset Contract | operational | - | shared | unmigrated |
-| [docs/visual/asset_folder_architecture.md](/docs/visual/asset_folder_architecture.md) | Visual Asset Folder Architecture | operational | - | shared | unmigrated |
-| [docs/visual/asset_review_checklist.md](/docs/visual/asset_review_checklist.md) | Asset Arrival Checklist | operational | - | shared | unmigrated |
-| [docs/visual/character_forge_architecture_v2.md](/docs/visual/character_forge_architecture_v2.md) | Character Forge — Architecture v2 (Design Review Outcome) | operational | - | shared | unmigrated |
-| [docs/visual/comfyui_install_verified.md](/docs/visual/comfyui_install_verified.md) | ComfyUI Install — VERIFIED AS-BUILT (2026-07-13) | operational | - | shared | unmigrated |
-| [docs/visual/comfyui_pipeline.md](/docs/visual/comfyui_pipeline.md) | ComfyUI Pipeline for NERO | operational | - | shared | unmigrated |
-| [docs/visual/comfyui_quality_control.md](/docs/visual/comfyui_quality_control.md) | ComfyUI Quality Control | operational | - | shared | unmigrated |
-| [docs/visual/forge_roadmap.md](/docs/visual/forge_roadmap.md) | NERO Visual Forge — Architecture & Roadmap v0.1 | operational | - | shared | unmigrated |
-| [docs/visual/manbeardog_character_dna.md](/docs/visual/manbeardog_character_dna.md) | Manbeardog — Character DNA v1.0 | operational | - | shared | unmigrated |
-| [docs/visual/manbeardog_identity_profile.md](/docs/visual/manbeardog_identity_profile.md) | Manbeardog — Identity Profile v1.0 | operational | - | shared | unmigrated |
-| [docs/visual/manbeardog_identity_spec_measurable.md](/docs/visual/manbeardog_identity_spec_measurable.md) | Manbeardog — Measurable Identity Spec + Measurement Harness  | operational | - | shared | unmigrated |
-| [docs/visual/manbeardog_identity_workflow.md](/docs/visual/manbeardog_identity_workflow.md) | Manbeardog Identity Preservation Workflow | operational | - | shared | unmigrated |
-| [docs/visual/manbeardog_prompt_system.md](/docs/visual/manbeardog_prompt_system.md) | Manbeardog Prompt System | operational | - | shared | unmigrated |
-| [docs/visual/manbeardog_visual_bible.md](/docs/visual/manbeardog_visual_bible.md) | Manbeardog — Visual Bible | operational | - | shared | unmigrated |
-| [docs/visual/manbeardog_visual_production.md](/docs/visual/manbeardog_visual_production.md) | Manbeardog Visual Production Roadmap | operational | - | shared | unmigrated |
-| [docs/visual/multi_device_asset_strategy.md](/docs/visual/multi_device_asset_strategy.md) | Multi-Device Asset Strategy | operational | - | shared | unmigrated |
-| [docs/visual/phase_a_execution_guide.md](/docs/visual/phase_a_execution_guide.md) | Phase A — Manbeardog Character Genesis — Execution Guide | operational | - | shared | unmigrated |
+| [docs/visual/asset_contract.md](/docs/visual/asset_contract.md) | Asset Contract | operational | active | shared |  |
+| [docs/visual/asset_folder_architecture.md](/docs/visual/asset_folder_architecture.md) | Visual Asset Folder Architecture | operational | active | shared |  |
+| [docs/visual/asset_review_checklist.md](/docs/visual/asset_review_checklist.md) | Asset Arrival Checklist | operational | active | shared |  |
+| [docs/visual/character_forge_architecture_v2.md](/docs/visual/character_forge_architecture_v2.md) | Character Forge — Architecture v2 (Design Review Outcome) | operational | active | shared |  |
+| [docs/visual/comfyui_install_verified.md](/docs/visual/comfyui_install_verified.md) | ComfyUI Install — VERIFIED AS-BUILT (2026-07-13) | operational | active | shared |  |
+| [docs/visual/comfyui_pipeline.md](/docs/visual/comfyui_pipeline.md) | ComfyUI Pipeline for NERO | operational | active | shared |  |
+| [docs/visual/comfyui_quality_control.md](/docs/visual/comfyui_quality_control.md) | ComfyUI Quality Control | operational | active | shared |  |
+| [docs/visual/forge_roadmap.md](/docs/visual/forge_roadmap.md) | NERO Visual Forge — Architecture & Roadmap v0.1 | operational | active | shared |  |
+| [docs/visual/manbeardog_character_dna.md](/docs/visual/manbeardog_character_dna.md) | Manbeardog — Character DNA v1.0 | operational | active | shared |  |
+| [docs/visual/manbeardog_identity_profile.md](/docs/visual/manbeardog_identity_profile.md) | Manbeardog — Identity Profile v1.0 | operational | active | shared |  |
+| [docs/visual/manbeardog_identity_spec_measurable.md](/docs/visual/manbeardog_identity_spec_measurable.md) | Manbeardog — Measurable Identity Spec + Measurement Harness  | operational | active | shared |  |
+| [docs/visual/manbeardog_identity_workflow.md](/docs/visual/manbeardog_identity_workflow.md) | Manbeardog Identity Preservation Workflow | operational | active | shared |  |
+| [docs/visual/manbeardog_prompt_system.md](/docs/visual/manbeardog_prompt_system.md) | Manbeardog Prompt System | operational | active | shared |  |
+| [docs/visual/manbeardog_visual_bible.md](/docs/visual/manbeardog_visual_bible.md) | Manbeardog — Visual Bible | core | active | shared |  |
+| [docs/visual/manbeardog_visual_production.md](/docs/visual/manbeardog_visual_production.md) | Manbeardog Visual Production Roadmap | operational | active | shared |  |
+| [docs/visual/multi_device_asset_strategy.md](/docs/visual/multi_device_asset_strategy.md) | Multi-Device Asset Strategy | operational | active | shared |  |
+| [docs/visual/phase_a_execution_guide.md](/docs/visual/phase_a_execution_guide.md) | Phase A — Manbeardog Character Genesis — Execution Guide | operational | active | shared |  |
 | [docs/visual/README.md](/docs/visual/README.md) | Manbeardog Visual System — Hierarchy | operational | - | shared | unmigrated |
 
 ## familiar
@@ -304,8 +304,8 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [presence/README.md](/presence/README.md) | Nero Presence Director | operational | - | shared | unmigrated |
-| [presence/runtime_bridge/live2d_protocol.md](/presence/runtime_bridge/live2d_protocol.md) | Nero ↔ Live2D Viewer — WebSocket Protocol v1 | operational | - | shared | unmigrated |
+| [presence/README.md](/presence/README.md) | Nero Presence Director | operational | active | shared |  |
+| [presence/runtime_bridge/live2d_protocol.md](/presence/runtime_bridge/live2d_protocol.md) | Nero ↔ Live2D Viewer — WebSocket Protocol v1 | operational | active | shared |  |
 
 ## skills
 
@@ -330,12 +330,12 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [verify/README.md](/verify/README.md) | Nero — Verification System | operational | - | shared | unmigrated |
+| [verify/README.md](/verify/README.md) | Nero — Verification System | operational | active | shared |  |
 
 ## voice
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [voice/effects/README.md](/voice/effects/README.md) | voice/effects — presentation-layer audio effects | operational | - | shared | unmigrated |
-| [voice/profiles/README.md](/voice/profiles/README.md) | voice/profiles — logical voice identities | operational | - | shared | unmigrated |
+| [voice/effects/README.md](/voice/effects/README.md) | voice/effects — presentation-layer audio effects | operational | active | shared |  |
+| [voice/profiles/README.md](/voice/profiles/README.md) | voice/profiles — logical voice identities | operational | active | shared |  |
 

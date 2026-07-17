@@ -1,3 +1,14 @@
+---
+id: audit.nero-continuity-2026-07-15
+title: "Nero Cross-Host Continuity — Audit Bundle"
+layer: operational
+type: report
+status: active
+owner: shared
+created: 2026-07-15
+updated: 2026-07-17
+---
+
 # Nero Cross-Host Continuity — Audit Bundle
 
 **Status:** `READY_FOR_CODEX_LIVE_TEST`

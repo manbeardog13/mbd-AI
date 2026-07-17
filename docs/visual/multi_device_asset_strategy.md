@@ -1,3 +1,14 @@
+---
+id: visual.multi-device-asset-strategy
+title: "Multi-Device Asset Strategy"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Multi-Device Asset Strategy
 
 **Principle:** *one identity, many manifestations*. Manbeardog is the

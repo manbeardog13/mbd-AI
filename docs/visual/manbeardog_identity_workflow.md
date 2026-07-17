@@ -1,3 +1,14 @@
+---
+id: visual.manbeardog-identity-workflow
+title: "Manbeardog Identity Preservation Workflow"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Manbeardog Identity Preservation Workflow
 
 **Problem:** AI image generation drifts. A Manbeardog generated today and

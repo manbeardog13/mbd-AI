@@ -1,3 +1,14 @@
+---
+id: root.progress
+title: "Nero — Progress Tracker"
+layer: operational
+type: log
+status: active
+owner: toni
+created: 2026-07-12
+updated: 2026-07-17
+---
+
 # Nero — Progress Tracker
 
 **Charter:** the increment log — what shipped, what's in flight. The plan lives in

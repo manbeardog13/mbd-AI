@@ -1,3 +1,14 @@
+---
+id: visual.manbeardog-prompt-system
+title: "Manbeardog Prompt System"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Manbeardog Prompt System
 
 **Purpose:** the permanent prompt library. Every AI image generation of

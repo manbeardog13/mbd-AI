@@ -1,3 +1,14 @@
+---
+id: visual.asset-contract
+title: "Asset Contract"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Asset Contract
 
 **Purpose:** define the requirements every visual asset must meet before

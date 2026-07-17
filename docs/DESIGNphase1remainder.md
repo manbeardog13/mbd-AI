@@ -1,3 +1,14 @@
+---
+id: docs.design-phase1-remainder
+title: "Phase 1 — Remaining Build: Continuation Guide"
+layer: operational
+type: plan
+status: active
+owner: shared
+created: 2026-07-12
+updated: 2026-07-17
+---
+
 # Phase 1 — Remaining Build: Continuation Guide
 
 *Authoritative build order and spec for the rest of Phase 1. You are implementing this autonomously on Toni's Windows PC (RTX 4070). The repo already has the Constitution, ADRs, DESIGN-phase1, and the working `git.status`/`fs.read`/security-gate/registry code. This document is law for the four PRs below; where it conflicts with the input designs, this document wins because it folds in the adversarial security reviews. Two things are Toni's call, not yours — they are marked **DECISION FOR TONI** and you must stop and ask before finalizing them.*

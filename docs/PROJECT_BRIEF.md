@@ -1,3 +1,14 @@
+---
+id: docs.project-brief
+title: "Nero — Project Status Brief"
+layer: operational
+type: report
+status: active
+owner: toni
+created: 2026-07-12
+updated: 2026-07-17
+---
+
 # Nero — Project Status Brief
 
 **Charter:** the living snapshot and external handoff. The plan is

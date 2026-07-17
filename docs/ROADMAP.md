@@ -1,3 +1,14 @@
+---
+id: docs.roadmap
+title: "Nero Roadmap"
+layer: operational
+type: plan
+status: active
+owner: toni
+created: 2026-07-12
+updated: 2026-07-17
+---
+
 # Nero Roadmap
 
 **Charter:** the authoritative, measurable plan. Increment log:

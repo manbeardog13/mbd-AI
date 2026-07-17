@@ -1,3 +1,14 @@
+---
+id: presence.readme
+title: "Nero Presence Director"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Nero Presence Director
 
 The visual counterpart to the Voice Director. Same principle: the brain

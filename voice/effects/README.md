@@ -1,3 +1,14 @@
+---
+id: voice.effects-readme
+title: "voice/effects — presentation-layer audio effects"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # voice/effects — presentation-layer audio effects
 
 Pure post-processing on Kokoro-synthesized audio. Each effect module exposes a

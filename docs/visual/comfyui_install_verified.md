@@ -1,3 +1,14 @@
+---
+id: visual.comfyui-install-verified
+title: "ComfyUI Install — VERIFIED AS-BUILT (2026-07-13)"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # ComfyUI Install — VERIFIED AS-BUILT (2026-07-13)
 
 **This document records what was *actually installed and run*, replacing the

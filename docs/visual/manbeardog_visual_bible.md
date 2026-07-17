@@ -1,3 +1,14 @@
+---
+id: visual.manbeardog-visual-bible
+title: "Manbeardog — Visual Bible"
+layer: core
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Manbeardog — Visual Bible
 
 **Status:** Version 1.0, established 2026-07-13. Source of truth for every

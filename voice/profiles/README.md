@@ -1,3 +1,14 @@
+---
+id: voice.profiles-readme
+title: "voice/profiles — logical voice identities"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # voice/profiles — logical voice identities
 
 The brain requests a voice by name; the profile bundles everything needed to

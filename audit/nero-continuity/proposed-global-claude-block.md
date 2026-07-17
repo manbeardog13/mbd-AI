@@ -1,3 +1,14 @@
+---
+id: audit.proposed-global-claude-block
+title: "PROPOSED (NOT DEPLOYED): global Claude routing block"
+layer: operational
+type: plan
+status: proposed
+owner: shared
+created: 2026-07-15
+updated: 2026-07-17
+---
+
 # PROPOSED (NOT DEPLOYED): global Claude routing block
 
 This is an **optional** routing aid. The project-level skill

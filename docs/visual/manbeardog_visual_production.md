@@ -1,3 +1,14 @@
+---
+id: visual.manbeardog-visual-production
+title: "Manbeardog Visual Production Roadmap"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Manbeardog Visual Production Roadmap
 
 **Version:** 1.0 (2026-07-13)

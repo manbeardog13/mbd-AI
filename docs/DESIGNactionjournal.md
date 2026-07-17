@@ -1,3 +1,14 @@
+---
+id: docs.design-action-journal
+title: "Technical Design — The Action Journal (Nero's Chain of Custody)"
+layer: operational
+type: plan
+status: active
+owner: shared
+created: 2026-07-12
+updated: 2026-07-17
+---
+
 # Technical Design — The Action Journal (Nero's Chain of Custody)
 
 **Status:** Approved (2026-07-12) — finalized with the Action Journal Finalization

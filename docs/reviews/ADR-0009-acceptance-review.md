@@ -1,3 +1,14 @@
+---
+id: reviews.adr-0009-acceptance
+title: "ADR-0009 Acceptance Review"
+layer: operational
+type: review
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # ADR-0009 Acceptance Review
 
 **Date:** 2026-07-13

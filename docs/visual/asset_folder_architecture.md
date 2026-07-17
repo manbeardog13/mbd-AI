@@ -1,3 +1,14 @@
+---
+id: visual.asset-folder-architecture
+title: "Visual Asset Folder Architecture"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Visual Asset Folder Architecture
 
 **Location of the workspace:** `C:\Users\tonij\iCloudDrive\Nero AI\visual\`

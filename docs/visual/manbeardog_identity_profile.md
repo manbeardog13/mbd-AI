@@ -1,3 +1,14 @@
+---
+id: visual.manbeardog-identity-profile
+title: "Manbeardog — Identity Profile v1.0"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-13
+updated: 2026-07-17
+---
+
 # Manbeardog — Identity Profile v1.0
 
 **Status:** DRAFT — awaiting Creative Director (Toni) approval.
