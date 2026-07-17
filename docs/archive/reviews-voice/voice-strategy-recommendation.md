@@ -1,10 +1,20 @@
+---
+id: archive.review-voice-voice-strategy-recommendation
+layer: archival
+type: review
+status: archived
+owner: shared
+superseded_by: docs/adr/0009, 0010, 0011
+updated: 2026-07-17
+---
+
 # Voice Strategy Recommendation
 
 **Date:** 2026-07-13
 **Author:** Claude Code (discovery-phase recommendation)
 **Scope:** documentation and recommendation only — no code, config, dependency, API, or runtime change of any kind.
 **Depends on:** [Stage 2 Voice Capability Audit](stage2-voice-capability-audit.md) · [Voice Provider Analysis](voice-provider-analysis.md) · [MMS-TTS Evaluation](mms-tts-evaluation.md).
-**Related:** [Stage 1 Voice Baseline](stage1-voice-baseline.md) · [ADR-0009](../adr/0009-voice-rendering-and-backend-architecture.md) (Proposed) · [ADR-0006 Local-First with Intelligence Escalation](../adr/0006-local-model-ceiling.md) · [VISION.md](../VISION.md).
+**Related:** [Stage 1 Voice Baseline](stage1-voice-baseline.md) · [ADR-0009](../../adr/0009-voice-rendering-and-backend-architecture.md) (Proposed) · [ADR-0006 Local-First with Intelligence Escalation](../../adr/0006-local-model-ceiling.md) · [VISION.md](../../VISION.md).
 
 ---
 

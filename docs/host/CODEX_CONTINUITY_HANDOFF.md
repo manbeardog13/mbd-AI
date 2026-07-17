@@ -1,3 +1,12 @@
+---
+id: host.codex-continuity-handoff
+layer: operational
+type: handoff
+status: active
+owner: shared
+updated: 2026-07-17
+---
+
 # Codex Continuity Handoff
 
 **From:** Claude builder lane · **To:** a real Codex session · **Date:** 2026-07-15
@@ -109,7 +118,7 @@ run the local continuity CLI once and report the result honestly:
 - Content and queries go on STDIN, never on the command line.
 - capture (--scope handoff|durable), recall (--topic or stdin query), correct
   (--supersedes <id>), revoke/forget (--event <id>). See
-  docs/CODEX_CONTINUITY_HANDOFF.md for the full contract.
+  docs/host/CODEX_CONTINUITY_HANDOFF.md for the full contract.
 - Do NOT run for greetings or ordinary chat, on every prompt, to auto-save
   conclusions, or to scrape transcripts. Capture only the single selected item.
 - source_host_claim is CLAIMED provenance, not provider-attested. A save does not
@@ -143,7 +152,7 @@ python continuity/continuityctl.py --host codex verify
   git-ignored; deleting that directory removes all stored continuity data.
 - The code/docs are contained under `continuity/`, `verify/verify_nero_continuity.py`,
   `.claude/skills/nero-continuity/`, `docs/adr/0016-*.md`,
-  `docs/CODEX_CONTINUITY_HANDOFF.md`, `docs/NERO_CONTINUITY_PRIVACY.md`, and the
+  `docs/host/CODEX_CONTINUITY_HANDOFF.md`, `docs/NERO_CONTINUITY_PRIVACY.md`, and the
   appended `.gitignore` block. `git checkout`/removal of these reverts cleanly.
 - No global config, hook, service, scheduled task, or `data/memory.db` change is
   part of this feature; there is nothing else to undo.

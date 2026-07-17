@@ -58,14 +58,24 @@ ADRs 0017–0019 (Proposed), `scripts/build_canon_index.py`.
 | A3 | `docs/VISION.md`: banner on the roadmap table ("historical — ROADMAP.md governs") + frontmatter | — |
 | A4 | `README.md`: add "Start here → docs/canon/README.md" section | — |
 | A5 | One-line charters atop PROGRESS.md / PROJECT_BRIEF.md / ROADMAP.md; adopt phase *names* with a legacy-numbering note | — |
-| A6 | `docs/INTEGRATIONS.md`: one sentence — maximum-access = discovery breadth, never a gate bypass | — |
+| A6 | `docs/host/INTEGRATIONS.md`: one sentence — maximum-access = discovery breadth, never a gate bypass | — |
 
 ## Phase B — Structural moves (reference-checked, ~2 h)
+
+> **EXECUTED 2026-07-17** (B1–B8; B9 stays by design until "The Hands"
+> completes): 19 files moved (archive/handoffs, archive/reviews-voice,
+> guides/, host/, visual roadmap merge), 24 files repointed + 18 relative
+> links auto-repaired, visual + familiar READMEs added, skill lifecycle
+> frontmatter applied and re-synced to both deployed skill homes, Cowork
+> project capsule canonical source captured. B5 executed for Claude/shared
+> docs only — the five Codex-lane host docs (GLOBAL_CAPSULE, CODEX_MEMORY,
+> CODEX_RUNTIME, HOST_VOICE, PRESENCE_ACCEPTANCE) stay in docs/ pending a
+> joint change. All verifiers green after execution.
 
 | Step | Move | Inbound refs found (fix in same commit) |
 |---|---|---|
 | B1 | `NERO_HANDOFF.md` → `docs/archive/handoffs/2026-07-13-manbeardog-pipeline.md` (+ tombstone frontmatter) | **none** |
-| B2 | `docs/roadmap/manbeardog_visual_production.md` → `docs/visual/`; delete empty `docs/roadmap/` | 6 (mobile/presence_experience, 4× visual docs, archived handoff) |
+| B2 | `docs/visual/manbeardog_visual_production.md` → `docs/visual/`; delete empty `docs/roadmap/` | 6 (mobile/presence_experience, 4× visual docs, archived handoff) |
 | B3 | `docs/reviews/{mms-tts-evaluation, stage1-voice-baseline, stage2-voice-capability-audit, voice-provider-analysis, voice-strategy-recommendation}.md` → `docs/archive/reviews-voice/` (ADR acceptance reviews stay with ADRs) | check each (expected ≈0; decisions live in ADR-0009/10/11) |
 | B4 | `docs/{SETUP, ALWAYS_ON, REMOTE_ACCESS, VOICE_AND_SIRI, MODELS}.md` → `docs/guides/` | SETUP↔REMOTE_ACCESS↔ALWAYS_ON cross-links; **MODELS: 7 refs incl. `bootstrap.py`, `config.yaml`, `config.example.yaml`, `verify_nero_global_presence.py`** — code refs are strings in messages; update carefully, run the verify script after |
 | B5 | Host-mode docs → `docs/host/` (GLOBAL_CAPSULE, CLAUDE_GLOBAL_CAPSULE, CODEX_MEMORY, CODEX_RUNTIME, HOST_VOICE, TAUGHT_KNOWLEDGE, INTEGRATIONS, CHATGPT_CLAUDE_COUNCIL, CODEX_CONTINUITY_HANDOFF, NERO_GLOBAL_PRESENCE_ACCEPTANCE) | `verify_nero_global_presence.py` reads capsule path — **update script + rerun**; AGENTS.md + CLAUDE.md references; **coordinate: several are Codex-lane-owned — this step is a joint change, or Claude moves only Claude/shared files** |
@@ -87,7 +97,7 @@ ADRs 0017–0019 (Proposed), `scripts/build_canon_index.py`.
 
 1. **Decide the governing text:** deployed V2 (observed in the live Claude
    project context) vs repo V1. Recommendation: V2 semantics are current
-   reality — bring V2 *into* `docs/NERO_CLAUDE_GLOBAL_CAPSULE.md` /
+   reality — bring V2 *into* `docs/host/NERO_CLAUDE_GLOBAL_CAPSULE.md` /
    `NERO_GLOBAL_CAPSULE.md` as the new marked blocks, superseding V1 blocks
    with banners. Resolve the **single- vs dual-voice** contradiction
    explicitly — this is Nero's observable personality; Toni chooses.
@@ -111,6 +121,11 @@ School frontmatter adoption. Each needs the two-host agreement flow — proposal
 lives here, execution goes through `schoolctl.py` logging.
 
 ## Phase E — Proxima retirement (outside-repo; Toni executes)
+
+> **EXECUTED 2026-07-17:** four running Proxima electron processes stopped
+> (Toni authorized); no autostart entry existed; ADR-0019 → Accepted. Folder
+> disposition (archive or delete C:\Users\tonij\Proxima, 834 MB) remains
+> Toni's.
 
 Per PROXIMA_DEPENDENCY_REPORT: verify not running / no startup entry; archive
 or delete `C:\Users\tonij\Proxima\`; ADR-0019 → Accepted once done.

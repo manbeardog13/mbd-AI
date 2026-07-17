@@ -362,4 +362,4 @@ Use these to generate keyframe references for the Cubism motion designer.
 - Character identity: `docs/visual/manbeardog_visual_bible.md`
 - Workflow that produces the LoRA: `docs/visual/manbeardog_identity_workflow.md`
 - Asset acceptance: `docs/visual/asset_contract.md`
-- Full pipeline: `docs/roadmap/manbeardog_visual_production.md`
+- Full pipeline: `docs/visual/manbeardog_visual_production.md`

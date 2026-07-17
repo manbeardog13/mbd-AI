@@ -51,7 +51,7 @@ model onboarding from this repo should read this before touching any store.
 | 2 | Executive Memory (working-state register) | app SQLite (ADR-0008) | Standalone app agent loop; `project`/`branch` **observed from git, never guessed** | Standalone app | Per-task; reset endpoints |
 | 3 | World model (continuity picture) | `world_state` table | Standalone app background pass | Standalone app (read into every prompt) | Continuously updated; owner reset via API |
 | 4 | Cross-host continuity ledger | `data/continuity/continuity.db` (ADR-0016) | `continuity/continuityctl.py`, invoked cold by the active hosted session **only on Toni's explicit routing language** | Either hosted lane, on demand, pull-only | Append-only, hash-chained; `handoff` 24 h / `durable` approved |
-| 5 | Static identity & host-mode facts | `docs/NERO_GLOBAL_CAPSULE.md`, `docs/NERO_CLAUDE_GLOBAL_CAPSULE.md`, `docs/NERO_CODEX_MEMORY.md`, `docs/NERO_TAUGHT_KNOWLEDGE.md` | Toni (deliberate edits; deployment is a manual configuration act) | Any host, cold | Versioned capsule blocks; verify scripts check deployed copies |
+| 5 | Static identity & host-mode facts | `docs/NERO_GLOBAL_CAPSULE.md`, `docs/host/NERO_CLAUDE_GLOBAL_CAPSULE.md`, `docs/NERO_CODEX_MEMORY.md`, `docs/host/NERO_TAUGHT_KNOWLEDGE.md` | Toni (deliberate edits; deployment is a manual configuration act) | Any host, cold | Versioned capsule blocks; verify scripts check deployed copies |
 | 6 | Evidence & learning records | `School/experience.json`, `School/DEBATE CC/` ledgers, EGCSE learning ledger | `School/tooling/schoolctl.py` (finalize) and the EGCSE maintenance path | Both lanes for School work | Evidence-gated; XP only via `finalize` ≥ 8.7 |
 | 7 | Provider-native memory | Claude auto-memory, Codex memory, Ruflo `memory_store` | The provider's own machinery | That provider only | External to Nero |
 
@@ -64,7 +64,7 @@ model onboarding from this repo should read this before touching any store.
   `scripts/claude_teach_nero.py` are a Toni-requested, idempotent, offline
   batch operation (rows `source='claude-teaching'`, embeddings left null so no
   local model wakes). Every batch must be mirrored in
-  `docs/NERO_TAUGHT_KNOWLEDGE.md` (the audit copy). This is a maintenance act,
+  `docs/host/NERO_TAUGHT_KNOWLEDGE.md` (the audit copy). This is a maintenance act,
   not a runtime path. *Note: capsule V2 wording and this exception need formal
   reconciliation — see Open items.*
 - The continuity ledger never reads or writes `data/memory.db`, DHEF/EGCSE

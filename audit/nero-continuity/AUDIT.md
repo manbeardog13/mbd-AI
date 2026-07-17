@@ -9,7 +9,7 @@
 This bundle is Claude's **builder-lane** evidence. It uses deterministic tests and
 a simulated single-machine client for both host claims. It is **not** proof of
 live cross-host continuity — that requires a separate real Codex session
-(see `../../docs/CODEX_CONTINUITY_HANDOFF.md`, §8).
+(see `../../docs/host/CODEX_CONTINUITY_HANDOFF.md`, §8).
 
 ## Declared allowlist (only these were touched)
 
@@ -18,7 +18,7 @@ continuity/{README.md, schema.sql, continuityctl.py, policy.json, tests/test_con
 data/continuity/**                         (git-ignored runtime; NOT created in the real tree — tests used temp dirs)
 .claude/skills/nero-continuity/SKILL.md
 docs/adr/0016-cross-host-continuity-ledger.md
-docs/CODEX_CONTINUITY_HANDOFF.md
+docs/host/CODEX_CONTINUITY_HANDOFF.md
 docs/NERO_CONTINUITY_PRIVACY.md
 verify/verify_nero_continuity.py
 audit/nero-continuity/**
@@ -36,7 +36,7 @@ audit/nero-continuity/**
 | `continuity/tests/test_continuity.py` | new |
 | `.claude/skills/nero-continuity/SKILL.md` | new |
 | `docs/adr/0016-cross-host-continuity-ledger.md` | new |
-| `docs/CODEX_CONTINUITY_HANDOFF.md` | new |
+| `docs/host/CODEX_CONTINUITY_HANDOFF.md` | new |
 | `docs/NERO_CONTINUITY_PRIVACY.md` | new |
 | `verify/verify_nero_continuity.py` | new |
 | `audit/nero-continuity/*` | new (this bundle) |
@@ -49,7 +49,7 @@ audit/nero-continuity/**
 | `data/memory.db` | `9dcfcac419…dabfb946` | **no** |
 | `~/.claude/CLAUDE.md` (Claude host capsule) | `579d453abb…f89755f0` | **no** |
 | `~/.codex/AGENTS.md` (Codex host capsule) | `d598491101…3e38b12d3` | **no** |
-| repo `AGENTS.md` / `CLAUDE.md` / `docs/NERO_CLAUDE_GLOBAL_CAPSULE.md` | unchanged | **no** |
+| repo `AGENTS.md` / `CLAUDE.md` / `docs/host/NERO_CLAUDE_GLOBAL_CAPSULE.md` | unchanged | **no** |
 | existing `claude-teaching` rows in memory.db | untouched (memory.db byte-identical) | **no** |
 
 ### Honest exception — external Codex-owned drift (NOT caused by this build)
@@ -149,7 +149,7 @@ such. Findings:
 - `proposed-global-claude-block.md` — optional global Claude routing block
   (managed markers + rollback). **Not deployed** (editing global CLAUDE.md is a
   stop-and-ask boundary).
-- Codex managed instruction block — in `../../docs/CODEX_CONTINUITY_HANDOFF.md` §5.
+- Codex managed instruction block — in `../../docs/host/CODEX_CONTINUITY_HANDOFF.md` §5.
   **Not deployed** (Codex owns its side).
 
 ## Live-test checklist — PENDING (Codex + fresh Claude sessions + Toni)

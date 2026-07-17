@@ -1,3 +1,12 @@
+---
+id: guides.remote-access
+layer: operational
+type: guide
+status: active
+owner: shared
+updated: 2026-07-17
+---
+
 # Reach Your AI From Anywhere (Securely)
 
 You want to talk to your AI **on any network, anytime** — but *without* exposing

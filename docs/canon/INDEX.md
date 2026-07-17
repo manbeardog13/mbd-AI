@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-221 knowledge files - 12 carrying canon frontmatter - 209 not yet migrated (see MIGRATION_PLAN.md).
+224 knowledge files - 28 carrying canon frontmatter - 196 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -12,7 +12,6 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 |---|---|---|---|---|---|
 | [AGENTS.md](/AGENTS.md) | Nero Host Mode — project instructions | operational | - | shared | unmigrated |
 | [CLAUDE.md](/CLAUDE.md) | Nero Claude Host Mode | operational | - | shared | unmigrated |
-| [NERO_HANDOFF.md](/NERO_HANDOFF.md) | NERO Presence Initiative | operational | - | shared | unmigrated |
 | [PROGRESS.md](/PROGRESS.md) | Nero — Progress Tracker | operational | - | shared | unmigrated |
 | [README.md](/README.md) | 🧠 mbd-AI — Your Personal, Local AI | operational | - | shared | unmigrated |
 
@@ -155,31 +154,21 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [docs/ALWAYS_ON.md](/docs/ALWAYS_ON.md) | Keep Your AI Always Running | operational | - | shared | unmigrated |
-| [docs/CHATGPT_CLAUDE_COUNCIL.md](/docs/CHATGPT_CLAUDE_COUNCIL.md) | External Council: OpenAI and Claude inside Nero | operational | - | shared | unmigrated |
 | [docs/CLAUDE_NERO_HOST_IMPLEMENTATION.md](/docs/CLAUDE_NERO_HOST_IMPLEMENTATION.md) | Claude implementation directive: Nero Hosted Mind / Local Re | operational | - | shared | unmigrated |
-| [docs/CODEX_CONTINUITY_HANDOFF.md](/docs/CODEX_CONTINUITY_HANDOFF.md) | Codex Continuity Handoff | operational | - | shared | unmigrated |
 | [docs/CONSTITUTION.md](/docs/CONSTITUTION.md) | The Nero Constitution | core | - | toni | unmigrated |
 | [docs/DESIGN-phase1.md](/docs/DESIGN-phase1.md) | Technical Design — Phase 1: The Hands | operational | - | shared | unmigrated |
 | [docs/DESIGNactionjournal.md](/docs/DESIGNactionjournal.md) | Technical Design — The Action Journal (Nero's Chain of Custo | operational | - | shared | unmigrated |
 | [docs/DESIGNphase1remainder.md](/docs/DESIGNphase1remainder.md) | Phase 1 — Remaining Build: Continuation Guide | operational | - | shared | unmigrated |
 | [docs/DIRECTIVE.md](/docs/DIRECTIVE.md) | Nero Development Directive | core | superseded | toni |  |
 | [docs/HOST_VOICE.md](/docs/HOST_VOICE.md) | Nero Host Voice status | operational | - | shared | unmigrated |
-| [docs/INTEGRATIONS.md](/docs/INTEGRATIONS.md) | Nero integrations - maximum-access mode | operational | - | shared | unmigrated |
-| [docs/MODELS.md](/docs/MODELS.md) | Choosing Nero's Brain (the model) | operational | - | shared | unmigrated |
-| [docs/NERO_CLAUDE_GLOBAL_CAPSULE.md](/docs/NERO_CLAUDE_GLOBAL_CAPSULE.md) | Nero -- Claude Global Host Presence (canonical source) | operational | - | shared | unmigrated |
 | [docs/NERO_CODEX_MEMORY.md](/docs/NERO_CODEX_MEMORY.md) | Nero Host Mode memory | operational | - | shared | unmigrated |
 | [docs/NERO_CODEX_RUNTIME.md](/docs/NERO_CODEX_RUNTIME.md) | Nero Host Runtime | operational | - | shared | unmigrated |
 | [docs/NERO_CONTINUITY_PRIVACY.md](/docs/NERO_CONTINUITY_PRIVACY.md) | Nero Cross-Host Continuity — Privacy & Limitations | operational | - | shared | unmigrated |
 | [docs/NERO_GLOBAL_CAPSULE.md](/docs/NERO_GLOBAL_CAPSULE.md) | Nero Global Host Presence — NERO_GLOBAL_CAPSULE_V1 | operational | - | shared | unmigrated |
 | [docs/NERO_GLOBAL_PRESENCE_ACCEPTANCE.md](/docs/NERO_GLOBAL_PRESENCE_ACCEPTANCE.md) | Nero Global Host Presence acceptance matrix | operational | - | shared | unmigrated |
-| [docs/NERO_TAUGHT_KNOWLEDGE.md](/docs/NERO_TAUGHT_KNOWLEDGE.md) | Nero — Taught Knowledge (Claude transfer log) | operational | - | shared | unmigrated |
 | [docs/PROJECT_BRIEF.md](/docs/PROJECT_BRIEF.md) | Nero — Project Status Brief | operational | - | shared | unmigrated |
-| [docs/REMOTE_ACCESS.md](/docs/REMOTE_ACCESS.md) | Reach Your AI From Anywhere (Securely) | operational | - | shared | unmigrated |
 | [docs/ROADMAP.md](/docs/ROADMAP.md) | Nero Roadmap | operational | - | shared | unmigrated |
-| [docs/SETUP.md](/docs/SETUP.md) | Setup Guide | operational | - | shared | unmigrated |
 | [docs/VISION.md](/docs/VISION.md) | Nero — Vision & Architecture | core | active | toni |  |
-| [docs/VOICE_AND_SIRI.md](/docs/VOICE_AND_SIRI.md) | Talking To Your AI (Voice & "Hey Siri") | operational | - | shared | unmigrated |
 
 ## docs/adr
 
@@ -207,6 +196,17 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/adr/0020-identity-plane-and-engine-handoff.md](/docs/adr/0020-identity-plane-and-engine-handoff.md) | ADR-0020: Stable identity plane, swappable engines, and the  | core | - | shared | unmigrated |
 | [docs/adr/README.md](/docs/adr/README.md) | Architecture Decision Records | core | - | shared | unmigrated |
 
+## docs/archive
+
+| File | Title | Layer | Status | Owner | |
+|---|---|---|---|---|---|
+| [docs/archive/handoffs/2026-07-13-manbeardog-pipeline.md](/docs/archive/handoffs/2026-07-13-manbeardog-pipeline.md) | NERO Presence Initiative | archival | archived | shared |  |
+| [docs/archive/reviews-voice/mms-tts-evaluation.md](/docs/archive/reviews-voice/mms-tts-evaluation.md) | Meta MMS-TTS Evaluation for Nero | archival | archived | shared |  |
+| [docs/archive/reviews-voice/stage1-voice-baseline.md](/docs/archive/reviews-voice/stage1-voice-baseline.md) | Stage 1 Voice Baseline Review | archival | archived | shared |  |
+| [docs/archive/reviews-voice/stage2-voice-capability-audit.md](/docs/archive/reviews-voice/stage2-voice-capability-audit.md) | Stage 2 Voice Capability Audit | archival | archived | shared |  |
+| [docs/archive/reviews-voice/voice-provider-analysis.md](/docs/archive/reviews-voice/voice-provider-analysis.md) | Voice Provider Analysis — Cloud and Cloning Options | archival | archived | shared |  |
+| [docs/archive/reviews-voice/voice-strategy-recommendation.md](/docs/archive/reviews-voice/voice-strategy-recommendation.md) | Voice Strategy Recommendation | archival | archived | shared |  |
+
 ## docs/canon
 
 | File | Title | Layer | Status | Owner | |
@@ -220,6 +220,27 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/canon/PROXIMA_DEPENDENCY_REPORT.md](/docs/canon/PROXIMA_DEPENDENCY_REPORT.md) | Proxima Dependency Report | operational | active | shared |  |
 | [docs/canon/README.md](/docs/canon/README.md) | Nero Canon — Start Here | core | active | shared |  |
 
+## docs/guides
+
+| File | Title | Layer | Status | Owner | |
+|---|---|---|---|---|---|
+| [docs/guides/ALWAYS_ON.md](/docs/guides/ALWAYS_ON.md) | Keep Your AI Always Running | operational | active | shared |  |
+| [docs/guides/MODELS.md](/docs/guides/MODELS.md) | Choosing Nero's Brain (the model) | operational | superseded | shared |  |
+| [docs/guides/REMOTE_ACCESS.md](/docs/guides/REMOTE_ACCESS.md) | Reach Your AI From Anywhere (Securely) | operational | active | shared |  |
+| [docs/guides/SETUP.md](/docs/guides/SETUP.md) | Setup Guide | operational | active | shared |  |
+| [docs/guides/VOICE_AND_SIRI.md](/docs/guides/VOICE_AND_SIRI.md) | Talking To Your AI (Voice & "Hey Siri") | operational | active | shared |  |
+
+## docs/host
+
+| File | Title | Layer | Status | Owner | |
+|---|---|---|---|---|---|
+| [docs/host/CHATGPT_CLAUDE_COUNCIL.md](/docs/host/CHATGPT_CLAUDE_COUNCIL.md) | External Council: OpenAI and Claude inside Nero | operational | active | shared |  |
+| [docs/host/CODEX_CONTINUITY_HANDOFF.md](/docs/host/CODEX_CONTINUITY_HANDOFF.md) | Codex Continuity Handoff | operational | active | shared |  |
+| [docs/host/INTEGRATIONS.md](/docs/host/INTEGRATIONS.md) | Nero integrations - maximum-access mode | operational | active | shared |  |
+| [docs/host/NERO_CLAUDE_GLOBAL_CAPSULE.md](/docs/host/NERO_CLAUDE_GLOBAL_CAPSULE.md) | Nero -- Claude Global Host Presence (canonical source) | core | active | shared |  |
+| [docs/host/NERO_COWORK_PROJECT_CAPSULE.md](/docs/host/NERO_COWORK_PROJECT_CAPSULE.md) | Nero — Cowork Project Capsule (canonical source) | operational | - | shared | unmigrated |
+| [docs/host/NERO_TAUGHT_KNOWLEDGE.md](/docs/host/NERO_TAUGHT_KNOWLEDGE.md) | Nero — Taught Knowledge (Claude transfer log) | operational | active | shared |  |
+
 ## docs/mobile
 
 | File | Title | Layer | Status | Owner | |
@@ -232,17 +253,6 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 |---|---|---|---|---|---|
 | [docs/reviews/2026-07-14-zero-start-host-presence-audit.md](/docs/reviews/2026-07-14-zero-start-host-presence-audit.md) | Zero-start Nero Host Presence implementation audit | operational | - | shared | unmigrated |
 | [docs/reviews/ADR-0009-acceptance-review.md](/docs/reviews/ADR-0009-acceptance-review.md) | ADR-0009 Acceptance Review | operational | - | shared | unmigrated |
-| [docs/reviews/mms-tts-evaluation.md](/docs/reviews/mms-tts-evaluation.md) | Meta MMS-TTS Evaluation for Nero | operational | - | shared | unmigrated |
-| [docs/reviews/stage1-voice-baseline.md](/docs/reviews/stage1-voice-baseline.md) | Stage 1 Voice Baseline Review | operational | - | shared | unmigrated |
-| [docs/reviews/stage2-voice-capability-audit.md](/docs/reviews/stage2-voice-capability-audit.md) | Stage 2 Voice Capability Audit | operational | - | shared | unmigrated |
-| [docs/reviews/voice-provider-analysis.md](/docs/reviews/voice-provider-analysis.md) | Voice Provider Analysis — Cloud and Cloning Options | operational | - | shared | unmigrated |
-| [docs/reviews/voice-strategy-recommendation.md](/docs/reviews/voice-strategy-recommendation.md) | Voice Strategy Recommendation | operational | - | shared | unmigrated |
-
-## docs/roadmap
-
-| File | Title | Layer | Status | Owner | |
-|---|---|---|---|---|---|
-| [docs/roadmap/manbeardog_visual_production.md](/docs/roadmap/manbeardog_visual_production.md) | Manbeardog Visual Production Roadmap | operational | - | shared | unmigrated |
 
 ## docs/specs
 
@@ -270,8 +280,16 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/visual/manbeardog_identity_workflow.md](/docs/visual/manbeardog_identity_workflow.md) | Manbeardog Identity Preservation Workflow | operational | - | shared | unmigrated |
 | [docs/visual/manbeardog_prompt_system.md](/docs/visual/manbeardog_prompt_system.md) | Manbeardog Prompt System | operational | - | shared | unmigrated |
 | [docs/visual/manbeardog_visual_bible.md](/docs/visual/manbeardog_visual_bible.md) | Manbeardog — Visual Bible | operational | - | shared | unmigrated |
+| [docs/visual/manbeardog_visual_production.md](/docs/visual/manbeardog_visual_production.md) | Manbeardog Visual Production Roadmap | operational | - | shared | unmigrated |
 | [docs/visual/multi_device_asset_strategy.md](/docs/visual/multi_device_asset_strategy.md) | Multi-Device Asset Strategy | operational | - | shared | unmigrated |
 | [docs/visual/phase_a_execution_guide.md](/docs/visual/phase_a_execution_guide.md) | Phase A — Manbeardog Character Genesis — Execution Guide | operational | - | shared | unmigrated |
+| [docs/visual/README.md](/docs/visual/README.md) | Manbeardog Visual System — Hierarchy | operational | - | shared | unmigrated |
+
+## familiar
+
+| File | Title | Layer | Status | Owner | |
+|---|---|---|---|---|---|
+| [familiar/README.md](/familiar/README.md) | Nero Desktop Familiar | operational | - | shared | unmigrated |
 
 ## presence
 

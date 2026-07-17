@@ -33,7 +33,7 @@ automatic transcript copier, or provider-to-provider runtime.
 | `data/continuity/continuity.db` | the live ledger (git-ignored, created by `init`) |
 | `verify/verify_nero_continuity.py` | deterministic verifier + 10k-event benchmark |
 | `.claude/skills/nero-continuity/SKILL.md` | Claude on-demand adapter |
-| `docs/CODEX_CONTINUITY_HANDOFF.md` | the Codex-lane contract (separate deploy) |
+| `docs/host/CODEX_CONTINUITY_HANDOFF.md` | the Codex-lane contract (separate deploy) |
 | `docs/NERO_CONTINUITY_PRIVACY.md` | capture policy & limitations |
 | `docs/adr/0016-cross-host-continuity-ledger.md` | the decision record |
 

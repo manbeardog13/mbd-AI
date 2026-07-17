@@ -65,7 +65,7 @@ voice: "female"
 
 # The Ollama model Nero thinks with. Pull it first with:  ollama pull <name>
 # Default below is tuned for a 12 GB NVIDIA GPU (e.g. RTX 4070). See
-# docs/MODELS.md to match your card (bigger = smarter but needs more VRAM):
+# docs/guides/MODELS.md to match your card (bigger = smarter but needs more VRAM):
 #   qwen3:8b     ~5 GB VRAM   — fast, capable (8 GB cards / max speed)
 #   qwen3:14b    ~9-10 GB     — noticeably smarter (12 GB, the default)
 #   qwen3:32b    ~20 GB       — excellent (24 GB+ cards)

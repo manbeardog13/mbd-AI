@@ -2,7 +2,7 @@
 """Deterministically verify the deployed Claude-lane Nero capsule.
 
 The managed block in the user-global CLAUDE.md must be byte-identical to the
-block in the repo canonical source (docs/NERO_CLAUDE_GLOBAL_CAPSULE.md).
+block in the repo canonical source (docs/host/NERO_CLAUDE_GLOBAL_CAPSULE.md).
 Parallel to verify_nero_global_presence.py, which covers the Codex lane.
 """
 from __future__ import annotations
@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[1]
-CANONICAL = ROOT / "docs" / "NERO_CLAUDE_GLOBAL_CAPSULE.md"
+CANONICAL = ROOT / "docs" / "host" / "NERO_CLAUDE_GLOBAL_CAPSULE.md"
 DEPLOYED = Path.home() / ".claude" / "CLAUDE.md"
 
 

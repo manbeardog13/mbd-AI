@@ -21,7 +21,7 @@ SKILLS = ("nero-continual-learning", "nero-hybrid-cognition")
 def _capsule_markers() -> tuple[str, str]:
     """Derive the capsule marker version from the repo canonical source."""
     import re as _re
-    canonical = (ROOT / "docs" / "NERO_CLAUDE_GLOBAL_CAPSULE.md").read_text(encoding="utf-8")
+    canonical = (ROOT / "docs" / "host" / "NERO_CLAUDE_GLOBAL_CAPSULE.md").read_text(encoding="utf-8")
     found = _re.search(r"<!-- (NERO_CLAUDE_GLOBAL_CAPSULE_V\d+):BEGIN -->", canonical)
     if not found:
         raise AssertionError("canonical Claude capsule marker not found")
@@ -58,7 +58,7 @@ def load_module(path: Path, name: str):
 
 
 def verify_capsule() -> None:
-    canonical_text = (ROOT / "docs" / "NERO_CLAUDE_GLOBAL_CAPSULE.md").read_text(
+    canonical_text = (ROOT / "docs" / "host" / "NERO_CLAUDE_GLOBAL_CAPSULE.md").read_text(
         encoding="utf-8"
     )
     deployed_path = Path.home() / ".claude" / "CLAUDE.md"

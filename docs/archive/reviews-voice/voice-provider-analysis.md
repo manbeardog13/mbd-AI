@@ -1,9 +1,19 @@
+---
+id: archive.review-voice-voice-provider-analysis
+layer: archival
+type: review
+status: archived
+owner: shared
+superseded_by: docs/adr/0009, 0010, 0011
+updated: 2026-07-17
+---
+
 # Voice Provider Analysis — Cloud and Cloning Options
 
 **Date:** 2026-07-13
 **Author:** Claude Code (discovery-phase analysis)
 **Scope:** documentation only — no code, config, dependency, API, or runtime change of any kind.
-**Related:** [Stage 2 Voice Capability Audit](stage2-voice-capability-audit.md) · [MMS-TTS Evaluation](mms-tts-evaluation.md) · [Voice Strategy Recommendation](voice-strategy-recommendation.md) · [ADR-0006 Local-First with Intelligence Escalation](../adr/0006-local-model-ceiling.md) · [VISION.md](../VISION.md).
+**Related:** [Stage 2 Voice Capability Audit](stage2-voice-capability-audit.md) · [MMS-TTS Evaluation](mms-tts-evaluation.md) · [Voice Strategy Recommendation](voice-strategy-recommendation.md) · [ADR-0006 Local-First with Intelligence Escalation](../../adr/0006-local-model-ceiling.md) · [VISION.md](../../VISION.md).
 
 ---
 
@@ -21,7 +31,7 @@ But this reframing overrides a specific existing product decision recorded in **
 
 That declination was written by Toni as part of the vision document. Any adoption of a cloud voice provider is a **product-level reversal of a previously stated decision**, not merely a technical choice. This document analyses the technical picture and, where relevant, flags the product-level implication so nothing is quietly resolved by engineering fiat.
 
-**A related governance point:** [ADR-0006 "Local-First with Intelligence Escalation"](../adr/0006-local-model-ceiling.md) already established the *pattern* for a cloud escalation: explicit, opt-in, off-by-default, transparent, per-request. That ADR was written for reasoning models (routing hard tasks to Claude/GPT). Whether the same pattern extends to voice output — moving one utterance's text to a cloud TTS API — is a separate decision. ADR-0006 does not automatically authorize cloud voice; it demonstrates a template.
+**A related governance point:** [ADR-0006 "Local-First with Intelligence Escalation"](../../adr/0006-local-model-ceiling.md) already established the *pattern* for a cloud escalation: explicit, opt-in, off-by-default, transparent, per-request. That ADR was written for reasoning models (routing hard tasks to Claude/GPT). Whether the same pattern extends to voice output — moving one utterance's text to a cloud TTS API — is a separate decision. ADR-0006 does not automatically authorize cloud voice; it demonstrates a template.
 
 ---
 

@@ -1,3 +1,12 @@
+---
+id: guides.voice-and-siri
+layer: operational
+type: guide
+status: active
+owner: shared
+updated: 2026-07-17
+---
+
 # Talking To Your AI (Voice & "Hey Siri")
 
 You want to reach your AI *like Siri* — instantly, by voice, no fuss. There are

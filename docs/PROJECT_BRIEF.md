@@ -24,7 +24,7 @@ lane is now exercised live** — a blind preflight (2026-07-15) invoked the real
 receipt-backed `NOT_FOUND` (exit 4), with no fabricated payload — confirming the
 CLI path, honest fail-closed behavior, and receipt emission from the Claude side.
 **Cross-host continuity is still uncertified** — that needs a separate real Codex
-session to deploy its adapter ([docs/CODEX_CONTINUITY_HANDOFF.md](CODEX_CONTINUITY_HANDOFF.md))
+session to deploy its adapter ([docs/host/CODEX_CONTINUITY_HANDOFF.md](host/CODEX_CONTINUITY_HANDOFF.md))
 and run the nonce round-trips + disabled-continuity control. Provenance is honest:
 `source_host_claim` is claimed, not provider-attested (shared Windows account);
 hash chains are tamper-evident, not tamper-proof. Also landed since PR #9: Phase 1

@@ -1,3 +1,12 @@
+---
+id: guides.setup
+layer: operational
+type: guide
+status: active
+owner: shared
+updated: 2026-07-17
+---
+
 # Setup Guide
 
 > [!IMPORTANT]

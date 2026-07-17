@@ -1,6 +1,10 @@
 ---
 name: nero-hybrid-cognition
 description: Coordinate Nero across concurrently available Codex and Claude hosted sessions using bounded task packets, collision-safe lanes, evidence-backed submissions, deterministic merge gates, explicit approval, and continual-learning feedback. Use when Toni asks Codex and Claude to collaborate, run Nero on both hosts, split a complex task, compare independent solutions, have one host build while the other audits, improve throughput, or turn cross-host outcomes into durable lessons.
+version: 1.0.0
+lifecycle: permanent
+owner: shared
+verified_by: verify/verify_nero_learning_hybrid.py
 ---
 
 # Nero Hybrid Cognition

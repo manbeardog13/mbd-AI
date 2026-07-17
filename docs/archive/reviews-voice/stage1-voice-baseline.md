@@ -1,9 +1,19 @@
+---
+id: archive.review-voice-stage1-voice-baseline
+layer: archival
+type: review
+status: archived
+owner: shared
+superseded_by: docs/adr/0009, 0010, 0011
+updated: 2026-07-17
+---
+
 # Stage 1 Voice Baseline Review
 
 **Date:** 2026-07-13
 **Author:** Claude Code (baseline capture for the ADR-0009 workstream)
 **Scope:** documentation only — no code, config, dependency, API, or runtime change of any kind.
-**Related:** [ADR-0009](../adr/0009-voice-rendering-and-backend-architecture.md) (Proposed, revised 2026-07-13) · [ADR-0009 Acceptance Review](ADR-0009-acceptance-review.md) (Accepted with implementation gate preserved).
+**Related:** [ADR-0009](../../adr/0009-voice-rendering-and-backend-architecture.md) (Proposed, revised 2026-07-13) · [ADR-0009 Acceptance Review](../../reviews/ADR-0009-acceptance-review.md) (Accepted with implementation gate preserved).
 
 ---
 

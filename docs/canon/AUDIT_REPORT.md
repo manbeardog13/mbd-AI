@@ -77,7 +77,7 @@ these files are currently user-modified, so plan-only.)
   project context carries **V2** (observed live this session). The stated
   contract — "repo file is the canonical source; keep byte-identical" — is
   currently violated in the Claude lane.
-- `docs/NERO_CLAUDE_GLOBAL_CAPSULE.md` (V1) specifies **dual-voice** presence
+- `docs/host/NERO_CLAUDE_GLOBAL_CAPSULE.md` (V1) specifies **dual-voice** presence
   (Claude + Nero both answer, labelled); deployed V2 specifies **single-voice**
   (answer as Nero). Materially different identity behavior, both on disk.
 - `.codex/nero-host.json` pins `NERO_GLOBAL_CAPSULE_V1` (consistent for the
@@ -104,7 +104,7 @@ resolve ADR-0009's status; VOICE_AND_SIRI (user guide) and HOST_VOICE
 (policy) keep distinct jobs.**
 
 **C6 · Visual / Manbeardog.** 16 docs in `docs/visual/` + the 973-line root
-`NERO_HANDOFF.md` + `docs/roadmap/manbeardog_visual_production.md` (a
+`NERO_HANDOFF.md` + `docs/visual/manbeardog_visual_production.md` (a
 one-file directory). Internal layering exists but isn't declared: the Visual
 Bible is law; character_dna / identity_profile / measurable-spec are derived
 views; workflow/pipeline/QC are ops. NERO_HANDOFF was the seed document —

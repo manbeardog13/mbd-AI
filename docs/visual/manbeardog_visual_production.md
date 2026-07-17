@@ -404,7 +404,7 @@ Any device on the same network — or on Tailscale — can reach it.
 
 - **Local LAN:** `http://<local-ip>:8080` from phone / other computer works today.
 - **Tailscale:** `http://<tailscale-hostname>:8080` works today if both devices are on the same tailnet.
-- **HTTPS:** not yet configured. `tailscale serve` can provide HTTPS termination for free (see docs/REMOTE_ACCESS.md).
+- **HTTPS:** not yet configured. `tailscale serve` can provide HTTPS termination for free (see docs/guides/REMOTE_ACCESS.md).
 
 ### 6.2 What needs to change for multi-device presence
 

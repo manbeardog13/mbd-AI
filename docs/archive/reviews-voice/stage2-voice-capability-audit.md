@@ -1,9 +1,19 @@
+---
+id: archive.review-voice-stage2-voice-capability-audit
+layer: archival
+type: review
+status: archived
+owner: shared
+superseded_by: docs/adr/0009, 0010, 0011
+updated: 2026-07-17
+---
+
 # Stage 2 Voice Capability Audit
 
 **Date:** 2026-07-13
 **Author:** Claude Code (discovery-phase audit)
 **Scope:** documentation only — no code, config, dependency, API, or runtime change of any kind.
-**Related:** [Stage 1 Voice Baseline](stage1-voice-baseline.md) · [ADR-0009](../adr/0009-voice-rendering-and-backend-architecture.md) (Proposed) · [ADR-0009 Acceptance Review](ADR-0009-acceptance-review.md).
+**Related:** [Stage 1 Voice Baseline](stage1-voice-baseline.md) · [ADR-0009](../../adr/0009-voice-rendering-and-backend-architecture.md) (Proposed) · [ADR-0009 Acceptance Review](../../reviews/ADR-0009-acceptance-review.md).
 
 **Filename note:** the "stage2" in this file's name refers to the *discovery phase* of the ADR-0009 evaluation, **not** ADR-0009 Migration Stage 2 (which remains gated and unauthorized). Migration Stage 1 stays the active operating state.
 

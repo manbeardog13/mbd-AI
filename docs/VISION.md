@@ -22,7 +22,7 @@ updated: 2026-07-17
 > biggest models — they're the ones that wake up already knowing what you were
 > working on and how to quietly help. We optimize for that.
 
-Because Nero's brain is swappable (see [MODELS.md](MODELS.md)), this
+Because Nero's brain is swappable (see [MODELS.md](guides/MODELS.md)), this
 architecture holds whether she's running a 14B model today or something far
 larger later. We build the mind once; the brain keeps getting better.
 

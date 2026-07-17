@@ -1,3 +1,16 @@
+---
+id: archive.manbeardog-pipeline-handoff
+layer: archival
+type: handoff
+status: archived
+owner: shared
+superseded_by: docs/visual/ (Manbeardog visual system)
+created: 2026-07-13
+updated: 2026-07-17
+---
+
+> **Archived 2026-07-17:** superseded by the docs/visual/ system. Retained as the founding handoff.
+
 # NERO Presence Initiative
 
 # Manbeardog Character Creation & Animation Pipeline — Claude Code Handoff
@@ -803,7 +816,7 @@ can promote the winners into the workspace directly.
 4. Prepare Phase B (LoRA training via Kohya_ss) infrastructure once Phase A
    produces the training set
 5. Build the Phase E multi-client presence broadcast server (`PresenceBroadcastService`
-   as a new RuntimeService — additive per `docs/roadmap/manbeardog_visual_production.md` §5)
+   as a new RuntimeService — additive per `docs/visual/manbeardog_visual_production.md` §5)
 
 **Do not treat this as a "make some AI images" task.** This is a character
 production pipeline leading to a live animated AI companion. Every prompt,

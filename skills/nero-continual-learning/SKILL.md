@@ -1,6 +1,10 @@
 ---
 name: nero-continual-learning
 description: Evidence-gated continual learning for Nero using outcome episodes, causal lesson proposals, multi-context evaluation, contextual routing across available skills/tools/models, spaced rehearsal, regression quarantine, and competence backlogs without model fine-tuning. Use when Toni asks Nero to learn, improve continuously, retain lessons from completed work, strengthen skills, choose better resources, audit weaknesses, rehearse competencies, or evolve reusable playbooks safely.
+version: 1.0.0
+lifecycle: permanent
+owner: shared
+verified_by: verify/verify_nero_learning_hybrid.py
 ---
 
 # Nero Continual Learning

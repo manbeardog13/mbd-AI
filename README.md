@@ -65,14 +65,14 @@ Ollama is installed and running, downloads Nero's brain, and starts him — with
 clear fix-it steps if anything's missing. Then open **http://localhost:8080**.
 
 > New to this / on Windows without Python or Ollama yet? The full click-by-click
-> guide is in **[docs/SETUP.md](docs/SETUP.md)**. After the first setup, just run
+> guide is in **[docs/guides/SETUP.md](docs/guides/SETUP.md)**. After the first setup, just run
 > **`start.bat`** (Windows) or **`./start.sh`** (macOS/Linux) to launch Nero.
 
 <details>
 <summary>Prefer to set it up by hand?</summary>
 
 ```bash
-ollama pull qwen3:14b     # see docs/MODELS.md to match your GPU
+ollama pull qwen3:14b     # see docs/guides/MODELS.md to match your GPU
 python -m venv .venv
 # Windows:  .venv\Scripts\activate     macOS/Linux:  source .venv/bin/activate
 pip install -r requirements.txt
@@ -82,9 +82,9 @@ python run.py
 </details>
 
 - Make it yours → edit **`config.yaml`** (name, personality, model).
-- Talk to it / "Hey Siri" → **[docs/VOICE_AND_SIRI.md](docs/VOICE_AND_SIRI.md)**.
-- Reach it from anywhere → **[docs/REMOTE_ACCESS.md](docs/REMOTE_ACCESS.md)**.
-- Keep it always on → **[docs/ALWAYS_ON.md](docs/ALWAYS_ON.md)**.
+- Talk to it / "Hey Siri" → **[docs/guides/VOICE_AND_SIRI.md](docs/guides/VOICE_AND_SIRI.md)**.
+- Reach it from anywhere → **[docs/guides/REMOTE_ACCESS.md](docs/guides/REMOTE_ACCESS.md)**.
+- Keep it always on → **[docs/guides/ALWAYS_ON.md](docs/guides/ALWAYS_ON.md)**.
 
 ## Project layout
 

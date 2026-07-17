@@ -1,9 +1,19 @@
+---
+id: archive.review-voice-mms-tts-evaluation
+layer: archival
+type: review
+status: archived
+owner: shared
+superseded_by: docs/adr/0009, 0010, 0011
+updated: 2026-07-17
+---
+
 # Meta MMS-TTS Evaluation for Nero
 
 **Date:** 2026-07-13
 **Author:** Claude Code (discovery-phase evaluation)
 **Scope:** documentation only — no code, config, dependency, API, or runtime change of any kind.
-**Related:** [Stage 2 Voice Capability Audit](stage2-voice-capability-audit.md) · [Voice Provider Analysis](voice-provider-analysis.md) · [Voice Strategy Recommendation](voice-strategy-recommendation.md) · [ADR-0009](../adr/0009-voice-rendering-and-backend-architecture.md).
+**Related:** [Stage 2 Voice Capability Audit](stage2-voice-capability-audit.md) · [Voice Provider Analysis](voice-provider-analysis.md) · [Voice Strategy Recommendation](voice-strategy-recommendation.md) · [ADR-0009](../../adr/0009-voice-rendering-and-backend-architecture.md).
 
 ---
 

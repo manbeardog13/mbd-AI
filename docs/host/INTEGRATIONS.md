@@ -1,3 +1,12 @@
+---
+id: host.integrations
+layer: operational
+type: reference
+status: active
+owner: shared
+updated: 2026-07-17
+---
+
 # Nero integrations - maximum-access mode
 
 Nero now discovers installed plugin skills and integration manifests at runtime.

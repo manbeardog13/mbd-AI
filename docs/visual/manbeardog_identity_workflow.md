@@ -10,7 +10,7 @@ combines three complementary identity-lock mechanisms (LoRA, IPAdapter,
 ControlNet), with a fallback approval gate for anything they miss.
 
 **Scope of this doc:** the workflow itself. Tool comparisons live in
-`docs/roadmap/manbeardog_visual_production.md` §1. Character definition
+`docs/visual/manbeardog_visual_production.md` §1. Character definition
 lives in `docs/visual/manbeardog_visual_bible.md`.
 
 **Honesty on evidence:** I have not verified the exact current version
@@ -316,4 +316,4 @@ never enter production folders.
 - Character definition: `docs/visual/manbeardog_visual_bible.md`
 - Approved-concept prompt library: `docs/visual/manbeardog_prompt_system.md`
 - Asset acceptance contract: `docs/visual/asset_contract.md`
-- Full pipeline context: `docs/roadmap/manbeardog_visual_production.md`
+- Full pipeline context: `docs/visual/manbeardog_visual_production.md`

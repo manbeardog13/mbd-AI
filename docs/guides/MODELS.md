@@ -1,3 +1,13 @@
+---
+id: guides.models
+layer: operational
+type: guide
+status: superseded
+superseded_by: docs/adr/0014-zero-start-global-host-presence.md
+owner: shared
+updated: 2026-07-17
+---
+
 # Choosing Nero's Brain (the model)
 
 > [!IMPORTANT]

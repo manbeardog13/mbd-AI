@@ -2,7 +2,7 @@
 
 **Scope:** what "Nero is present" looks and feels like on a phone.
 **Not scope:** Flutter/Swift/Kotlin implementation code (belongs to Phase F
-in `docs/roadmap/manbeardog_visual_production.md`).
+in `docs/visual/manbeardog_visual_production.md`).
 
 **Guiding principle:** mobile is not a smaller desktop. It's Nero
 manifesting through a different kind of window. Battery, glanceability,
@@ -294,7 +294,7 @@ re-litigated later:
 - **Presence event stream:** WebSocket connection to Nero's forthcoming
   `/api/presence/subscribe` endpoint (part of the multi-client broadcast
   service — Phase E in the roadmap). Client sends `client.hello` with
-  its capabilities per `docs/roadmap/manbeardog_visual_production.md` §5.
+  its capabilities per `docs/visual/manbeardog_visual_production.md` §5.
 - **Widget refresh:** Android AppWidget provider + iOS WidgetKit.
   Widget renders a snapshot of the emblem, updated on OS refresh
   intervals.
@@ -306,5 +306,5 @@ re-litigated later:
 - Character visual identity: `docs/visual/manbeardog_visual_bible.md`
 - Presence Levels + capabilities: `presence/types.py::PresenceLevel`
 - Multi-device asset strategy: `docs/visual/multi_device_asset_strategy.md`
-- Full roadmap (mobile is Phase F): `docs/roadmap/manbeardog_visual_production.md`
-- Client capability protocol: `docs/roadmap/manbeardog_visual_production.md` §5
+- Full roadmap (mobile is Phase F): `docs/visual/manbeardog_visual_production.md`
+- Client capability protocol: `docs/visual/manbeardog_visual_production.md` §5

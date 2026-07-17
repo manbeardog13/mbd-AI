@@ -1,6 +1,10 @@
 ---
 name: nero-software-engineering
 description: Universal software engineering, code implementation, refactoring, debugging, testing, architecture, documentation, performance tuning, secure code review, repository auditing, and behavior-preserving translation or adaptation between programming languages, frameworks, platforms, APIs, and data models. Use for any task that creates, changes, explains, diagnoses, reviews, audits, migrates, ports, modernizes, or validates source code in any language, especially polyglot repositories and unfamiliar stacks.
+version: 1.0.0
+lifecycle: permanent
+owner: shared
+verified_by: verify/verify_nero_software_skill.py
 ---
 
 # Nero Software Engineering

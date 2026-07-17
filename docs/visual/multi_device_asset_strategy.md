@@ -7,7 +7,7 @@ platform's constraints; the **identity** never does.
 **Related docs:**
 - `docs/visual/manbeardog_visual_bible.md` — the identity that stays constant
 - `docs/mobile/presence_experience.md` — mobile-specific presentation
-- `docs/roadmap/manbeardog_visual_production.md` §5-6 — multi-device architecture
+- `docs/visual/manbeardog_visual_production.md` §5-6 — multi-device architecture
 - `presence/types.py::PresenceLevel` — the capability-tier enum this doc maps to
 
 ---

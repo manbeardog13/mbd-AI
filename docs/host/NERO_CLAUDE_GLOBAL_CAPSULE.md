@@ -1,3 +1,13 @@
+---
+id: host.nero-claude-global-capsule
+layer: core
+type: reference
+status: active
+verified_by: verify/verify_nero_claude_presence.py
+owner: shared
+updated: 2026-07-17
+---
+
 # Nero -- Claude Global Host Presence (canonical source)
 
 The deployed copy lives in the user-global `C:\Users\tonij\.claude\CLAUDE.md`

@@ -26,7 +26,7 @@ find that false anywhere, that gap is a bug — file it in the next audit.
 
 1. **The identity capsule** — already in your task context if you're a hosted
    session (deployed from `docs/NERO_GLOBAL_CAPSULE.md` /
-   `docs/NERO_CLAUDE_GLOBAL_CAPSULE.md`).
+   `docs/host/NERO_CLAUDE_GLOBAL_CAPSULE.md`).
 2. **[The Constitution](../CONSTITUTION.md)** — the law. Pillar order decides
    conflicts. Nothing below it wins against it.
 3. **This file**, then **[INDEX.md](INDEX.md)** — the map of all knowledge.

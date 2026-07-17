@@ -53,7 +53,7 @@ Only intentionally-uncommitted state remains: Toni's two `.claude` hook edits.
   CONSTITUTION.md v1.1; verification standards remain in daily use.
 - `docs/VISION.md` — philosophy sections superseded; roadmap table marked
   historical (ROADMAP.md governs).
-- `docs/MODELS.md` — already marked historical in-file (pre-existing).
+- `docs/guides/MODELS.md` — already marked historical in-file (pre-existing).
 - `NERO_HANDOFF.md` — superseded by docs/visual/*; **zero inbound references**;
   scheduled to archive in Phase B1.
 
@@ -64,7 +64,7 @@ Only intentionally-uncommitted state remains: Toni's two `.claude` hook edits.
 - VISION.md: PROGRESS.md, README.md, CONSTITUTION.md, PROJECT_BRIEF.md, three
   voice reviews (archive candidates themselves).
 - MODELS.md: README.md, bootstrap.py, config.example.yaml (+ untracked
-  config.yaml), docs/SETUP.md, verify_nero_global_presence.py — **the B4
+  config.yaml), docs/guides/SETUP.md, verify_nero_global_presence.py — **the B4
   repoint list**; code references are user-facing strings, update with care.
 - NERO_HANDOFF.md: none.
 
@@ -109,7 +109,23 @@ canonical source yet (needs an exact export from project settings); the
 memory.db teach-exception wording is queued as a V3 capsule proposal; DHEF
 packet fa2367b4's builder lane can now resubmit against green verifiers.
 
+## Update — Phase B + E executed (2026-07-17)
+
+Structural pass complete: founding handoff and five voice reviews archived
+with tombstones; guides grouped under docs/guides/ (MODELS repoints included
+code and config strings); Claude/shared host docs under docs/host/; visual
+roadmap merged into docs/visual/ and its hierarchy declared in a README;
+familiar/ documented; skill lifecycle frontmatter applied (all four skills
+permanent, per skill-lifecycle.spec) and re-synced to both deployed skill
+homes; Cowork project capsule captured as docs/host/NERO_COWORK_PROJECT_CAPSULE.md
+(byte-verification pending one export by Toni). 24 files repointed, 18 links
+auto-repaired, link check clean, index regenerated (224 files), all
+verifiers green. Codex-lane host docs stay in docs/ pending a joint change.
+Proxima retired: processes stopped, ADR-0019 Accepted, folder disposition
+Toni's.
+
 ## Changelog
 
+- 2026-07-17 — Phase B + E update appended (Fable, Claude lane).
 - 2026-07-17 — Phase C update appended (Fable, Claude lane).
 - 2026-07-17 — Initial checkpoint report (Fable, Claude lane).

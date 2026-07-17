@@ -1,3 +1,12 @@
+---
+id: guides.always-on
+layer: operational
+type: guide
+status: active
+owner: shared
+updated: 2026-07-17
+---
+
 # Keep Your AI Always Running
 
 > [!IMPORTANT]

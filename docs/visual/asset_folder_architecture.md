@@ -154,4 +154,4 @@ Related documents:
 - `docs/visual/manbeardog_visual_bible.md` — character identity
 - `docs/visual/asset_contract.md` — what makes an asset production-ready
 - `docs/visual/asset_review_checklist.md` — the arrival gate
-- `docs/roadmap/manbeardog_visual_production.md` — phased production plan
+- `docs/visual/manbeardog_visual_production.md` — phased production plan

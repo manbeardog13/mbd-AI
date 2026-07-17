@@ -1,3 +1,12 @@
+---
+id: host.chatgpt-claude-council
+layer: operational
+type: guide
+status: active
+owner: shared
+updated: 2026-07-17
+---
+
 # External Council: OpenAI and Claude inside Nero
 
 This is an optional, local-to-Nero bridge. It does not connect the ChatGPT and

@@ -1,3 +1,12 @@
+---
+id: host.nero-taught-knowledge
+layer: operational
+type: reference
+status: active
+owner: shared
+updated: 2026-07-17
+---
+
 # Nero — Taught Knowledge (Claude transfer log)
 
 *Human-readable mirror of the durable lessons Claude has written into Nero's
