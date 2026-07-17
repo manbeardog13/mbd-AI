@@ -9,7 +9,26 @@ It doubles as a self-contained handoff you can give to an external advisor
 gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
 
-*Latest (2026-07-15): **Cross-host continuity layer built — status
+*Latest (2026-07-17): **Canonical knowledge base built and migration executed —
+the repo now governs and audits itself.** `docs/canon/` (standards, generated
+INDEX, audit + architecture reports, migration plan and checkpoint report),
+`docs/specs/` contracts (memory-architecture, skill-lifecycle, engine-handoff,
+review-inbox), ADRs 0017–0021, new `docs/host/`, `docs/guides/`, `docs/archive/`
+structure — links, index, and ADR log machine-verified by the new
+`verify/verify_canon.py` (7 tests). Identity: Toni decided **single voice**;
+the deployed V2 capsule was adopted as canonical source with per-lane deploy
+verifiers (reconciliation-before-evolution, now a standing rule); ADR-0020
+fixes the stable identity plane (Nero violet · Claude warm amber · Codex ice
+blue, engine in a details panel) and the engine-handoff contract; ADR-0021
+defines the attention architecture (levels L0–L3, review inbox, daily brief,
+self-decision rule) with the inbox build delegated to Codex via DHEF packet
+`ac362276`. DHEF ran live: capsule-audit and School-review packets completed
+and Toni-approved; the EGCSE/DHEF review returned changes-requested (verifier
+pin since fixed). Proxima retired and deleted (ADR-0019 fully executed). All
+on branch `claude/rescue-dirty-worktree-20260715`, pushed; merge to main is
+Toni's call.*
+
+*Prior (2026-07-15): **Cross-host continuity layer built — status
 `READY_FOR_CODEX_LIVE_TEST`.** A cold, deterministic, standard-library-only SQLite
 ledger (`continuity/continuityctl.py`, `data/continuity/continuity.db`) lets an
 active Claude- or Codex-hosted Nero session **deliberately** save/recall selected

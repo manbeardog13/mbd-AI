@@ -13,6 +13,14 @@ For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
 ---
 
 ## 🧪 In review (PR)
+- **Canonical knowledge base + attention architecture** 🧪 — on the pushed
+  rescue branch awaiting merge: `docs/canon/` (self-auditing via
+  `verify_canon.py` + 7 tests), migration Phases 0/A/B/C/E executed with all
+  verifiers green, ADRs 0017–0021 (canon · skill lifecycle · Proxima
+  retirement ✅ executed · identity plane · attention L0–L3), capsule V2
+  reconciled with per-lane deploy verification, engine-handoff + review-inbox
+  specs, DHEF packets open for Codex (`ac362276` inbox build, `fa2367b4`
+  changes-requested).
 - **Phase 1 — "The Hands" · first slice** 🧪 — the primitive that lets Nero
   *act*: the **agent loop** (reason → tool → observe → repeat, bounded and
   cancellable), the **Capability Registry** (one guarded dispatch seam; the model
