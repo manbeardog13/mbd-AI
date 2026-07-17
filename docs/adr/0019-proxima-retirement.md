@@ -1,6 +1,6 @@
 # ADR-0019: Proxima retirement
 
-**Status:** Proposed (Toni's acceptance + Phase E execution promotes)
+**Status:** Accepted (Toni, 2026-07-17 — retirement executed: processes stopped, no autostart entry existed; folder disposition of C:\Users\tonij\Proxima remains Toni's — archive or delete; reversible until then)
 **Date:** 2026-07-16
 
 ## Context

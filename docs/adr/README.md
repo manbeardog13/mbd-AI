@@ -36,4 +36,4 @@ that supersedes it, and set the old one's status to "Superseded by ADR-XXXX".
 | [0016](0016-cross-host-continuity-ledger.md) | Cross-host continuity ledger (deliberate capture, receipts) | Accepted (pending live Codex verification) |
 | [0017](0017-canonical-knowledge-base.md) | Canonical knowledge base + documentation hierarchy | Proposed |
 | [0018](0018-skill-lifecycle.md) | Skill lifecycle — evidence-gated promotion, versioning, rollback | Proposed |
-| [0019](0019-proxima-retirement.md) | Proxima retirement | Proposed |
+| [0019](0019-proxima-retirement.md) | Proxima retirement | Accepted |
