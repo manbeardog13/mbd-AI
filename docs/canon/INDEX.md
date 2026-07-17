@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-226 knowledge files - 28 carrying canon frontmatter - 198 not yet migrated (see MIGRATION_PLAN.md).
+228 knowledge files - 28 carrying canon frontmatter - 200 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -231,10 +231,17 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/guides/SETUP.md](/docs/guides/SETUP.md) | Setup Guide | operational | active | shared |  |
 | [docs/guides/VOICE_AND_SIRI.md](/docs/guides/VOICE_AND_SIRI.md) | Talking To Your AI (Voice & "Hey Siri") | operational | active | shared |  |
 
+## docs/handoffs
+
+| File | Title | Layer | Status | Owner | |
+|---|---|---|---|---|---|
+| [docs/handoffs/2026-07-17-inbox-build.md](/docs/handoffs/2026-07-17-inbox-build.md) | Engine Handoff — Review Inbox Build | operational | - | shared | unmigrated |
+
 ## docs/host
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
+| [docs/host/CAPSULE_V3_PROPOSAL.md](/docs/host/CAPSULE_V3_PROPOSAL.md) | Capsule V3 Proposal — deliberate evolution after reconciliat | operational | - | shared | unmigrated |
 | [docs/host/CHATGPT_CLAUDE_COUNCIL.md](/docs/host/CHATGPT_CLAUDE_COUNCIL.md) | External Council: OpenAI and Claude inside Nero | operational | active | shared |  |
 | [docs/host/CODEX_CONTINUITY_HANDOFF.md](/docs/host/CODEX_CONTINUITY_HANDOFF.md) | Codex Continuity Handoff | operational | active | shared |  |
 | [docs/host/INTEGRATIONS.md](/docs/host/INTEGRATIONS.md) | Nero integrations - maximum-access mode | operational | active | shared |  |
