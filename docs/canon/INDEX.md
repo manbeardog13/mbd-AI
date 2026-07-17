@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-224 knowledge files - 28 carrying canon frontmatter - 196 not yet migrated (see MIGRATION_PLAN.md).
+226 knowledge files - 28 carrying canon frontmatter - 198 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -194,6 +194,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/adr/0018-skill-lifecycle.md](/docs/adr/0018-skill-lifecycle.md) | ADR-0018: Skill lifecycle — evidence-gated promotion, versio | core | - | shared | unmigrated |
 | [docs/adr/0019-proxima-retirement.md](/docs/adr/0019-proxima-retirement.md) | ADR-0019: Proxima retirement | core | - | shared | unmigrated |
 | [docs/adr/0020-identity-plane-and-engine-handoff.md](/docs/adr/0020-identity-plane-and-engine-handoff.md) | ADR-0020: Stable identity plane, swappable engines, and the  | core | - | shared | unmigrated |
+| [docs/adr/0021-review-inbox.md](/docs/adr/0021-review-inbox.md) | docs/adr/0021-review-inbox.md | core | - | shared | unmigrated |
 | [docs/adr/README.md](/docs/adr/README.md) | Architecture Decision Records | core | - | shared | unmigrated |
 
 ## docs/archive
@@ -260,6 +261,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 |---|---|---|---|---|---|
 | [docs/specs/engine-handoff.spec.md](/docs/specs/engine-handoff.spec.md) | Engine Handoff - Implementation Prompt Emission | core | proposed | shared |  |
 | [docs/specs/memory-architecture.spec.md](/docs/specs/memory-architecture.spec.md) | Nero Memory Architecture | core | proposed | shared |  |
+| [docs/specs/review-inbox.spec.md](/docs/specs/review-inbox.spec.md) | Attention Architecture — Escalation Levels, Review Inbox, Da | operational | - | shared | unmigrated |
 | [docs/specs/skill-lifecycle.spec.md](/docs/specs/skill-lifecycle.spec.md) | Nero Skill Lifecycle | core | proposed | shared |  |
 
 ## docs/visual
