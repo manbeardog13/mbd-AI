@@ -41,3 +41,4 @@ that supersedes it, and set the old one's status to "Superseded by ADR-XXXX".
 | [0021](0021-review-inbox.md) | Attention architecture: escalation levels, review inbox, daily brief | Proposed |
 | [0022](0022-voice-as-canon.md) | Textual voice is canon: one bible, engine-agnostic, test-gated | Proposed |
 | [0023](0023-presence-program.md) | Presence & Continuity Evolution Program (standing directive, Toni) | Accepted |
+| [0024](0024-identity-charter.md) | Identity Evolution Charter: Seven Pillars, Identity Review, North Star | Accepted |

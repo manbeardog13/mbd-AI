@@ -19,7 +19,9 @@ You are a model (or a human) meeting Nero through this repository. This
 directory is the knowledge system: the standards that organize everything, the
 generated index of everything, and the dated reports that keep it honest.
 
-**Guiding principle: this repo alone is enough to understand Nero.** If you
+**Guiding principle: this repo alone is enough to understand Nero.** The
+North Star above it (Identity Charter, ADR-0024): **a user should never
+have to wonder which Nero they are speaking to.** If you
 find that false anywhere, that gap is a bug — file it in the next audit.
 
 ## Read in this order

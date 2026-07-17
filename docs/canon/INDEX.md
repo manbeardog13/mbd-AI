@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-236 knowledge files - 64 carrying canon frontmatter - 172 not yet migrated (see MIGRATION_PLAN.md).
+239 knowledge files - 64 carrying canon frontmatter - 175 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -161,6 +161,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/DESIGNphase1remainder.md](/docs/DESIGNphase1remainder.md) | Phase 1 — Remaining Build: Continuation Guide | operational | active | shared |  |
 | [docs/DIRECTIVE.md](/docs/DIRECTIVE.md) | Nero Development Directive | core | superseded | toni |  |
 | [docs/HOST_VOICE.md](/docs/HOST_VOICE.md) | Nero Host Voice status | operational | - | shared | unmigrated |
+| [docs/IDENTITY_EVOLUTION_CHARTER.md](/docs/IDENTITY_EVOLUTION_CHARTER.md) | The Nero Constitution — Identity Evolution Charter | operational | - | shared | unmigrated |
 | [docs/NERO_CODEX_MEMORY.md](/docs/NERO_CODEX_MEMORY.md) | Nero Host Mode memory | operational | - | shared | unmigrated |
 | [docs/NERO_CODEX_RUNTIME.md](/docs/NERO_CODEX_RUNTIME.md) | Nero Host Runtime | operational | - | shared | unmigrated |
 | [docs/NERO_CONTINUITY_PRIVACY.md](/docs/NERO_CONTINUITY_PRIVACY.md) | Nero Cross-Host Continuity — Privacy & Limitations | core | active | shared |  |
@@ -198,6 +199,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/adr/0021-review-inbox.md](/docs/adr/0021-review-inbox.md) | docs/adr/0021-review-inbox.md | core | - | shared | unmigrated |
 | [docs/adr/0022-voice-as-canon.md](/docs/adr/0022-voice-as-canon.md) | docs/adr/0022-voice-as-canon.md | core | - | shared | unmigrated |
 | [docs/adr/0023-presence-program.md](/docs/adr/0023-presence-program.md) | docs/adr/0023-presence-program.md | core | - | shared | unmigrated |
+| [docs/adr/0024-identity-charter.md](/docs/adr/0024-identity-charter.md) | docs/adr/0024-identity-charter.md | core | - | shared | unmigrated |
 | [docs/adr/README.md](/docs/adr/README.md) | Architecture Decision Records | core | - | shared | unmigrated |
 
 ## docs/archive
@@ -262,9 +264,10 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
+| [docs/persona/identity-reviews/2026-07-review-0.md](/docs/persona/identity-reviews/2026-07-review-0.md) | Identity Review #0 — baseline (2026-07-17) | operational | - | shared | unmigrated |
 | [docs/persona/NERO_VOICE_BIBLE.md](/docs/persona/NERO_VOICE_BIBLE.md) | Nero Voice Bible — the textual-voice law | operational | - | shared | unmigrated |
 | [docs/persona/OPERATOR_PATTERNS.md](/docs/persona/OPERATOR_PATTERNS.md) | Operator Patterns — transparent adaptation notes | operational | - | shared | unmigrated |
-| [docs/persona/PRESENCE_PROGRAM.md](/docs/persona/PRESENCE_PROGRAM.md) | Presence Program — living backlog, experiments, metrics | operational | - | shared | unmigrated |
+| [docs/persona/PRESENCE_PROGRAM.md](/docs/persona/PRESENCE_PROGRAM.md) | Identity Program — the Seven Pillars (living) | operational | - | shared | unmigrated |
 | [docs/persona/voice-goldens.md](/docs/persona/voice-goldens.md) | Voice Goldens — reference corpus | operational | - | shared | unmigrated |
 | [docs/persona/VOICE_PATTERNS_MINED.md](/docs/persona/VOICE_PATTERNS_MINED.md) | Voice Patterns Mined — sources and evidence | operational | - | shared | unmigrated |
 
