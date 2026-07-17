@@ -8,6 +8,10 @@ superseded_by: docs/adr/0009, 0010, 0011
 updated: 2026-07-17
 ---
 
+> **Archived 2026-07-17:** conclusions extracted into ADR-0009/0010/0011.
+> Retained as dated evaluation history.
+
+
 # Voice Provider Analysis — Cloud and Cloning Options
 
 **Date:** 2026-07-13
