@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-232 knowledge files - 64 carrying canon frontmatter - 168 not yet migrated (see MIGRATION_PLAN.md).
+236 knowledge files - 64 carrying canon frontmatter - 172 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -166,6 +166,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/NERO_CONTINUITY_PRIVACY.md](/docs/NERO_CONTINUITY_PRIVACY.md) | Nero Cross-Host Continuity — Privacy & Limitations | core | active | shared |  |
 | [docs/NERO_GLOBAL_CAPSULE.md](/docs/NERO_GLOBAL_CAPSULE.md) | Nero Global Host Presence — NERO_GLOBAL_CAPSULE_V1 | operational | - | shared | unmigrated |
 | [docs/NERO_GLOBAL_PRESENCE_ACCEPTANCE.md](/docs/NERO_GLOBAL_PRESENCE_ACCEPTANCE.md) | Nero Global Host Presence acceptance matrix | operational | - | shared | unmigrated |
+| [docs/PRESENCE_CONTINUITY_DIRECTIVE.md](/docs/PRESENCE_CONTINUITY_DIRECTIVE.md) | NERO — Presence & Continuity Evolution Directive | operational | - | shared | unmigrated |
 | [docs/PROJECT_BRIEF.md](/docs/PROJECT_BRIEF.md) | Nero — Project Status Brief | operational | active | toni |  |
 | [docs/ROADMAP.md](/docs/ROADMAP.md) | Nero Roadmap | operational | active | toni |  |
 | [docs/VISION.md](/docs/VISION.md) | Nero — Vision & Architecture | core | active | toni |  |
@@ -196,6 +197,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/adr/0020-identity-plane-and-engine-handoff.md](/docs/adr/0020-identity-plane-and-engine-handoff.md) | ADR-0020: Stable identity plane, swappable engines, and the  | core | - | shared | unmigrated |
 | [docs/adr/0021-review-inbox.md](/docs/adr/0021-review-inbox.md) | docs/adr/0021-review-inbox.md | core | - | shared | unmigrated |
 | [docs/adr/0022-voice-as-canon.md](/docs/adr/0022-voice-as-canon.md) | docs/adr/0022-voice-as-canon.md | core | - | shared | unmigrated |
+| [docs/adr/0023-presence-program.md](/docs/adr/0023-presence-program.md) | docs/adr/0023-presence-program.md | core | - | shared | unmigrated |
 | [docs/adr/README.md](/docs/adr/README.md) | Architecture Decision Records | core | - | shared | unmigrated |
 
 ## docs/archive
@@ -261,6 +263,8 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
 | [docs/persona/NERO_VOICE_BIBLE.md](/docs/persona/NERO_VOICE_BIBLE.md) | Nero Voice Bible — the textual-voice law | operational | - | shared | unmigrated |
+| [docs/persona/OPERATOR_PATTERNS.md](/docs/persona/OPERATOR_PATTERNS.md) | Operator Patterns — transparent adaptation notes | operational | - | shared | unmigrated |
+| [docs/persona/PRESENCE_PROGRAM.md](/docs/persona/PRESENCE_PROGRAM.md) | Presence Program — living backlog, experiments, metrics | operational | - | shared | unmigrated |
 | [docs/persona/voice-goldens.md](/docs/persona/voice-goldens.md) | Voice Goldens — reference corpus | operational | - | shared | unmigrated |
 | [docs/persona/VOICE_PATTERNS_MINED.md](/docs/persona/VOICE_PATTERNS_MINED.md) | Voice Patterns Mined — sources and evidence | operational | - | shared | unmigrated |
 
