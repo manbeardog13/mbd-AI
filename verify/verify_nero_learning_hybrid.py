@@ -18,8 +18,18 @@ DEPLOYMENTS = {
     "claude": Path.home() / ".claude" / "skills",
 }
 SKILLS = ("nero-continual-learning", "nero-hybrid-cognition")
-BEGIN = "<!-- NERO_CLAUDE_GLOBAL_CAPSULE_V1:BEGIN -->"
-END = "<!-- NERO_CLAUDE_GLOBAL_CAPSULE_V1:END -->"
+def _capsule_markers() -> tuple[str, str]:
+    """Derive the capsule marker version from the repo canonical source."""
+    import re as _re
+    canonical = (ROOT / "docs" / "NERO_CLAUDE_GLOBAL_CAPSULE.md").read_text(encoding="utf-8")
+    found = _re.search(r"<!-- (NERO_CLAUDE_GLOBAL_CAPSULE_V\d+):BEGIN -->", canonical)
+    if not found:
+        raise AssertionError("canonical Claude capsule marker not found")
+    name = found.group(1)
+    return f"<!-- {name}:BEGIN -->", f"<!-- {name}:END -->"
+
+
+BEGIN, END = _capsule_markers()
 
 
 def managed_block(text: str) -> str:

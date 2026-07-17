@@ -76,6 +76,15 @@ ADRs 0017–0019 (Proposed), `scripts/build_canon_index.py`.
 
 ## Phase C — Capsule reconciliation (identity-critical; Toni + both lanes)
 
+> **EXECUTED 2026-07-17** (items 1 and 3, plus the hybrid-verifier marker
+> de-pin): repo capsule source = deployed V2 verbatim; deployed artifacts
+> untouched; both verifiers green. Remaining: item 2 (teach-exception wording)
+> deferred as a V3 proposal per reconciliation-before-evolution; item 4
+> (CODEX_MEMORY slimming) is Codex-lane; item 5 (proposed routing block)
+> awaits Toni. The Cowork project 'NERO' instructions carry a separate
+> NERO_GLOBAL_CAPSULE_V2 surface whose canonical capture is tracked in the
+> migration report.
+
 1. **Decide the governing text:** deployed V2 (observed in the live Claude
    project context) vs repo V1. Recommendation: V2 semantics are current
    reality — bring V2 *into* `docs/NERO_CLAUDE_GLOBAL_CAPSULE.md` /

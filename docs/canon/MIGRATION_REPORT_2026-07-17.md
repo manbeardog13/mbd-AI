@@ -96,6 +96,20 @@ the deployed capsule leads the repo source, tracked and decided but not yet
 reconciled; and 207 files still lack frontmatter (flagged `unmigrated` in the
 index), which affects metadata coverage, not authority.
 
+## Update — Phase C executed (2026-07-17)
+
+Repo capsule source now carries the deployed V2 block verbatim (single voice);
+the hybrid verifier derives its marker version from the canonical source
+instead of a hardcoded V1 pin; `verify_nero_claude_presence.py` gives the
+Claude lane the same deploy verification the Codex lane had. Deployed
+artifacts untouched. Standing rule adopted: **reconciliation before
+evolution** (KNOWLEDGE_STANDARD §6). Tracked residue: the Cowork project
+'NERO' instructions carry a NERO_GLOBAL_CAPSULE_V2 surface with no repo
+canonical source yet (needs an exact export from project settings); the
+memory.db teach-exception wording is queued as a V3 capsule proposal; DHEF
+packet fa2367b4's builder lane can now resubmit against green verifiers.
+
 ## Changelog
 
+- 2026-07-17 — Phase C update appended (Fable, Claude lane).
 - 2026-07-17 — Initial checkpoint report (Fable, Claude lane).
