@@ -78,17 +78,7 @@ Three tiers, matched to weight:
 
 1. **Decisions** — a new ADR in `docs/adr/`, logged in its README table.
    Accepted ADRs are never edited; they are superseded.
-2. **Core docs** (constitution, standards, specs, capsules) — a `## 6. Reconciliation before evolution (standing rule)
-
-When deployed behavior and the repository differ, first make the repository
-faithfully represent deployed reality — a pure reconciliation change with no
-behavioral edits — and only then introduce intentional change as a new
-version (V3, V4, ...). This preserves clean history, keeps reviews simple,
-and keeps audits unambiguous. Adopted as a standing rule by Toni,
-2026-07-17; candidate for a future Constitution §4 amendment. First
-application: the V2 capsule adoption (MIGRATION_PLAN Phase C).
-
-## Changelog`
+2. **Core docs** (constitution, standards, specs, capsules) — a `## Changelog`
    section at the bottom of the file: one line per version, newest first, with
    date and what changed. Version bumps follow semver semantics on the
    document's *contract*, not its prose.
@@ -120,6 +110,16 @@ A new model reads, in order: capsule (arrives with context) →
 `docs/CONSTITUTION.md` → `docs/canon/README.md` → `docs/canon/INDEX.md` →
 `docs/PROJECT_BRIEF.md` — then everything else cold, on demand. The canon
 README must always keep this contract true from its first screen.
+
+## 6. Reconciliation before evolution (standing rule)
+
+When deployed behavior and the repository differ, first make the repository
+faithfully represent deployed reality — a pure reconciliation change with no
+behavioral edits — and only then introduce intentional change as a new
+version (V3, V4, ...). This preserves clean history, keeps reviews simple,
+and keeps audits unambiguous. Adopted as a standing rule by Toni,
+2026-07-17; candidate for a future Constitution §4 amendment. First
+application: the V2 capsule adoption (MIGRATION_PLAN Phase C).
 
 ## Changelog
 
