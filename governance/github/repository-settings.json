@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "repository": "manbeardog13/mbd-AI",
+  "activation_requires_toni_approval": true,
+  "repository_settings": {
+    "default_branch": "main",
+    "allow_squash_merge": true,
+    "allow_merge_commit": false,
+    "allow_rebase_merge": false,
+    "allow_auto_merge": false,
+    "delete_branch_on_merge": true
+  },
+  "actions_settings": {
+    "default_workflow_permissions": "read",
+    "can_approve_pull_requests": false,
+    "sha_pinning_required": true,
+    "allowed_actions": "selected",
+    "github_owned_allowed": true,
+    "verified_allowed": false
+  },
+  "security_settings": {
+    "dependency_graph": true,
+    "dependabot_alerts": true,
+    "dependabot_security_updates": true,
+    "private_vulnerability_reporting": true,
+    "secret_scanning": true,
+    "secret_scanning_push_protection": true
+  }
+}

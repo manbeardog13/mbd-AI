@@ -1,0 +1,3 @@
+#!/bin/sh
+# Mechanical safety only. Human approval for push remains out-of-band and exact.
+exec python scripts/repoctl.py pre-push "$1" "$2"

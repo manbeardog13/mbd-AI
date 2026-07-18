@@ -26,6 +26,9 @@ models/
 # --- Claude Code (shared .claude/settings.json is committed; personal overrides are not) ---
 .claude/settings.local.json
 
+# Codex desktop generates per-workspace environment metadata locally.
+.codex/environments/
+
 # --- Editor / OS junk ---
 .vscode/
 .idea/

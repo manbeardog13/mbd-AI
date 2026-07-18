@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "repository": "manbeardog13/mbd-AI",
+  "canonical_remote": "origin",
+  "canonical_branch": "main",
+  "protected_branches": [
+    "main"
+  ],
+  "allowed_branch_patterns": [
+    "^(codex|claude|human)/[a-z0-9][a-z0-9._-]*$",
+    "^dependabot/(pip|github_actions)/[a-z0-9][a-z0-9._/-]*$"
+  ],
+  "allowed_remote_url_patterns": [
+    "^https://github\\.com/manbeardog13/mbd-AI(?:\\.git)?$",
+    "^git@github\\.com:manbeardog13/mbd-AI(?:\\.git)?$"
+  ],
+  "push": {
+    "allow_branch_deletion": false,
+    "allow_force_push": false,
+    "allow_protected_branch_push": false,
+    "allow_tag_push": false,
+    "require_clean_worktree": true,
+    "require_canonical_base_ancestor": true,
+    "require_same_source_and_destination_branch": true
+  },
+  "pull": {
+    "allowed_branch": "main",
+    "strategy": "ff-only",
+    "require_clean_worktree": true,
+    "require_tracking_branch": "origin/main"
+  }
+}

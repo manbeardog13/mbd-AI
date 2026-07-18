@@ -1,0 +1,14 @@
+# Toni is the final authority. CODEOWNERS requests attention; the initial
+# solo-owner ruleset deliberately does not require a self-impossible approval.
+* @manbeardog13
+
+/.github/ @manbeardog13
+/governance/ @manbeardog13
+/.githooks/ @manbeardog13
+/AGENTS.md @manbeardog13
+/CLAUDE.md @manbeardog13
+/docs/CONSTITUTION.md @manbeardog13
+/docs/adr/ @manbeardog13
+/app/security/ @manbeardog13
+/continuity/ @manbeardog13
+/School/ @manbeardog13

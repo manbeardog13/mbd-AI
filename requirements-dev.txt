@@ -1,0 +1,2 @@
+# Deterministic test runner for both unittest classes and pytest-style functions.
+pytest==9.1.1
