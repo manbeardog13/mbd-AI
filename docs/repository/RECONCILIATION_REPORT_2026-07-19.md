@@ -145,7 +145,19 @@ than hand-merging stale counts.
 
 ## Intentionally excluded or deferred
 
-- No commit or unique source work was excluded.
+- No unique source work was excluded.
+- `git fsck --full` found two unreachable commit objects and no missing/corrupt
+  object. They were inspected and intentionally not attached to the canonical
+  graph because they are provably duplicated/superseded:
+  - `8a264438` (`feat(nero): add cross-host continuity ledger`) has stable patch
+    ID `b11f23201b15845ace7e0d6670d8a7754d6b3589`, exactly matching reachable
+    commit `194eeff`.
+  - `5b135a61` is a Git stash-style merge (`On codex/nero-mission-control-m2`)
+    over `41c47db`. Its `app/core/contracts.py` and `app/core/adapters.py` WIP is
+    present in reachable `c9ad17f`; the latter only adds hardening fields and
+    refines labels relative to the stash tree.
+  Both unreachable objects remain in the object database; no prune or garbage
+  collection was run.
 - Duplicate branch aliases were not replayed because their commits are already
   ancestors; replaying them would create duplicates rather than preserve work.
 - Generated `config.yaml`, `__pycache__`, and other runtime artifacts were not
@@ -226,6 +238,9 @@ All authorized deterministic/offline verifiers passed:
 - School structure/protocol;
 - Identity Review: 6/6 green;
 - Mission Control packaged verifier: 134 tests in 552.24 seconds, PASS.
+- Git object integrity: `git fsck --full` reported no missing or corrupt object;
+  only the explicitly analyzed duplicate/superseded unreachable objects and
+  ordinary dangling blobs/trees from temporary indexes were reported.
 
 Warnings were limited to 875 FastAPI/Starlette deprecation warnings for
 `asyncio.iscoroutinefunction`; no correctness failure resulted. No ESET scan was
