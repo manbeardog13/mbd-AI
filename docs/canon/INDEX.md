@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-243 knowledge files - 82 carrying canon frontmatter - 161 not yet migrated (see MIGRATION_PLAN.md).
+246 knowledge files - 83 carrying canon frontmatter - 163 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -137,6 +137,12 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [School/SCHOOL_RULES.md](/School/SCHOOL_RULES.md) | Nero School rules | operational | - | school | unmigrated |
 | [School/SHARED_WORK_RULES.md](/School/SHARED_WORK_RULES.md) | Nero School shared-work protocol | operational | - | school | unmigrated |
 
+## adventure
+
+| File | Title | Layer | Status | Owner | |
+|---|---|---|---|---|---|
+| [adventure/README.md](/adventure/README.md) | Nero: Voidbound Codex | operational | - | shared | unmigrated |
+
 ## audit
 
 | File | Title | Layer | Status | Owner | |
@@ -201,6 +207,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/adr/0023-presence-program.md](/docs/adr/0023-presence-program.md) | ADR-0023: The Presence & Continuity Evolution Program | core | - | shared | unmigrated |
 | [docs/adr/0024-identity-charter.md](/docs/adr/0024-identity-charter.md) | ADR-0024: The Identity Evolution Charter — Seven Pillars, Id | core | - | shared | unmigrated |
 | [docs/adr/0025-desktop-familiar.md](/docs/adr/0025-desktop-familiar.md) | ADR-0025: Mission Control manifests through an opt-in Deskto | core | - | shared | unmigrated |
+| [docs/adr/0026-voidbound-codex.md](/docs/adr/0026-voidbound-codex.md) | ADR-0026: Voidbound Codex is a static local-first game modul | core | - | shared | unmigrated |
 | [docs/adr/README.md](/docs/adr/README.md) | Architecture Decision Records | core | - | shared | unmigrated |
 
 ## docs/archive
@@ -289,6 +296,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/specs/memory-architecture.spec.md](/docs/specs/memory-architecture.spec.md) | Nero Memory Architecture | core | proposed | shared |  |
 | [docs/specs/review-inbox.spec.md](/docs/specs/review-inbox.spec.md) | Attention Architecture - Escalation Levels, Review Inbox, Da | core | active | shared |  |
 | [docs/specs/skill-lifecycle.spec.md](/docs/specs/skill-lifecycle.spec.md) | Nero Skill Lifecycle | core | proposed | shared |  |
+| [docs/specs/voidbound-codex.spec.md](/docs/specs/voidbound-codex.spec.md) | Voidbound Codex v1 contract | core | active | toni |  |
 
 ## docs/visual
 

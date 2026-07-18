@@ -159,6 +159,12 @@ def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
 
 
+@app.get("/adventure")
+def adventure() -> FileResponse:
+    """Serve the self-contained Nero: Voidbound Codex game shell."""
+    return FileResponse(STATIC_DIR / "adventure" / "index.html")
+
+
 @app.get("/api/config")
 def get_config_info() -> dict:
     cfg = load_config()

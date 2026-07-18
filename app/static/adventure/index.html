@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#100d1b" />
+  <meta name="description" content="Nero: Voidbound Codex — a persistent local-first action RPG." />
+  <title>Nero: Voidbound Codex</title>
+  <link rel="icon" href="../icon.svg" />
+  <link rel="stylesheet" href="./styles.css?v=1.1.2" />
+</head>
+<body>
+  <a class="skip-link" href="#game-shell">Skip to game</a>
+  <main id="game-shell" class="game-shell" aria-label="Nero: Voidbound Codex">
+    <header class="hud-top" aria-live="polite">
+      <div class="brand-lockup">
+        <span class="brand-rune" aria-hidden="true">✦</span>
+        <div><strong>VOIDBOUND CODEX</strong><small id="run-label">Awaiting a new oath</small></div>
+      </div>
+      <div class="vitals">
+        <div class="meter health"><span>HP</span><div><i id="hp-fill"></i></div><b id="hp-label">100/100</b></div>
+        <div class="meter stamina"><span>STA</span><div><i id="stamina-fill"></i></div><b id="stamina-label">100/100</b></div>
+        <div class="meter xp"><span>XP</span><div><i id="xp-fill"></i></div><b id="xp-label">0/80</b></div>
+      </div>
+      <div class="run-stats">
+        <span>LV <b id="level-label">1</b></span>
+        <span>SCORE <b id="score-label">000000</b></span>
+        <span>SHARDS <b id="shard-label">0</b></span>
+      </div>
+    </header>
+
+    <section class="viewport-wrap">
+      <canvas id="game" width="960" height="540" tabindex="0" aria-label="Action RPG game world"></canvas>
+      <div id="announcement" class="announcement" aria-live="assertive"></div>
+      <div id="objective" class="objective" aria-live="polite"></div>
+
+      <section id="start-screen" class="overlay start-screen">
+        <div class="title-card">
+          <p class="eyebrow">A NERO CHRONICLE</p>
+          <h1>VOIDBOUND<br /><span>CODEX</span></h1>
+          <p class="lede">Descend through eight fractured domains. Bind their keepers. Bring the light home.</p>
+          <div class="mode-tabs" role="tablist" aria-label="Game mode">
+            <button class="mode-tab selected" data-mode="journey" role="tab" aria-selected="true">Journey<small>Eight domains · bosses · ending</small></button>
+            <button class="mode-tab" data-mode="survival" role="tab" aria-selected="false">Survival<small>Endless escalation · high score</small></button>
+          </div>
+          <h2>Choose an oath</h2>
+          <div id="class-grid" class="class-grid"></div>
+          <h2>Choose a companion</h2>
+          <div id="companion-grid" class="companion-grid"></div>
+          <div class="start-actions">
+            <button id="start-button" class="primary">Begin the descent</button>
+            <button id="continue-button" class="secondary" hidden>Continue saved run</button>
+          </div>
+          <p class="controls-hint"><kbd>WASD</kbd> move · <kbd>Space</kbd> attack · <kbd>Shift</kbd> evade · <kbd>F</kbd> oath art · <kbd>Q</kbd> tonic</p>
+        </div>
+      </section>
+
+      <section id="level-screen" class="overlay dialog-overlay" hidden>
+        <div class="dialog level-dialog" role="dialog" aria-modal="true" aria-labelledby="level-title">
+          <p class="eyebrow">THE CODEX ANSWERS</p><h2 id="level-title">Choose a resonance</h2>
+          <div id="upgrade-grid" class="upgrade-grid"></div>
+        </div>
+      </section>
+
+      <section id="codex-screen" class="overlay dialog-overlay" hidden>
+        <div class="dialog codex-dialog" role="dialog" aria-modal="true" aria-labelledby="codex-title">
+          <button class="dialog-close" data-close="codex-screen" aria-label="Close Codex">×</button>
+          <p class="eyebrow">CURRENT VESSEL</p><h2 id="codex-title">The Codex</h2>
+          <div id="codex-content"></div>
+        </div>
+      </section>
+
+      <section id="rank-screen" class="overlay dialog-overlay" hidden>
+        <div class="dialog rank-dialog" role="dialog" aria-modal="true" aria-labelledby="rank-title">
+          <button class="dialog-close" data-close="rank-screen" aria-label="Close rankings">×</button>
+          <p class="eyebrow">LOCAL CHRONICLE</p><h2 id="rank-title">Hall of Echoes</h2>
+          <div id="rank-content"></div>
+          <p class="privacy-note">Stored only in this browser. No identity or score leaves this machine.</p>
+        </div>
+      </section>
+
+      <section id="end-screen" class="overlay dialog-overlay" hidden>
+        <div class="dialog end-dialog" role="dialog" aria-modal="true" aria-labelledby="end-title">
+          <p class="eyebrow" id="end-kicker">THE VOID REMEMBERS</p><h2 id="end-title">Run complete</h2>
+          <div id="end-stats"></div>
+          <div class="start-actions"><button id="retry-button" class="primary">Begin anew</button><button id="menu-button" class="secondary">Return to oaths</button></div>
+        </div>
+      </section>
+
+      <div id="touch-controls" class="touch-controls" aria-label="Touch controls">
+        <div class="touch-stick" id="touch-stick"><span></span></div>
+        <div class="touch-actions">
+          <button data-touch="dash" aria-label="Evade">↯<small>EVade</small></button>
+          <button data-touch="ability" aria-label="Oath art">✦<small>ART</small></button>
+          <button class="attack" data-touch="attack" aria-label="Attack">⚔<small>STRIKE</small></button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="command-deck">
+      <div class="weapon-card"><span id="class-icon">◆</span><div><small id="class-label">OATH</small><strong id="weapon-label">Unbound</strong></div><em id="mastery-label">M0</em></div>
+      <div class="companion-hud"><span id="companion-avatar" aria-hidden="true"></span><div><small>COMPANION</small><strong id="companion-label">Unbound</strong></div><em id="bond-label">B0</em></div>
+      <div class="command-list"><button data-command="codex"><kbd>C</kbd> Codex</button><button data-command="ranks"><kbd>L</kbd> Ranks</button><button data-command="audio"><kbd>M</kbd> <span id="audio-label">Audio</span></button><button data-command="tonic"><kbd>Q</kbd> Tonic <b id="tonic-label">3</b></button></div>
+      <button id="return-nero" class="return-link" type="button">Return</button>
+    </footer>
+  </main>
+  <noscript>This game requires JavaScript.</noscript>
+  <script src="./game.js?v=1.1.2"></script>
+</body>
+</html>

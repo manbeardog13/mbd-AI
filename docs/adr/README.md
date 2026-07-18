@@ -43,3 +43,4 @@ that supersedes it, and set the old one's status to "Superseded by ADR-XXXX".
 | [0023](0023-presence-program.md) | Presence & Continuity Evolution Program (standing directive, Toni) | Accepted |
 | [0024](0024-identity-charter.md) | Identity Evolution Charter: Seven Pillars, Identity Review, North Star | Accepted |
 | [0025](0025-desktop-familiar.md) | Mission Control manifests through an opt-in Desktop Familiar | Accepted (amended v2) |
+| [0026](0026-voidbound-codex.md) | Voidbound Codex is a static local-first game module | Accepted |
