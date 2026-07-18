@@ -65,3 +65,14 @@ user-global `NERO_GLOBAL_CAPSULE_V1` contract; they do not start Nero locally.
   conversation details.
 - Source order is Toni's current direct instruction, the Constitution, current
   primary-source repository evidence, then dated summaries or memory.
+
+## Nero School
+
+- `School/` is the canonical evidence-gated training environment. Before the
+  first substantive School mutation, execution, design, or audit, log START as
+  Codex through `School/tooling/schoolctl.py`; append FINISH at handoff.
+- Never impersonate Claude in task agreements or audits. Initial tasks remain
+  locked until both hosts approve the identical task digest.
+- Debate and execution are each capped at three. Only `finalize` may award XP
+  after deterministic grading and independent reviews meet the 8.7/10 gate.
+- Read detailed rules from `School/SCHOOL_RULES.md` only for School work.

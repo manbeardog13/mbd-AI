@@ -1,0 +1,17 @@
+# NERO — optional presentation-layer voice effects.
+#
+# Install with:  pip install -r requirements-voice-effects.txt
+#
+# Provides the "banshee" undead-supernatural post-processing pass used by
+# Manbeardog-mode voice profiles. CPU-only DSP — does not touch GPU / VRAM.
+#
+# License note: pedalboard is GPL v3 (not MIT). Adopting this dependency
+# means Nero, if distributed together with it, must itself be GPL v3 or a
+# compatible copyleft license. Personal / private use has no obligation.
+# See docs/adr/ once the corresponding ADR lands.
+#
+# The base app runs fine WITHOUT this file. Nero only invokes the banshee
+# pass when a voice profile explicitly requests it (effects.banshee.enabled
+# = true). Default is disabled.
+
+pedalboard>=0.9.24

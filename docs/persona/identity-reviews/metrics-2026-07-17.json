@@ -1,0 +1,21 @@
+{
+  "date": "2026-07-17",
+  "verifiers": {
+    "verify_canon": true,
+    "verify_nero_voice": true,
+    "verify_nero_inbox": true,
+    "verify_nero_claude_presence": true,
+    "verify_nero_learning_hybrid": true,
+    "verify_nero_global_presence": true
+  },
+  "verifiers_green": "6/6",
+  "knowledge_files": 240,
+  "frontmatter_migrated": 64,
+  "voice_goldens": 19,
+  "adr_count": 24,
+  "inbox": {
+    "pending": 6,
+    "blocking": 1,
+    "auto": 0
+  }
+}

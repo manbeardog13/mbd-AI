@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nero Software Engineering"
+  short_description: "Build, audit, debug, and port code reliably"
+  default_prompt: "Use $nero-software-engineering to implement, audit, or adapt this codebase with native verification."

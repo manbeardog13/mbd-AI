@@ -9,6 +9,10 @@ description: >-
   …". It runs the local continuity CLI to store or fetch that one item with a
   source receipt. Do NOT invoke for greetings, ordinary chat, or on every prompt;
   do NOT auto-save conclusions; do NOT imply Codex was contacted.
+version: 1.0.0
+lifecycle: permanent
+owner: claude-lane
+verified_by: verify/verify_nero_continuity.py
 ---
 
 # Nero cross-host continuity adapter (Claude lane)

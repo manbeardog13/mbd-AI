@@ -1,0 +1,4 @@
+1 pytest test_auth.py -> connection refused
+2 pytest test_auth.py -> connection refused
+3 pytest test_auth.py -> connection refused
+4 pytest test_auth.py -> connection refused

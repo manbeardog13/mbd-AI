@@ -1,10 +1,23 @@
-"""voice.profiles — the declarative voice cast (identity as data).
+"""Declarative cast profiles and logical Voice Director presets."""
 
-`cast.json` holds *what a voice is*; `loader.py` holds *how to load one*. Behavior
-lives in Stages 2 (Voice Capability Graph) and 4 (Voice Manager) — unchanged.
-"""
 from .loader import (
-    DEFAULT_CAST_PATH, Cast, CastError, VoiceProfile, load_cast,
+    DEFAULT_CAST_PATH,
+    Cast,
+    CastError,
+    VoiceProfile as CastVoiceProfile,
+    load_cast,
 )
+from .profile import VoiceProfile, synthesize_with_profile
+from .presets import PRESETS, get_profile
 
-__all__ = ["Cast", "CastError", "VoiceProfile", "load_cast", "DEFAULT_CAST_PATH"]
+__all__ = [
+    "Cast",
+    "CastError",
+    "CastVoiceProfile",
+    "DEFAULT_CAST_PATH",
+    "PRESETS",
+    "VoiceProfile",
+    "get_profile",
+    "load_cast",
+    "synthesize_with_profile",
+]

@@ -1,4 +1,20 @@
+---
+id: docs.directive
+title: Nero Development Directive
+layer: core
+type: reference
+status: superseded
+owner: toni
+superseded_by: docs/CONSTITUTION.md
+updated: 2026-07-17
+---
+
 # Nero Development Directive
+
+> **Superseded as law (2026-07-12):** [CONSTITUTION.md](CONSTITUTION.md) v1.1 supersedes this
+> document's governing claims and its priority order — when they disagree, the
+> Constitution's six pillars win, not the seven priorities below. Retained as
+> founding philosophy; its verification standards remain in daily use.
 
 **Local-First Cognitive Operating System**
 

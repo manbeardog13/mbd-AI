@@ -1,0 +1,1 @@
+inspect -> failing test -> minimal implementation -> verification -> report

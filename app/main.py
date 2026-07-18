@@ -15,6 +15,8 @@ Serves the chat web app and exposes a small API the browser talks to:
 from __future__ import annotations
 
 import asyncio
+import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
@@ -22,17 +24,21 @@ from fastapi.responses import FileResponse, JSONResponse, Response, StreamingRes
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import db, memory, tts, world_model
+from . import collaboration, db, memory, tts, world_model
 from .agent import loop as agent_loop, state as agent_state
 from .capabilities import Context, Registry
 from .capabilities.builtin import register_builtins
 from .config import ROOT, load_config, set_override
 from .llm import check_ollama, embed_text, stream_chat
 from .prompt import build_system_prompt
+from .runtime import LifecycleManager
+from .runtime.services import PresenceService
 
+log = logging.getLogger("nero.app.main")
 HOSTED_ONLY_HARD_DISABLED = True
 HOSTED_ONLY_MESSAGE = (
-    "The standalone local Nero API is hard-disabled. Use zero-start Codex Host Presence."
+    "The standalone local Nero API is hard-disabled. "
+    "Use zero-start Codex Host Presence."
 )
 
 # One Capability Registry for the process, populated with the built-in provider
@@ -56,7 +62,54 @@ def _spawn(coro) -> None:
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
-app = FastAPI(title="Your Personal AI")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Nero's runtime lifecycle.
+
+    Startup order (per the Phase-3 spec):
+        Configuration → DB init → Core services → Voice-related → Presence →
+        (future: Memory / Scheduler / Vision) → API interfaces (already
+        registered on this app instance) → Ready.
+
+    Shutdown reverses the service order. HTTP surface must never fail
+    because a subsystem failed — every service error is isolated by the
+    LifecycleManager.
+    """
+    if HOSTED_ONLY_HARD_DISABLED:
+        log.warning(HOSTED_ONLY_MESSAGE)
+        yield
+        return
+
+    # 1. Config first so services can read it.
+    cfg = load_config()
+
+    # 2. DB init (schema-migration-safe; existing behavior preserved).
+    db.init_db()
+
+    # 3. Register long-lived services in intended startup order.
+    manager = LifecycleManager()
+
+    if cfg.presence_enabled:
+        manager.register(PresenceService.from_config(cfg))
+
+    # 4. Start them.
+    await manager.start_all()
+
+    # 5. Expose the manager for the health endpoint. FastAPI's app.state is
+    #    the intended place for lifespan-owned handles.
+    app.state.lifecycle = manager
+    log.info("Nero ready — %d service(s) online", len(list(manager.services())))
+
+    try:
+        yield
+    finally:
+        # 6. Shutdown: reverse order, isolated failures.
+        await manager.stop_all()
+        app.state.lifecycle = None
+
+
+app = FastAPI(title="Your Personal AI", lifespan=lifespan)
 
 
 @app.middleware("http")
@@ -68,13 +121,6 @@ async def hosted_only_lock(request: Request, call_next):
             content={"detail": HOSTED_ONLY_MESSAGE},
         )
     return await call_next(request)
-
-
-@app.on_event("startup")
-def _startup() -> None:
-    if HOSTED_ONLY_HARD_DISABLED:
-        return
-    db.init_db()
 
 
 # ---- Request bodies ----
@@ -100,11 +146,23 @@ class AgentIn(BaseModel):
     message: str
 
 
+class CollaborationIn(BaseModel):
+    task: str
+    mode: str = "plan-build-review"
+    confirmed: bool = False
+
+
 # ---- Pages & basic info ----
 
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/adventure")
+def adventure() -> FileResponse:
+    """Serve the self-contained Nero: Voidbound Codex game shell."""
+    return FileResponse(STATIC_DIR / "adventure" / "index.html")
 
 
 @app.get("/api/config")
@@ -139,6 +197,32 @@ async def status() -> dict:
     cfg = load_config()
     ok, message = await check_ollama(cfg.ollama_host, cfg.model)
     return {"ok": ok, "message": message, "model": cfg.model}
+
+
+# ---- External Council (opt-in cloud escalation) ----
+
+@app.get("/api/collaboration/status")
+def collaboration_status() -> dict:
+    """Configuration-only health; never checks providers or reveals secrets."""
+    return collaboration.status(load_config())
+
+
+@app.post("/api/collaboration")
+async def collaboration_run(payload: CollaborationIn) -> dict:
+    """Run one explicitly confirmed, bounded OpenAI -> Claude -> OpenAI handoff."""
+    if not payload.confirmed:
+        raise HTTPException(
+            status_code=400,
+            detail="External Council needs confirmation because it sends this task to cloud providers.",
+        )
+    try:
+        return await collaboration.coordinate(load_config(), payload.task, payload.mode)
+    except collaboration.CollaborationConfigurationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except collaboration.CollaborationProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except collaboration.CollaborationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 # ---- Conversation ----
@@ -337,19 +421,73 @@ def voice_status() -> dict:
 
 @app.post("/api/speak")
 async def speak(payload: SpeakIn) -> Response:
-    """Synthesize `text` in Nero's local voice.
+    """Synthesize ``text`` in Nero's canonical voice (nero_prime).
 
-    Returns audio/wav on success, or 204 No Content when the neural voice isn't
-    installed/enabled — the browser then falls back to its own voice.
+    Single production path: brain → Voice Director → Kokoro → banshee →
+    audio. No browser SpeechSynthesis fallback, no legacy alternate engine
+    (per the Phase-3 direction — the user should always hear NERO or hear
+    nothing at all).
+
+    Response codes:
+        200 audio/wav             — synthesis succeeded, plays as Nero
+        204 (X-Voice-Reason: …)   — no audio; reason header explains why
+                                    ("unsupported-language" | "engine-unavailable"
+                                    | "synthesis-failed" | "unknown-profile")
+        400 Bad Request           — empty text
     """
     text = payload.text.strip()
     if not text:
         raise HTTPException(status_code=400, detail="Nothing to speak.")
-    cfg = load_config()
-    audio = await asyncio.to_thread(tts.synthesize, cfg, text)
-    if not audio:
-        return Response(status_code=204)
-    return Response(content=audio, media_type="audio/wav")
+
+    from voice import director as voice_director  # local import; voice/ is optional
+
+    try:
+        result = await asyncio.to_thread(voice_director.synthesize, "nero_prime", text)
+    except Exception as exc:  # noqa: BLE001 — voice must never break chat
+        log.warning("voice.director raised: %s", exc)
+        return Response(
+            status_code=204,
+            headers={"X-Voice-Reason": "director-error"},
+        )
+
+    if result.ok:
+        return Response(content=result.audio, media_type="audio/wav")
+
+    # 204 with a machine-readable reason. Frontend / any consumer can inspect
+    # this header to show a UI hint (e.g. "no voice for Croatian yet") without
+    # parsing the response body.
+    headers = {"X-Voice-Reason": result.reason}
+    # Attach a small detail header for the two most useful cases so the UI
+    # can be specific without a second round-trip.
+    if result.reason == "unsupported-language":
+        detected = result.metadata.get("detected")
+        if detected:
+            headers["X-Voice-Detected-Language"] = str(detected)
+    return Response(status_code=204, headers=headers)
+
+
+@app.get("/api/runtime/health")
+async def runtime_health() -> dict:
+    """Structured health for every registered RuntimeService.
+
+    Returns a JSON object of the shape::
+
+        {
+          "services": [
+            {"name": "presence", "running": true, "status": "ok",
+             "details": {"runtime": "log", "active_level": "L1_MINIMAL_MANIFESTATION",
+                         "current_state": "idle", "voice_bound": true, ...}}
+          ]
+        }
+
+    Never fails: individual service health() errors are captured by the
+    manager and reported as status="unavailable" rather than propagating.
+    """
+    manager: LifecycleManager | None = getattr(app.state, "lifecycle", None)
+    if manager is None:
+        return {"services": []}
+    snapshots = await manager.health_all()
+    return {"services": [s.as_dict() for s in snapshots]}
 
 
 @app.delete("/api/memories/{memory_id}")

@@ -20,4 +20,9 @@ Governed by docs/VOICE.md ("the Bible") and Toni's V1.2.1 architecture locks:
 Model-independent foundation first (this package builds it, one stage at a time);
 engine bodies and all GPU/VRAM/latency work belong to the local RTX-4070
 environment, never to cloud assumption.
+
+The package now contains both the staged Voice Platform foundation and the
+presentation-layer Voice Director, engine adapters, casting logic, and effects
+described by ADR-0009 through ADR-0011. Hosted presence remains independent of
+this optional standalone voice path.
 """

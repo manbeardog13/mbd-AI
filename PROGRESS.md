@@ -1,50 +1,53 @@
+---
+id: root.progress
+title: "Nero — Progress Tracker"
+layer: operational
+type: log
+status: active
+owner: toni
+created: 2026-07-12
+updated: 2026-07-17
+---
+
 # Nero — Progress Tracker
+
+**Charter:** the increment log — what shipped, what's in flight. The plan lives in
+[docs/ROADMAP.md](docs/ROADMAP.md); the narrative snapshot in
+[docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md). Phase *names* ("The Hands") are
+canonical; older entries may use two legacy numbering eras.
 
 The single place to see where things stand. I update this every increment.
 For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
-**Doing repository architecture work?** Use the task-scoped read order in
-[docs/ARCHITECT_MEMORY.md](docs/ARCHITECT_MEMORY.md). Hosted conversation does
-not preload project context.
 
 **Legend:** ✅ shipped · 🔨 building now · 🧪 in review (PR) · ⏭️ next · 🗓️ planned
 
 ---
 
-## ✅ Verified locally (not pushed)
-- **Mission Control Milestone 1** on `codex/nero-mission-control-m1`:
-  authoritative model-independent Core, deterministic Git state, task queue,
-  repository-global write lease, bounded Claude/Codex worker adapters,
-  approval-safe read-only UI, and hash-chained event recording under ADR-0017.
-  Focused Core/Git/service/API/interface tests and the existing Host Presence,
-  continuity, journal, agent, memory, voice-policy, and security regressions are
-  the merge gate. GitHub remains unchanged until Toni explicitly approves a
-  push.
-
-## ⏭️ Next
-- Review the local M1 branch, then decide whether to publish it for review.
-- A later milestone may add real worker invocation and a guarded local commit /
-  remote push capability, but only through the Capability Registry, Security
-  Gate, verification, and fresh human approval.
-- **Phase 1 — more capabilities, one PR each:** `fs.list`, `git.log` (read-only),
-  then the **human-in-the-loop terminal**, then the Approve/Deny **confirmation
-  UX** with the first MEDIUM+ (write) capability.
+## 🧪 In review (PR)
+- **Canonical knowledge base + attention architecture** 🧪 — on the pushed
+  rescue branch awaiting merge: `docs/canon/` (self-auditing via
+  `verify_canon.py` + 7 tests), migration Phases 0/A/B/C/E executed with all
+  verifiers green, ADRs 0017–0021 (canon · skill lifecycle · Proxima
+  retirement ✅ executed · identity plane · attention L0–L3), capsule V2
+  reconciled with per-lane deploy verification, engine-handoff + review-inbox
+  specs, DHEF packets open for Codex (`ac362276` inbox build, `fa2367b4`
+  changes-requested).
+- **Phase 1 — "The Hands" · first slice** 🧪 — the primitive that lets Nero
+  *act*: the **agent loop** (reason → tool → observe → repeat, bounded and
+  cancellable), the **Capability Registry** (one guarded dispatch seam; the model
+  reasons over capabilities discovered at runtime, not a hard-coded list), the
+  **security gate** (every MEDIUM+ action needs confirmation; project jail;
+  fail-closed), **Executive Memory** (the working-state register — goal/project/
+  branch/task/blocker/next_action; branch & project observed from git, not
+  guessed), and the first capability **`git.status`**. New endpoints `POST
+  /api/agent`, `GET /api/agent/capabilities`, `GET/DELETE /api/executive`; agent
+  + capability metrics in `/api/metrics`. 32 offline tests + `verify_security.py`,
+  `verify_capabilities.py`, `verify_executive_memory.py`, `verify_agent.py` all
+  green (the live agent run verifies on the PC where Ollama runs). Next Phase-1
+  capabilities, one PR each: `fs.read`, `fs.list`, `git.log`, then the
+  human-in-the-loop terminal.
 
 ## ✅ Shipped (on `main`)
-- **Phase 1 — "The Hands" · first slice** ✅ (PR #10) — the primitive that lets
-  Nero *act*, **verified end-to-end on the RTX 4070**: the **agent loop**
-  (reason → tool → observe → repeat, bounded, never hangs), the **Capability
-  Registry** (one guarded dispatch seam; the model reasons over capabilities
-  discovered at runtime, not a hard-coded list), the **security gate** (every
-  MEDIUM+ action needs confirmation; project jail; fail-closed), **Executive
-  Memory** (the working-state register — goal/project/branch/task/blocker/
-  next_action; branch & project observed from git, not guessed), and the first
-  read-only capabilities **`git.status`** and **`fs.read`** (jailed, bounded —
-  a path escaping the jail is gated). Endpoints `POST /api/agent`, `GET
-  /api/agent/capabilities`, `GET/DELETE /api/executive`; agent + capability
-  metrics in `/api/metrics`. Live PC verify: a real qwen3:14b drove the loop via
-  `git.status`; adversarial battery gated 32 unconfirmed attempts (0 escapes);
-  Executive Memory observed the real git branch. 32 offline tests + four new
-  `verify_*.py`.
 - **V3 governance layer** ✅ — the Constitution (v1.1), ADRs 0001–0008, the phased
   Roadmap, and the Phase-1 technical design in `docs/`. Two decisions settled:
   **ADR-0006 "Local-First with Intelligence Escalation"** and the **Principle of

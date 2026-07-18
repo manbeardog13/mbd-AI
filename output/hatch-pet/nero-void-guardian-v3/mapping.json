@@ -1,0 +1,80 @@
+{
+  "sourceWpfAtlas": "familiar/assets/nero/nero-voidcaster-v2.png",
+  "sourceGeneratedVariants": "output/hatch-pet/nero-void-guardian-v3/source/generated-variants-alpha.png",
+  "cell": [
+    192,
+    208
+  ],
+  "grid": [
+    8,
+    11
+  ],
+  "rows": [
+    {
+      "row": 0,
+      "state": "idle",
+      "frames": 6,
+      "source": "exact WPF breathe frames"
+    },
+    {
+      "row": 1,
+      "state": "run-right",
+      "frames": 8,
+      "source": "generated WPF-identity movement"
+    },
+    {
+      "row": 2,
+      "state": "run-left",
+      "frames": 8,
+      "source": "mirrored run-right"
+    },
+    {
+      "row": 3,
+      "state": "wave",
+      "frames": 4,
+      "source": "WPF attention and greeting gestures"
+    },
+    {
+      "row": 4,
+      "state": "jump",
+      "frames": 5,
+      "source": "WPF-identity hover and action poses"
+    },
+    {
+      "row": 5,
+      "state": "failed",
+      "frames": 8,
+      "source": "WPF pensive frames with failure pulse"
+    },
+    {
+      "row": 6,
+      "state": "waiting",
+      "frames": 6,
+      "source": "WPF thinking frames with orbiting cognition dots"
+    },
+    {
+      "row": 7,
+      "state": "active-work",
+      "frames": 6,
+      "source": "cyan Codex hex and work effects"
+    },
+    {
+      "row": 8,
+      "state": "review-success",
+      "frames": 6,
+      "source": "violet review and success ring"
+    },
+    {
+      "row": 9,
+      "state": "look-000-to-157",
+      "frames": 8,
+      "source": "WPF attentive frames with directional focus spark"
+    },
+    {
+      "row": 10,
+      "state": "look-180-to-337",
+      "frames": 8,
+      "source": "WPF attentive frames with directional focus spark"
+    }
+  ]
+}

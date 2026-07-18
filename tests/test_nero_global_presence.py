@@ -100,10 +100,11 @@ class NeroGlobalPresenceTests(unittest.TestCase):
         self.assertNotIn("SessionStart", settings.get("hooks", {}))
         self.assertFalse((ROOT / ".claude" / "hooks" / "session_context.py").exists())
         stop_hook = (
-            ROOT / ".claude" / "hooks" / "brief_staleness_check.py"
+            ROOT / ".claude" / "hooks" / "brief-staleness-check.sh"
         ).read_text(encoding="utf-8")
-        self.assertNotIn("commit and push", stop_hook.lower())
-        self.assertIn("Do not edit, commit, merge, or push", stop_hook)
+        self.assertNotIn("git push", stop_hook.lower())
+        self.assertIn("never authorizes", stop_hook)
+        self.assertIn("Do not edit it, commit, push, merge", stop_hook)
 
     def test_fail_closed_and_personality_clauses_are_canonical(self) -> None:
         capsule = self._canonical()

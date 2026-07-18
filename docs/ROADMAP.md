@@ -1,4 +1,19 @@
+---
+id: docs.roadmap
+title: "Nero Roadmap"
+layer: operational
+type: plan
+status: active
+owner: toni
+created: 2026-07-12
+updated: 2026-07-17
+---
+
 # Nero Roadmap
+
+**Charter:** the authoritative, measurable plan. Increment log:
+[PROGRESS.md](../PROGRESS.md) · snapshot: [PROJECT_BRIEF.md](PROJECT_BRIEF.md).
+Phase *names* are canonical; numbers are era-bound.
 
 The current phases, their dependencies, and the **measurable** bar each must
 clear before the next begins. Governed by [CONSTITUTION.md](CONSTITUTION.md) and

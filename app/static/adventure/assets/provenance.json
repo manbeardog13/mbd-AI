@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-18",
+  "assets": [
+    {
+      "file": "iskra-v2.webp",
+      "sha256": "E07BFD3777AABBC74A88266EC6AC3A67F3821100A43A2125FC2CA2601890B008",
+      "source": "codex-pet:iskra:v2",
+      "status": "validated-published-copy",
+      "grid": { "columns": 8, "rows": 11, "cellWidth": 192, "cellHeight": 208 }
+    },
+    {
+      "file": "nero-void-guardian-v2.webp",
+      "sha256": "61A8C71B1D3406939CEAB74F1641F7A420907FEA7FC29957270D5BEB62F2EF63",
+      "source": "codex-pet:nero-void-guardian:v2",
+      "status": "validated-published-copy",
+      "grid": { "columns": 8, "rows": 11, "cellWidth": 192, "cellHeight": 208 }
+    },
+    {
+      "file": "mia-v2-provisional.webp",
+      "sha256": "6B4ABF2BF46BB4AFF29EFF18BAE8739E99F5B7A228A30564B56C60976D687B78",
+      "source": "external-build:mia-v2:provisional",
+      "status": "provisional-versioned-copy-active-build-untouched",
+      "grid": { "columns": 8, "rows": 11, "cellWidth": 192, "cellHeight": 208 }
+    },
+    {
+      "file": "voidbound-companions-keyart-v1.png",
+      "sha256": "9C62323059D0524EC1B3FC576DEAABB2C341E53D3EA9D1169E6E44BDB5AD6CCB",
+      "source": "OpenAI built-in image generation using the three companion atlases as identity references",
+      "status": "project-original-generated",
+      "promptSummary": "Cinematic 32-bit pixel-art Voidbound domain; Nero left, Iskra foreground, Mia right; central quiet space; no text or logos."
+    }
+  ]
+}

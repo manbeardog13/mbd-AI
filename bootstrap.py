@@ -246,7 +246,7 @@ def ensure_models() -> None:
             die(
                 f"Couldn't download '{model}'.\n"
                 "    Make sure Ollama is running, then re-run this script.\n"
-                "    (You can pick different models in config.yaml — see docs/MODELS.md)"
+                "    (You can pick different models in config.yaml — see docs/guides/MODELS.md)"
             )
         ok("Ready")
 

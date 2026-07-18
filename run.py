@@ -4,7 +4,7 @@
 
 Then open the printed address in your browser. On the same machine that's
 http://localhost:8080 . From your phone or laptop over Tailscale, use your
-PC's Tailscale address instead (see docs/REMOTE_ACCESS.md).
+PC's Tailscale address instead (see docs/guides/REMOTE_ACCESS.md).
 """
 from __future__ import annotations
 

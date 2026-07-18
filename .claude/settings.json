@@ -5,8 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/brief_staleness_check.py\"",
-            "statusMessage": "Checking PROJECT_BRIEF.md freshness..."
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/brief-staleness-check.sh\"",
+            "statusMessage": "Checking PROJECT_BRIEF.md freshness (advisory only)…"
           }
         ]
       }

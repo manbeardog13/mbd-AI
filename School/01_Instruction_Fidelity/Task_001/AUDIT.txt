@@ -1,0 +1,3 @@
+AUDIT - HASH-CHAINED CODEX / CLAUDE REVIEWS
+Deterministic grader evidence is mandatory. Direct edits to ENTRY lines invalidate the chain.
+

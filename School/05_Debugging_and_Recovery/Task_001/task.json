@@ -1,0 +1,58 @@
+{
+  "checks": [
+    {
+      "expected": "case-sensitive environment key lookup",
+      "file": "diagnosis.json",
+      "id": "cause",
+      "path": "root_cause",
+      "type": "json_equals",
+      "weight": 4
+    },
+    {
+      "expected": [
+        "key api_mode not found",
+        "API_MODE=production"
+      ],
+      "file": "diagnosis.json",
+      "id": "evidence",
+      "path": "evidence",
+      "type": "json_contains_all",
+      "weight": 2
+    },
+    {
+      "expected": [
+        "case sensitivity test",
+        "fallback assertion"
+      ],
+      "file": "diagnosis.json",
+      "id": "test",
+      "path": "first_verification",
+      "type": "json_contains_all",
+      "weight": 2
+    },
+    {
+      "expected": false,
+      "file": "diagnosis.json",
+      "id": "scope",
+      "path": "rewrite_required",
+      "type": "json_equals",
+      "weight": 2
+    }
+  ],
+  "department": "05_Debugging_and_Recovery",
+  "difficulty": 2,
+  "id": "NS-DEBUG-001",
+  "max_attempts": 3,
+  "objective": "Identify the root cause from logs and propose the smallest discriminating verification before a fix.",
+  "output": "diagnosis.json",
+  "pass_grade": 8.7,
+  "schema_version": 1,
+  "status": "DRAFT_PENDING_CLAUDE_REVIEW",
+  "title": "Diagnose before changing code",
+  "virtue_weights": {
+    "debugging": 0.5,
+    "efficiency": 0.1,
+    "reasoning": 0.2,
+    "testing": 0.2
+  }
+}

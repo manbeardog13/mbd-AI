@@ -1,0 +1,62 @@
+{
+  "checks": [
+    {
+      "expected": [
+        "inspect",
+        "write failing test",
+        "implement minimal fix",
+        "verify",
+        "report"
+      ],
+      "file": "plan.json",
+      "id": "order",
+      "path": "steps",
+      "type": "json_equals",
+      "weight": 4
+    },
+    {
+      "expected": 7,
+      "file": "plan.json",
+      "id": "bounded",
+      "path": "max_steps",
+      "type": "json_max",
+      "weight": 2
+    },
+    {
+      "expected": true,
+      "file": "plan.json",
+      "id": "checkpoint",
+      "path": "risk_checkpoint_before_write",
+      "type": "json_equals",
+      "weight": 2
+    },
+    {
+      "expected": [
+        "scope conflict",
+        "test environment unavailable",
+        "permission required"
+      ],
+      "file": "plan.json",
+      "id": "stop",
+      "path": "stop_conditions",
+      "type": "json_contains_all",
+      "weight": 2
+    }
+  ],
+  "department": "02_Planning_and_Decomposition",
+  "difficulty": 1,
+  "id": "NS-PLAN-001",
+  "max_attempts": 3,
+  "objective": "Create a short plan whose ordering, checkpoints, and stop conditions are executable.",
+  "output": "plan.json",
+  "pass_grade": 8.7,
+  "schema_version": 1,
+  "status": "DRAFT_PENDING_CLAUDE_REVIEW",
+  "title": "Build a dependency-aware execution plan",
+  "virtue_weights": {
+    "calibration": 0.1,
+    "change_safety": 0.15,
+    "efficiency": 0.2,
+    "planning": 0.55
+  }
+}

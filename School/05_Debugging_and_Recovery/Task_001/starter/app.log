@@ -1,0 +1,4 @@
+INFO loading config
+WARN key api_mode not found
+INFO fallback mode=development
+ERROR production endpoint disabled

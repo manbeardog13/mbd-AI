@@ -1,0 +1,4 @@
+TASK AGREEMENT - HASH-CHAINED MANAGED ENTRIES
+Maximum three rounds. Direct edits to ENTRY lines invalidate the chain.
+
+ENTRY {"actor": "codex", "decision": "APPROVE", "entry_hash": "108d7c433f591d2cfe1687e3a47719b3ec4e2e5b6d98125ae98fa5cb462bedea", "note": "Codex initial proposal after research synthesis; Claude review is required before execution.", "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000", "round": 1, "task_digest": "99dfb450ed992c9a552e581399fca9e8a68963f0e19fc1b3d3cd6705a37e4e5b", "timestamp": "2026-07-14T20:17:51.655626Z", "type": "agreement"}

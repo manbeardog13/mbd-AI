@@ -77,6 +77,27 @@ class Config:
     agent_max_steps: int
     agent_max_seconds: float
     agent_project_dir: str
+    # Presence Director (visual counterpart to Voice Director) — renderer-agnostic
+    # by design. Runtime-specific settings (Live2D URL, Godot binary path)
+    # belong INSIDE the individual runtime implementations, not at the app level.
+    presence_enabled: bool
+    presence_runtime: str    # "null" | "log" | "live2d" | (future: "godot" | "unreal")
+    presence_level: int      # 0..5, capped at active runtime's max_presence_level
+    presence_debug: bool
+    # Opaque runtime-specific settings. Passed to the runtime constructor
+    # verbatim. Each runtime interprets per its own schema — e.g. Live2D reads
+    # websocket_url / reconnect_backoff_s / cubism_param_overrides.
+    presence_runtime_settings: dict
+    # External Council (OpenAI -> Claude -> OpenAI), intentionally opt-in.
+    # API keys stay in the gitignored config.yaml and are never returned by APIs.
+    collaboration_enabled: bool = False
+    collaboration_openai_api_key: str = ""
+    collaboration_openai_model: str = ""
+    collaboration_anthropic_api_key: str = ""
+    collaboration_anthropic_model: str = ""
+    collaboration_timeout_seconds: float = 90.0
+    collaboration_max_output_tokens: int = 1800
+    collaboration_max_handoff_chars: int = 12000
 
 
 def ensure_config() -> None:
@@ -143,6 +164,9 @@ def load_config() -> Config:
     languages = _list("languages", ["English", "Croatian"])
     goals = _list("goals", DEFAULT_GOALS)
     principles = _list("principles", DEFAULT_PRINCIPLES)
+    collaboration = _collaboration_block(data)
+    collaboration_openai = _nested_mapping(collaboration, "openai")
+    collaboration_anthropic = _nested_mapping(collaboration, "anthropic")
 
     # Every field below is written to tolerate a present-but-blank key in
     # config.yaml (which YAML parses as None). `or` handles strings; `_num`
@@ -193,4 +217,75 @@ def load_config() -> Config:
         agent_max_steps=_clamp(_num(data.get("agent_max_steps"), 8, int), 1, 32),
         agent_max_seconds=_num(data.get("agent_max_seconds"), 60.0, float),
         agent_project_dir=(data.get("agent_project_dir") or ""),
+        # `presence:` is the first nested subsystem block in this config file.
+        # Kept nested (not flat) so future subsystem blocks (memory:, scheduler:)
+        # follow the same convention. Missing block = defaults.
+        presence_enabled=_presence_bool(data, "enabled", True),
+        presence_runtime=_presence_str(data, "runtime", "log"),
+        presence_level=_clamp(_presence_int(data, "level", 0), 0, 5),
+        presence_debug=_presence_bool(data, "debug", False),
+        presence_runtime_settings=_presence_settings(data),
+        collaboration_enabled=_mapping_bool(collaboration, "enabled", False),
+        collaboration_openai_api_key=(collaboration_openai.get("api_key") or "").strip(),
+        collaboration_openai_model=(collaboration_openai.get("model") or "").strip(),
+        collaboration_anthropic_api_key=(collaboration_anthropic.get("api_key") or "").strip(),
+        collaboration_anthropic_model=(collaboration_anthropic.get("model") or "").strip(),
+        collaboration_timeout_seconds=max(
+            5.0, min(_num(collaboration.get("timeout_seconds"), 90.0, float), 300.0)
+        ),
+        collaboration_max_output_tokens=_clamp(
+            _num(collaboration.get("max_output_tokens"), 1800, int), 128, 4096
+        ),
+        collaboration_max_handoff_chars=_clamp(
+            _num(collaboration.get("max_handoff_chars"), 12000, int), 1000, 20000
+        ),
     )
+
+
+def _presence_settings(data: dict) -> dict:
+    """Opaque dict from `presence.settings`. Runtime interprets its own keys."""
+    block = _presence_block(data)
+    s = block.get("settings")
+    return dict(s) if isinstance(s, dict) else {}
+
+
+def _collaboration_block(data: dict) -> dict:
+    block = data.get("collaboration")
+    return block if isinstance(block, dict) else {}
+
+
+def _nested_mapping(block: dict, key: str) -> dict:
+    value = block.get(key)
+    return value if isinstance(value, dict) else {}
+
+
+def _mapping_bool(block: dict, key: str, default: bool) -> bool:
+    value = block.get(key)
+    return default if value is None else bool(value)
+
+
+# ---- Nested `presence:` block helpers ------------------------------------
+
+def _presence_block(data: dict) -> dict:
+    block = data.get("presence")
+    return block if isinstance(block, dict) else {}
+
+
+def _presence_bool(data: dict, key: str, default: bool) -> bool:
+    v = _presence_block(data).get(key)
+    return default if v is None else bool(v)
+
+
+def _presence_str(data: dict, key: str, default: str) -> str:
+    v = _presence_block(data).get(key)
+    return default if v is None else str(v).strip() or default
+
+
+def _presence_int(data: dict, key: str, default: int) -> int:
+    v = _presence_block(data).get(key)
+    if v is None:
+        return default
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return default

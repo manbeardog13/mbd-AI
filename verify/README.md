@@ -1,3 +1,14 @@
+---
+id: verify.readme
+title: "Nero — Verification System"
+layer: operational
+type: reference
+status: active
+owner: shared
+created: 2026-07-12
+updated: 2026-07-17
+---
+
 # Nero — Verification System
 
 Per the [Development Directive](../docs/DIRECTIVE.md): **no feature is complete

@@ -40,9 +40,9 @@ SHELL_LOCAL_ENTRY_PATHS = (
 )
 HISTORICAL_DOC_PATHS = (
     ROOT / "README.md",
-    ROOT / "docs" / "ALWAYS_ON.md",
-    ROOT / "docs" / "SETUP.md",
-    ROOT / "docs" / "MODELS.md",
+    ROOT / "docs" / "guides" / "ALWAYS_ON.md",
+    ROOT / "docs" / "guides" / "SETUP.md",
+    ROOT / "docs" / "guides" / "MODELS.md",
 )
 TRACKED_REQUIRED_PATHS = (
     ".codex/hooks.json",
@@ -52,14 +52,14 @@ TRACKED_REQUIRED_PATHS = (
     "Start-NERO.ps1",
     "app/main.py",
     "bootstrap.py",
-    "docs/ALWAYS_ON.md",
+    "docs/guides/ALWAYS_ON.md",
     "docs/HOST_VOICE.md",
-    "docs/MODELS.md",
+    "docs/guides/MODELS.md",
     "docs/NERO_CODEX_MEMORY.md",
     "docs/NERO_CODEX_RUNTIME.md",
     "docs/NERO_GLOBAL_CAPSULE.md",
     "docs/NERO_GLOBAL_PRESENCE_ACCEPTANCE.md",
-    "docs/SETUP.md",
+    "docs/guides/SETUP.md",
     "docs/adr/0014-zero-start-global-host-presence.md",
     "docs/reviews/2026-07-14-zero-start-host-presence-audit.md",
     "run.py",

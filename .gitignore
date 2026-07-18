@@ -32,10 +32,25 @@ models/
 .DS_Store
 Thumbs.db
 
-# Nero cross-host continuity: live ledger, backups, journals, exports stay local.
-# (data/ is already ignored above; these are defensive companion patterns.)
+_nero_preview/
+
+# Nero School runtime attempts and notification signals
+School/*/Task_*/runs/
+School/DEBATE CC/.signals/*.pending.json
+School/DEBATE CC/.signals/archive/
+
+# Nero cross-host continuity: live ledger, backups, journals, exports (never committed).
+# (data/ is already ignored above; these patterns are defensive belt-and-suspenders.)
 data/continuity/
 *.db-journal
 *.db-wal
 *.db-shm
 *.continuity-export.json
+
+# Desktop Familiar build/runtime artifacts and retired prototype media.
+familiar/bin/*.exe
+familiar/bin/_shot.jpg
+familiar/bin/_nero_proto.png
+familiar/assets/placeholder/
+familiar/runtime/*
+!familiar/runtime/.gitkeep
