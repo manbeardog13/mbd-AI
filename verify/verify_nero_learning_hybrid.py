@@ -40,9 +40,17 @@ def managed_block(text: str) -> str:
     return text[start:finish]
 
 
+def _portable_content(item: Path) -> bytes:
+    """Compare deployed text semantically across LF/CRLF host checkouts."""
+    data = item.read_bytes()
+    if b"\x00" in data:
+        return data
+    return data.replace(b"\r\n", b"\n")
+
+
 def tree(path: Path) -> dict[str, bytes]:
     return {
-        item.relative_to(path).as_posix(): item.read_bytes()
+        item.relative_to(path).as_posix(): _portable_content(item)
         for item in sorted(path.rglob("*"))
         if item.is_file() and "__pycache__" not in item.parts and item.suffix != ".pyc"
     }
