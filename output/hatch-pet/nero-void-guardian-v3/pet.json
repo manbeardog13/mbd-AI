@@ -1,0 +1,7 @@
+{
+  "id": "nero-void-guardian",
+  "displayName": "Nero Void Guardian",
+  "description": "The full WPF Void Guardian adapted for Codex Pets with movement, attention, waiting, work, success, failure, and directional states.",
+  "spriteVersionNumber": 2,
+  "spritesheetPath": "spritesheet.webp"
+}

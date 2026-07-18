@@ -1,0 +1,383 @@
+{
+  "passed": true,
+  "size": [
+    1536,
+    2288
+  ],
+  "mode": "RGBA",
+  "alphaExtrema": [
+    0,
+    255
+  ],
+  "usedFrames": 73,
+  "uniqueFrameHashes": 67,
+  "unusedOpaquePixels": 0,
+  "greenLeakPixels": 0,
+  "frames": [
+    {
+      "row": 0,
+      "column": 0,
+      "hash": "533a7b8a27d20d31"
+    },
+    {
+      "row": 0,
+      "column": 1,
+      "hash": "04483b517b72daef"
+    },
+    {
+      "row": 0,
+      "column": 2,
+      "hash": "cce0144f355bc019"
+    },
+    {
+      "row": 0,
+      "column": 3,
+      "hash": "b9f0ccbe8f4cbb49"
+    },
+    {
+      "row": 0,
+      "column": 4,
+      "hash": "695928a18a582c38"
+    },
+    {
+      "row": 0,
+      "column": 5,
+      "hash": "4584b432c20edad9"
+    },
+    {
+      "row": 1,
+      "column": 0,
+      "hash": "24a90fa6d8239f24"
+    },
+    {
+      "row": 1,
+      "column": 1,
+      "hash": "12b6e9058ff36e8d"
+    },
+    {
+      "row": 1,
+      "column": 2,
+      "hash": "e7e65c8c5a8de645"
+    },
+    {
+      "row": 1,
+      "column": 3,
+      "hash": "e6e7905fa37af2d7"
+    },
+    {
+      "row": 1,
+      "column": 4,
+      "hash": "6459d75634d1344d"
+    },
+    {
+      "row": 1,
+      "column": 5,
+      "hash": "88f1023f70e9d4f0"
+    },
+    {
+      "row": 1,
+      "column": 6,
+      "hash": "6459d75634d1344d"
+    },
+    {
+      "row": 1,
+      "column": 7,
+      "hash": "e7e65c8c5a8de645"
+    },
+    {
+      "row": 2,
+      "column": 0,
+      "hash": "409c5ba133a630ab"
+    },
+    {
+      "row": 2,
+      "column": 1,
+      "hash": "da872efe645c35e2"
+    },
+    {
+      "row": 2,
+      "column": 2,
+      "hash": "e8f34cb0a42d3106"
+    },
+    {
+      "row": 2,
+      "column": 3,
+      "hash": "54f2c51b1994e112"
+    },
+    {
+      "row": 2,
+      "column": 4,
+      "hash": "16c5009d43d89023"
+    },
+    {
+      "row": 2,
+      "column": 5,
+      "hash": "e40fdb8ac50186ba"
+    },
+    {
+      "row": 2,
+      "column": 6,
+      "hash": "16c5009d43d89023"
+    },
+    {
+      "row": 2,
+      "column": 7,
+      "hash": "e8f34cb0a42d3106"
+    },
+    {
+      "row": 3,
+      "column": 0,
+      "hash": "bb752f3eb3b3127f"
+    },
+    {
+      "row": 3,
+      "column": 1,
+      "hash": "66420d29b9ea4cfa"
+    },
+    {
+      "row": 3,
+      "column": 2,
+      "hash": "f95f6999ee9933fa"
+    },
+    {
+      "row": 3,
+      "column": 3,
+      "hash": "b2fcabc245998115"
+    },
+    {
+      "row": 4,
+      "column": 0,
+      "hash": "c7d24c54676734c3"
+    },
+    {
+      "row": 4,
+      "column": 1,
+      "hash": "d59284c9ea6f8c2f"
+    },
+    {
+      "row": 4,
+      "column": 2,
+      "hash": "17c01451294f2295"
+    },
+    {
+      "row": 4,
+      "column": 3,
+      "hash": "bd11f575ca986416"
+    },
+    {
+      "row": 4,
+      "column": 4,
+      "hash": "2a0af34ae805822e"
+    },
+    {
+      "row": 5,
+      "column": 0,
+      "hash": "d58cc27a40450351"
+    },
+    {
+      "row": 5,
+      "column": 1,
+      "hash": "f93656a70ef38fae"
+    },
+    {
+      "row": 5,
+      "column": 2,
+      "hash": "b1e4d61f5e8f6339"
+    },
+    {
+      "row": 5,
+      "column": 3,
+      "hash": "09722476975e549c"
+    },
+    {
+      "row": 5,
+      "column": 4,
+      "hash": "c556f199b2051e1e"
+    },
+    {
+      "row": 5,
+      "column": 5,
+      "hash": "cfd9f15b4799b10f"
+    },
+    {
+      "row": 5,
+      "column": 6,
+      "hash": "0c059a00fb888a53"
+    },
+    {
+      "row": 5,
+      "column": 7,
+      "hash": "1705cc295983fa3d"
+    },
+    {
+      "row": 6,
+      "column": 0,
+      "hash": "0fb8828c0a479a52"
+    },
+    {
+      "row": 6,
+      "column": 1,
+      "hash": "db034fb108b0de7a"
+    },
+    {
+      "row": 6,
+      "column": 2,
+      "hash": "60ab7d620ab7b238"
+    },
+    {
+      "row": 6,
+      "column": 3,
+      "hash": "72298c913ad9bc6c"
+    },
+    {
+      "row": 6,
+      "column": 4,
+      "hash": "1f503631e0c6af65"
+    },
+    {
+      "row": 6,
+      "column": 5,
+      "hash": "014817576fe76411"
+    },
+    {
+      "row": 7,
+      "column": 0,
+      "hash": "3750d2fd9ecf2a4e"
+    },
+    {
+      "row": 7,
+      "column": 1,
+      "hash": "57ab7ef1e19a60f8"
+    },
+    {
+      "row": 7,
+      "column": 2,
+      "hash": "63008879cebe1792"
+    },
+    {
+      "row": 7,
+      "column": 3,
+      "hash": "a70d12e51dab0e9b"
+    },
+    {
+      "row": 7,
+      "column": 4,
+      "hash": "2aa5d40056cd09bb"
+    },
+    {
+      "row": 7,
+      "column": 5,
+      "hash": "63008879cebe1792"
+    },
+    {
+      "row": 8,
+      "column": 0,
+      "hash": "4bf00079f21d5ee0"
+    },
+    {
+      "row": 8,
+      "column": 1,
+      "hash": "c8fdc99c996a2e55"
+    },
+    {
+      "row": 8,
+      "column": 2,
+      "hash": "407f2ab636ac3e22"
+    },
+    {
+      "row": 8,
+      "column": 3,
+      "hash": "6854f71907cc3279"
+    },
+    {
+      "row": 8,
+      "column": 4,
+      "hash": "ef7802b1f8b9a143"
+    },
+    {
+      "row": 8,
+      "column": 5,
+      "hash": "407f2ab636ac3e22"
+    },
+    {
+      "row": 9,
+      "column": 0,
+      "hash": "e0b32a433f08ec67"
+    },
+    {
+      "row": 9,
+      "column": 1,
+      "hash": "6d237e85ad269e7a"
+    },
+    {
+      "row": 9,
+      "column": 2,
+      "hash": "93dc889351bb3cd8"
+    },
+    {
+      "row": 9,
+      "column": 3,
+      "hash": "682f159e67553c03"
+    },
+    {
+      "row": 9,
+      "column": 4,
+      "hash": "812aecd897996f9c"
+    },
+    {
+      "row": 9,
+      "column": 5,
+      "hash": "a5d6e6fad45982e4"
+    },
+    {
+      "row": 9,
+      "column": 6,
+      "hash": "ba2f14422a359148"
+    },
+    {
+      "row": 9,
+      "column": 7,
+      "hash": "4591e2011f3b361c"
+    },
+    {
+      "row": 10,
+      "column": 0,
+      "hash": "5b2501c9f9e18f0f"
+    },
+    {
+      "row": 10,
+      "column": 1,
+      "hash": "80c1be459051447a"
+    },
+    {
+      "row": 10,
+      "column": 2,
+      "hash": "ae6d9d80126872ea"
+    },
+    {
+      "row": 10,
+      "column": 3,
+      "hash": "d1d3fc17b714ec77"
+    },
+    {
+      "row": 10,
+      "column": 4,
+      "hash": "5db9baf6aa1d9514"
+    },
+    {
+      "row": 10,
+      "column": 5,
+      "hash": "a49638d5ab688cb8"
+    },
+    {
+      "row": 10,
+      "column": 6,
+      "hash": "6ab81385dcfcc0dd"
+    },
+    {
+      "row": 10,
+      "column": 7,
+      "hash": "425c85793d7e0b27"
+    }
+  ]
+}
