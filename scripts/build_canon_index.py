@@ -12,13 +12,16 @@ Usage:  python scripts/build_canon_index.py [--check]
 from __future__ import annotations
 
 import sys
+import subprocess
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 INDEX = REPO / "docs" / "canon" / "INDEX.md"
 
 EXCLUDE_DIRS = {
-    ".git", ".venv", "venv", "node_modules", "__pycache__",
+    ".git", ".venv", "venv", "env", "node_modules", "__pycache__",
+    ".pytest_cache", ".mypy_cache", ".ruff_cache", ".tox", ".nox",
+    ".cache", ".eggs", "htmlcov", "build", "dist",
     "data", "models", "output", "_nero_preview",
 }
 
@@ -72,14 +75,52 @@ def classify(rel: str, meta: dict):
     return "operational", "shared", True
 
 
-def collect() -> list:
+def markdown_paths(repo: Path) -> list[Path]:
+    """Return Git-visible Markdown paths, excluding non-canonical structures.
+
+    Git is the source of truth for tracked files and repository ignore policy.
+    This keeps ignored caches and local tool state out of the index while still
+    surfacing non-ignored documentation added in a dirty checkout. Explicit
+    structural exclusions also protect the canon if an artifact is force-added.
+    """
+    result = subprocess.run(
+        [
+            "git", "-C", str(repo), "ls-files", "-z", "--cached", "--others",
+            "--exclude-standard", "--", "*.md",
+        ],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if result.returncode:
+        detail = result.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError(f"cannot build canon inventory from Git: {detail}")
+
+    excluded = {part.casefold() for part in EXCLUDE_DIRS}
+    rels = result.stdout.decode("utf-8", errors="surrogateescape").split("\0")
+    paths = []
+    for rel in rels:
+        if not rel:
+            continue
+        path = repo / rel
+        if any(part.casefold() in excluded for part in Path(rel).parts):
+            continue
+        paths.append(path)
+    return sorted(
+        paths,
+        key=lambda path: (
+            path.relative_to(repo).as_posix().casefold(),
+            path.relative_to(repo).as_posix(),
+        ),
+    )
+
+
+def collect(repo: Path = REPO, index: Path = INDEX) -> list:
     rows = []
-    for path in sorted(REPO.rglob("*.md")):
-        if path == INDEX:  # the index never indexes itself
+    for path in markdown_paths(repo):
+        if path == index:  # the index never indexes itself
             continue
-        rel_parts = path.relative_to(REPO).parts
-        if any(p in EXCLUDE_DIRS for p in rel_parts):
-            continue
+        rel_parts = path.relative_to(repo).parts
         rel = "/".join(rel_parts)
         try:
             # utf-8-sig consumes an optional BOM while remaining identical to

@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-267 knowledge files - 88 carrying canon frontmatter - 179 not yet migrated (see MIGRATION_PLAN.md).
+266 knowledge files - 88 carrying canon frontmatter - 178 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -28,12 +28,6 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
 | [.github/pull_request_template.md](/.github/pull_request_template.md) | .github/pull_request_template.md | operational | - | shared | unmigrated |
-
-## .pytest_cache
-
-| File | Title | Layer | Status | Owner | |
-|---|---|---|---|---|---|
-| [.pytest_cache/README.md](/.pytest_cache/README.md) | pytest cache directory # | operational | - | shared | unmigrated |
 
 ## School
 
