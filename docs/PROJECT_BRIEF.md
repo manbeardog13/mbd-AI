@@ -81,6 +81,193 @@ of the adopted `docs/VOICE.md` "Bible") and awaits approval — a parallel,
 interface-only track (voice acts on nothing; it never touches the Trust Engine or
 the Journal), whose GPU milestones run on the local instance.*
 
+*Development now runs as **two independent tracks** (locked by Toni), each with
+its own branch/PR/rollback point: **Track A — Executive Intelligence** (Capability
+Registry · Trust Engine · Action Journal · Integrity · Terminal) and **Track B —
+Voice Platform** (an output interface only — it never calls dispatch/authorize,
+writes no Journal, executes nothing; "the Brain produces a response, the Voice
+presents it"). Voice is built **model-independent foundation first, API-first**
+(the contract before any engine body); GPU/VRAM/latency work belongs to the local
+4070, never cloud assumption. **Voice Stages 1–10 (foundation) + Stages 11–12 (two
+engine bodies, first multi-engine proof) + Stage 13 (Voice Rendering Profile) shipped**
+on their own branch/PR (**PR #14**, draft): (1) the **TTSEngine interface** —
+`voice/local_tts/base.py`
+(`TTSEngine` Protocol · `BaseTTSEngine` health+timing envelope · `NullEngine`
+fallback sentinel · `VoiceRequest`/`AudioResult`/`EngineHealth` contracts); (2) the
+**Voice Capability Graph** — `voice_capability_graph.py`, answering "can THIS
+voice perform right now?" by resolving against **live** engine state (runtime
+discovery, never cached), mapping voice → engine → language → features →
+availability → quality. All best-effort/never-raises; 14 tests + `verify_voice.py`
+(14 checks) green; overheads 2.45 µs (envelope) / 0.2 µs (live resolve); zero
+regressions. (3) the **Engine Health Cache** — `engine_health.py`, a lightweight
+state tracker answering "should the Voice Manager attempt this engine now?" with a
+predictable, capped time-based cooldown/backoff (protection, not intelligence; no
+VRAM, no routing, no `app/` imports) over the lifecycle UNKNOWN → AVAILABLE →
+FAILING → COOLDOWN → RECOVERING → AVAILABLE. Capability Graph ("can it perform?")
+and Health Cache ("should we attempt it now?") stay separate; the future Voice
+Manager composes them and makes routing. (4) the **Voice Manager** —
+`manager/voice_manager.py`, the single routing authority: `speak(request)` walks
+an injected fallback chain (preferred → personality fallbacks → emergency NERO
+PRIME → text-only), gating each candidate on the Capability Graph + Health Cache,
+attempting synthesis, recording outcomes, emitting telemetry; engine exceptions
+become health failures (never crashes); the result's `outcome` distinguishes
+primary/fallback/text_only. It orchestrates, never absorbs — no intelligence,
+intent, memory, security, or synthesis logic; fallback *reasons* are injected data
+(`cast.json`, Stage 5), not inferred. A later `kokoro_engine` will **wrap** the
+shipped `app/tts.py` (strangler-fig), never rewrite it. (5) **Voice Profiles** —
+`voice/profiles/cast.json` + `loader.py`: voice identity, fallback relationships,
+language support and routing metadata now live in **declarative data**, on the
+principle *"the system knows how to load voices; it does not know what a voice
+is."* `cast.json` is a manifest (no logic/routing/conditionals); `loader.py` is a
+thin translation layer — read JSON, validate, build the immutable `Cast`
+(capabilities + `fallback_map` + `emergency_voice`) that feeds Stage 2 + Stage 4,
+one-way. It creates no engines, makes no decisions, imports nothing executive.
+Every bad manifest is a single loud/safe `CastError` (never a leaked
+`JSONDecodeError`/`FileNotFoundError`); it rejects duplicate ids, dangling or
+self/circular fallbacks, a missing engine binding, and — the Stage 4 finding —
+**a declared language the bound engine can't produce** (caught at load/wire time,
+not as a silent runtime drop). 15 tests + 10 verify checks green; load ≈0.09 ms,
+populate ≈0.013 ms (startup-only); zero regressions across Stages 1–4. Croatian
+voices join the manifest — a data change, not a code change — when `mms_hr` ships.
+(6) the **Performance Director** — `voice/personalities/performance_director.py`:
+answers *"how should this be delivered?"* and nothing else. `docs/VOICE.md`'s
+single "Voice Director" (which chose both voice and style) is **split** —
+voice-selection stays with the Voice Manager (Stage 4); delivery-interpretation is
+this component. A **pure, deterministic** transform (Principle of Least
+Intelligence): `direct(request) → VoiceRequest` reads the Brain's raw `delivery`
+intent and returns a **new** request whose `delivery` is a canonical, clamped
+`DeliveryPlan` (emotion→neutral fallback; authority/warmth/intensity/humor clamped
+0–1, `humor` = the TARS dial; pace slow/normal/fast→0.85/1.0/1.15; pauses
+none/short/long; unknown effects dropped). `text`/`voice_id`/`language`/`speed`
+pass through untouched, input never mutated. **Option A** wiring (Director upstream
+of the Manager) needs **zero contract changes** — `VoiceRequest.delivery` already
+exists and `_with_voice` already forwards it, so the canonical plan reaches the
+engine unchanged. No LLM, no randomness, no I/O, no memory, no text/sentiment
+inference, no routing, no voice/engine/health/capability awareness. 16 tests + 6
+verify checks green; ≈4.2 µs/call (CPU-only, no GPU); zero regressions across
+Stages 1–5. (7) the **Voice Event Bus** — `voice/manager/events.py`: an
+observational-only pub/sub — *"report what happened, never influence what
+happens."* It **wraps** the Manager's existing `telemetry` callback (Option B), so
+the whole bus ships with **zero change to `voice_manager.py`** (the headline).
+`VoiceEvent` is a frozen, schema-versioned, timestamped, sequence-numbered fact
+with a read-only value-copied payload (no references to live routing objects);
+`VoiceEventBus` is `subscribe`/`unsubscribe`/`emit`/`manager_sink` — synchronous,
+subscription-ordered, subscriber-fault-isolated, injectable clock, no
+persistence/async/threads/queues. `manager_sink()` maps telemetry dicts to a
+minimal past-tense vocabulary (VOICE_SELECTED, FALLBACK_USED, ENGINE_FAILED,
+ENGINE_COOLDOWN, VOICE_SKIPPED, TEXT_ONLY_RESULT; DELIVERY_APPLIED defined but not
+emitted — the future orchestrator is its emitter); unknown telemetry is ignored,
+never crashes. Facts, not commands (no `TRY_FALLBACK`); observers cannot influence
+routing; dependency is one-way (events.py imports nothing about Manager/Graph/
+Health/Director/executive). 14 tests + 5 verify checks green; emit ≈0.08 µs (0
+subs) / ≈3.4 µs (1–10 subs), CPU-only; zero regressions across Stages 1–6.
+(8) **Voice Telemetry** — `voice/manager/telemetry.py`: the first real bus
+subscriber — *"the Event Bus reports facts; Voice Telemetry summarizes facts; the
+Action Journal records executive history."* It observes immutable `VoiceEvent`s and
+aggregates them into in-memory counters (`total_events`, primary/fallback/selected,
+engine_failures + `per_engine_failures`, cooldown/unavailable/language skips,
+text_only, `per_voice_counts`, `average_latency_ms`, `last_event_timestamp`),
+exposed as an immutable `VoiceTelemetrySnapshot` (frozen; read-only map copies,
+detached from the live collector). API: `handle(event)` (O(1), on the synchronous
+emit path), `snapshot()` (on-demand, off the hot path), `attach(bus)` (duck-typed
+`bus.subscribe`, no bus/Manager import). Ephemeral (no persistence), synchronous
+(no async/queue/worker), no learning/scoring/prediction, no decision authority —
+it can never select voices, influence fallbacks, mutate health, alter delivery, or
+call engines. Wiring adds **zero Manager dependency** (`telemetry=bus.manager_sink()`).
+Dependency is one-way (imports only the event vocabulary). 16 tests + 4 verify
+checks green; handle ≈0.55 µs, snapshot ≈2.2 µs, +≈7.9 µs per speak (CPU-only);
+zero regressions across Stages 1–7; voice_manager.py untouched. (9) **Warm Startup**
+— `voice/manager/startup.py`, the **composition root** (a composer, not a
+commander): `build_voice_runtime(*, engines, cast_path, clock, …)` wires the sealed
+Stages 1–8 bricks in a deterministic order (load_cast → graph → populate → health →
+bus → telemetry.attach → Manager with `telemetry=bus.manager_sink()`) and returns a
+frozen `VoiceRuntime(manager, bus, telemetry, graph, health, cast)` with a
+`readiness()` re-probe. **Engines are injected, never created** (the 4070's engines
++ GPU warm-up stay behind the `TTSEngine` plug — model-independent, cloud-testable).
+Composition failures (unreadable/invalid manifest, missing engine binding,
+unsupported declared language) raise `StartupError` with no partial runtime;
+operational unavailability is *reported* not raised via `VoiceReadiness`
+(READY = emergency voice available / DEGRADED = some voice, not emergency / OFFLINE
+= none). Not a health authority — readiness is derived by *asking* the Capability
+Graph (live); startup never calls `record_success/failure/repair`. It owns only
+construction/wiring/ordering/readiness-reporting — no routing, ranking, engine
+selection, health decisions, retries, recovery, memory, personality, LLM, or Journal.
+The one sanctioned broad-import module (composition needs it); one-way (nothing
+imports startup); `voice_manager.py` constructed, never modified. 16 tests + 4
+verify checks green; build ≈0.13 ms (10-voice cast), readiness ≈22 µs (CPU-only);
+zero regressions across Stages 1–8. (10) **Voice Health Check** —
+`voice/manager/health.py`, a **stateless read-only interpreter**: *"what is the
+current observable health picture?"* (never *"what should the system do next?"*).
+`build_health_report(*, graph, engine_health, emergency_voice, telemetry, now,
+clock)` and `report_for_runtime(runtime)` compose three lenses — availability
+(Graph: `available_voices`/`emergency_available`), attempt-health (Engine Health:
+per-engine `status`/`should_attempt`/`consecutive_failures` + `gated_engines`),
+execution (Telemetry snapshot: failures/fallbacks/text-only/latency) — plus a **pure
+advisory rollup** `overall ∈ {HEALTHY, DEGRADED, OFFLINE}` (OFFLINE = no voice
+available; DEGRADED = emergency down OR engine gated OR recent failures>0 OR
+text_only>0; else HEALTHY) that the Manager never consumes. Immutable report; owns
+nothing — no routing, no health mutation (never `record_*`), no state, no
+persistence, no learning, no Event Bus subscription (reads Telemetry's snapshot). It
+imports **no** voice module (duck-typed on `runtime.graph/health/telemetry`); one-way,
+no cycle. Engine Health remembers · Telemetry observes · Startup assembles · the
+Health Report interprets — three questions, three owners, nobody decides for the
+Manager. 13 tests + 5 verify checks green; ≈22 µs/report (CPU-only); zero regressions
+across Stages 1–9. **Stages 1–10 complete the model-independent foundation.** (11)
+**Kokoro engine body** — `voice/engines/kokoro.py`, the first real engine (bodies now
+live in `voice/engines/`, separate from orchestration): a **contract adapter** that
+exposes the proven `app/tts.py` (Kokoro) through the sealed `BaseTTSEngine` — wrapped,
+never modified (strangler-fig). `KokoroEngine(backend, *, name="kokoro", languages,
+voices)` implements `_available()`/`_synthesize()` **only** (no speak/fallback/select/
+recover/retry) and never bypasses the Stage-1 envelope; it delegates to an **injected**
+`KokoroBackend`. `RealKokoroBackend(cfg)` is the sole `app.tts` importer (lazy — the
+package stays importable without Kokoro deps) and caches the dependency probe (not a
+synthesis success); `FakeKokoroBackend` is the cloud test double. Availability is a
+flashlight (O(1), never loads/probes/synthesizes). Accepted limitation: text-only for
+now (one Kokoro voice; per-profile voice mapping is a future additive step that never
+touches `app/tts.py`). 14 cloud tests + 5 verify checks (61 total) green; fake-backend
+overhead ≈0.18 µs available / ≈3.9 µs synth (adapter+envelope only). `app/tts.py` and
+the entire sealed foundation unchanged; `build_voice_runtime` unchanged (the caller
+injects `KokoroEngine(RealKokoroBackend(cfg))` on the 4070). (12) **MMS Croatian
+engine body + first multi-engine proof** — `voice/engines/mms.py`: the second engine
+(Meta MMS-TTS, `hr`, 16 kHz) behind the same sealed contract. Adding it changes **no**
+upper layer — `KokoroEngine(en)` + `MMSEngine(hr)` route purely by capability through
+the *unchanged* Stage-4 language gate (en→kokoro, hr→mms), and an hr request with MMS
+down fails **honestly** to `text_only` — English is never substituted (**no smart
+fallback**). Built in **parallel**, not on a shared base (two engines aren't enough
+evidence; MMS already diverges at 16 kHz — *good duplication beats bad inheritance*).
+Unlike Kokoro (a strangler-fig wrap of `app/tts.py`), MMS has no existing code:
+`RealMMSBackend` is a new seam lazily wrapping a **future `app/mms_tts.py`** (4070
+work; not-ready in cloud). Permanent rules set here: **language preprocessing lives
+only in the backend** (never Manager/Graph/Startup/Telemetry); the **charter
+principle** *"the architecture never learns that Croatia exists"* (capability, not
+country); and the shipped `cast.json` stays **all-`kokoro`** (all-or-nothing startup
+would turn a premature `mms_hr` data change into a boot failure — Croatian joins the
+shipped cast as a 4070 data step when the backend is real; Stage 12 proves it with
+test manifests). Deferred note: a first-class `EngineIdentity` object once a *third*
+engine exists. 13 cloud tests + 5 verify checks green; fake-backend overhead ≈0.12 µs
+available / ≈2.9 µs synth. Foundation, Kokoro, `cast.json`, and `app/*` all unchanged.
+(13) **Voice Rendering Profile** — `voice/rendering/`: makes the cast's identities
+*audible*. The one design question (*who owns `DeliveryPlan → RenderingProfile`*) is
+answered **Candidate C — a new pure "Voice Casting" mapper** (not the Director/semantic,
+not the engine/must-not-see-intent, not the Manager/routing). `RenderingProfile`
+(`profile.py`) is engine-agnostic + identity-blind (`voice_character` abstract, +
+speed/pitch/energy/pause_style), loaded from `rendering/profiles.json` — **separate**
+from `cast.json` (four concepts never merged); malformed → loud `RenderingError`,
+unknown voice_id → default. `VoiceCasting` (`casting.py`) is a **pure deterministic**
+`cast(voice_id, delivery) = base(voice_id) ⊕ modulate(pace/intensity)`; it consumes the
+semantic DeliveryPlan (via the `delivery` seam) so **no emotion/authority reaches the
+engine** — closing the pre-13 leak — and imports nothing about Manager/Graph/Health/
+Telemetry/Startup. Engine honoring (13b): each engine body — and only it — maps the
+abstract `voice_character` → a native voice (Kokoro/MMS tables **parallel, no shared
+base**) and applies speed; the `*Backend.synthesize` seam gained optional voice/speed
+(additive, backward-compatible). **`app/tts.py` and the whole foundation are unchanged**
+— only the engine bodies were extended (their designated job); real parameterized
+synthesis (audibly distinct personas) is a new backend path on the RTX-4070, proven in
+cloud via fake backends recording the params. 16 tests + 5 verify checks (71 total)
+green; casting ≈3.2 µs/call; zero regressions across Stages 1–12. **Real audio /
+audibly-distinct persona validation is reserved for the local RTX-4070.** Stopped for
+review before Stage 14.*
+
 ---
 
 ## 1. What Nero is
