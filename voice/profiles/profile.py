@@ -14,9 +14,26 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import numpy as np
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+else:
+    NDArray = Any
+
+
+def _require_numpy() -> Any:
+    """Load NumPy only when the rendering profile capability is invoked."""
+    try:
+        import numpy
+    except ModuleNotFoundError as exc:
+        if exc.name != "numpy":
+            raise
+        raise ModuleNotFoundError(
+            "NumPy is required to load voice blends or synthesize a rendering "
+            "profile; install NumPy before invoking this optional voice capability."
+        ) from exc
+    return numpy
 
 
 @dataclass
@@ -54,9 +71,10 @@ class VoiceProfile:
     text_prep_style: str = "normal"
     notes: str = ""
 
-    def load_blend(self) -> np.ndarray:
+    def load_blend(self) -> NDArray:
         """Load the profile's blend vector from disk. Cached across calls."""
         if not hasattr(self, "_cached_blend"):
+            np = _require_numpy()
             self._cached_blend = np.load(str(self.blend_path))
         return self._cached_blend
 
@@ -65,7 +83,7 @@ def synthesize_with_profile(
     profile: VoiceProfile,
     text: str,
     kokoro: Any,
-) -> tuple[np.ndarray, int]:
+) -> tuple[NDArray, int]:
     """Synthesize `text` using `profile` and return (samples, sample_rate).
 
     Parameters
