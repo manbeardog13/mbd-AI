@@ -6,7 +6,7 @@ type: plan
 status: active
 owner: toni
 created: 2026-07-12
-updated: 2026-07-17
+updated: 2026-07-18
 ---
 
 # Nero Roadmap
@@ -22,6 +22,20 @@ benchmarks + a `verify_*.py` + docs. No half-finished experiment crosses a phase
 boundary.
 
 **Legend:** ✅ shipped · 🔨 building · ⏭️ next · 🗓️ planned
+
+---
+
+## Repository convergence gate - blocks new orchestrator automation
+
+Before automated task routing or Git publication is built, complete the
+[repository reconciliation and governance migration](repository/MIGRATION_PLAN.md).
+The live 2026-07-18 baseline has divergent histories, a non-`main` GitHub
+default, no remote protection, and no required checks. New orchestrator work is
+tracked under [OR-0 through OR-5](orchestration/ROADMAP.md); OR-0 must be green
+before the durable queue or provider adapters begin.
+
+This gate does not renumber the canonical Nero phases below. It makes the
+repository safe enough to deliver them.
 
 ---
 

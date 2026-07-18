@@ -1,128 +1,121 @@
-# 🧠 mbd-AI — Your Personal, Local AI
+# Nero
 
 > [!IMPORTANT]
-> **Hosted-only lock (2026-07-14):** the standalone local Nero runtime and all
-> launch paths are hard-disabled under ADR-0014. The local-runtime material
-> below is retained as historical architecture only; do not run it. Nero's
-> active interface is zero-start Codex Host Presence from the global capsule.
+> **Hosted-only lock:** the standalone local Nero runtime, local model, project
+> server, memory preload, and local voice launch paths are hard-disabled under
+> ADR-0014. Active Nero Host Presence is static hosted context. Do not run the
+> historical launchers or treat `data/memory.db` as shared hosted memory.
 
-**Start here (humans and models):** the canonical knowledge base is
-**[docs/canon/README.md](docs/canon/README.md)** — read order, master index,
-standards, migration plan. The law is [docs/CONSTITUTION.md](docs/CONSTITUTION.md).
+Nero is Toni's local-first cognitive-assistant project and its evidence-gated
+host integration repository. The codebase is a modular monolith with explicit
+security, capability, continuity, presence, voice, Familiar, School, and
+verification boundaries.
 
-A private AI companion that runs **entirely on your own machine**, remembers
-you, has its own personality, and is reachable from anywhere on any network —
-without your data ever touching the cloud.
+## Start here
 
-> The idea: build the **body and nervous system** (memory, personality,
-> interface, remote access) once, and let the **brain** get smarter over time
-> by swapping in better local models as they're released.
+Read in this order:
 
----
+1. [The Nero Constitution](docs/CONSTITUTION.md) - governing law.
+2. [Canon start page](docs/canon/README.md) - source hierarchy and master index.
+3. [Project brief](docs/PROJECT_BRIEF.md) - current narrative snapshot.
+4. [Repository Git policy](docs/repository/GIT_POLICY.md) - branch, pull, push,
+   review, and publication rules.
+5. [Repository migration plan](docs/repository/MIGRATION_PLAN.md) - current
+   history reconciliation and remote-enforcement sequence.
 
-## What it does today (v0.1)
+## Repository safety state
 
-- 💬 **Natural chat** with a local model through a clean web app (phone + desktop)
-- 🌐 **Bilingual** — understands and replies in **English *and* Croatian**, auto-detecting each message
-- 😄 **Humor dial** — a live, TARS-from-Interstellar style slider from all-business to full comedian
-- 🎙️ **Voice** — talk to it and hear it back; hands-free conversation mode (in English or Croatian)
-- 🗣️ **"Hey Siri, ask Nero…"** — an iPhone Siri Shortcut for true hands-free access
-- 🧠 **Runs locally** on your NVIDIA GPU via [Ollama](https://ollama.com) — fully offline, fully private
-- 📝 **Remembers you** — conversations persist, plus a long-term "memory" of facts about you that shape every reply
-- 🎭 **Its own personality** — a name and character you define
-- 🌍 **Reachable anywhere** — securely, over [Tailscale](https://tailscale.com), from any network
-- 📱 **Installable** — "Add to Home Screen" for a full-screen, app-like launch
-- ⚡ **Streaming replies** — watch it think, token by token
+The live 2026-07-18 audit found a public repository with a task branch as the
+GitHub default, divergent histories, no rulesets, no `main` protection, and no
+required CI. The local governance package in this branch does **not** mean those
+remote settings are fixed. Remote reconciliation, default-branch changes,
+ruleset activation, push, merge, and publication each require Toni's exact
+approval.
+
+Inspect the local state without changing it:
+
+```powershell
+python scripts/repoctl.py audit
+```
 
 ## Architecture at a glance
 
-```
-   Your phone / laptop  ──(Tailscale, encrypted)──►  Your PC
-                                                       │
-                                        ┌──────────────┴───────────────┐
-                                        │   mbd-AI  (this project)      │
-                                        │                              │
-                                        │   web app  ─►  FastAPI  ─►  Ollama (the brain)
-                                        │                   │                            │
-                                        │                   └─►  SQLite (memory)         └─ your GPU
-                                        └──────────────────────────────┘
-```
+```text
+Hosted identity plane (static, zero-start)
+    -> Codex/Claude execution lanes with explicit capabilities
+    -> guarded repository work and evidence
 
-Nothing leaves your machine. Tailscale just lets *your own devices* reach it.
+Standalone application plane (hard-disabled until deliberately revived)
+    app/ -> agent loop, capability registry, security gate, state, web shell
+    continuity/ -> explicit cross-host ledger, separate from local app memory
+    presence/ + familiar/ -> opt-in presentation and semantic state
+    voice/ -> dormant standalone presentation components
 
-## Quick start
-
-**The one-command way** (Windows / macOS / Linux) — sets up everything and launches Nero:
-
-```bash
-git clone https://github.com/manbeardog13/mbd-AI.git
-cd mbd-AI
-python bootstrap.py
+Governance plane
+    docs/ + ADRs + specs
+    governance/ + .github/ + .githooks/
+    tests/ + verify/
+    School/ -> separately governed shared training evidence
 ```
 
-`bootstrap.py` creates the environment, installs dependencies, checks that
-Ollama is installed and running, downloads Nero's brain, and starts him — with
-clear fix-it steps if anything's missing. Then open **http://localhost:8080**.
+## Canonical layout
 
-> New to this / on Windows without Python or Ollama yet? The full click-by-click
-> guide is in **[docs/guides/SETUP.md](docs/guides/SETUP.md)**. After the first setup, just run
-> **`start.bat`** (Windows) or **`./start.sh`** (macOS/Linux) to launch Nero.
-
-<details>
-<summary>Prefer to set it up by hand?</summary>
-
-```bash
-ollama pull qwen3:14b     # see docs/guides/MODELS.md to match your GPU
-python -m venv .venv
-# Windows:  .venv\Scripts\activate     macOS/Linux:  source .venv/bin/activate
-pip install -r requirements.txt
-python run.py
+```text
+.github/       CODEOWNERS, PR template, pinned CI/security workflows, ruleset
+.githooks/     local mechanical Git safety hooks
+governance/    machine-readable local and desired GitHub policy
+docs/
+  adr/         architectural decisions - why
+  specs/       boundary contracts - what must hold
+  canon/       knowledge standard, index, audits, canonical structure
+  repository/  Git policy, research baseline, reconciliation plan
+  orchestration/ orchestrator program roadmap
+app/           modular-monolith application code
+continuity/    explicit continuity ledger subsystem
+presence/      presence contracts and runtime bridges
+familiar/      desktop Familiar assets/runtime source
+voice/         standalone voice components
+skills/        evidence-gated Nero skills
+School/        School protocol, tasks, grading, and audit evidence
+scripts/       deterministic maintenance and policy tools
+tests/         automated tests
+verify/        repository and subsystem verification spine
+audit/         dated initiative evidence bundles
 ```
 
-</details>
+Runtime data, downloaded models, local configuration, generated output, and
+private databases remain untracked.
 
-- Make it yours → edit **`config.yaml`** (name, personality, model).
-- Talk to it / "Hey Siri" → **[docs/guides/VOICE_AND_SIRI.md](docs/guides/VOICE_AND_SIRI.md)**.
-- Reach it from anywhere → **[docs/guides/REMOTE_ACCESS.md](docs/guides/REMOTE_ACCESS.md)**.
-- Keep it always on → **[docs/guides/ALWAYS_ON.md](docs/guides/ALWAYS_ON.md)**.
+## Verification
 
-## Project layout
+Use the project virtual environment when available:
 
-```
-mbd-AI/
-├── bootstrap.py           # one-command setup & launch
-├── start.bat / start.sh   # quick relaunch (Windows / macOS-Linux)
-├── run.py                 # runs the server directly
-├── config.example.yaml    # template; copied to config.yaml on first run
-├── requirements.txt
-├── app/
-│   ├── main.py            # web server + API
-│   ├── config.py          # loads your settings (+ live humor override)
-│   ├── db.py              # memory: conversations + facts (SQLite)
-│   ├── llm.py             # streams from your local Ollama model
-│   ├── prompt.py          # builds Nero's identity, languages & humor
-│   └── static/            # the web app (HTML/CSS/JS)
-├── verify/                # self-check scripts — `python verify/verify_everything.py`
-└── docs/                  # setup, models, voice/Siri, remote access, DIRECTIVE, VISION
+```powershell
+.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.venv\Scripts\python.exe -m pytest tests continuity/tests `
+  School/tooling/test_schoolctl.py School/tooling/test_task_graders.py -q
+.venv\Scripts\python.exe verify/verify_repository_governance.py
+.venv\Scripts\python.exe verify/verify_canon.py
+.venv\Scripts\python.exe scripts/build_canon_index.py --check
 ```
 
-## Where this is going (the roadmap)
+Do not run `verify_everything.py` for hosted-presence work: it includes dormant
+standalone/local-model checks. Select the deterministic verifier relevant to the
+current scope.
 
-> The full architecture — turning Nero from a chatbot into a **cognitive
-> companion** (layered memory, identity, reflection, world model, continuity) —
-> is mapped in **[docs/VISION.md](docs/VISION.md)**. A living snapshot of the
-> current state (and open questions) lives in
-> **[docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md)**. The governing philosophy —
-> local-first, verification-first — is in **[docs/DIRECTIVE.md](docs/DIRECTIVE.md)**.
+## Plans
 
+- [Authoritative Nero roadmap](docs/ROADMAP.md)
+- [Orchestrator delivery roadmap](docs/orchestration/ROADMAP.md)
+- [Repository convergence gate](docs/repository/MIGRATION_PLAN.md)
+- [Progress log](PROGRESS.md)
 
-- [x] **Voice** — talk to it and hear it back (in-app + Siri Shortcut)
-- [x] **Bilingual** (English + Croatian) and a live **humor dial**
-- [ ] **Studio-quality local voice** — a fully-offline neural voice (Piper) for a smoother, "glassier" Nero
-- [ ] **Automatic memory** — the AI decides on its own what's worth remembering
-- [ ] **Multiple conversations** with a browsable history sidebar
-- [ ] **Tools** — let it search your files, run tasks, check the weather, etc.
-- [ ] **Smarter retrieval** — semantic search over everything it knows (embeddings)
-- [ ] **Bigger brains** — plug in larger/newer local models as your hardware allows
+The orchestrator is not a license for unattended publication or simulated
+cross-host contact. Every adapter must report its real capabilities and every
+consequential transition remains inside the security and approval gates.
 
-Built step by step. This is v0.1 — the foundation everything else grows from.
+## Contributing and security
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before creating a branch or worktree.
+Do not report vulnerabilities or secrets publicly; follow
+[SECURITY.md](SECURITY.md).

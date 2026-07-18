@@ -5,9 +5,9 @@ layer: core
 type: standard
 status: proposed
 owner: shared
-version: 1.1.0
+version: 1.2.0
 created: 2026-07-16
-updated: 2026-07-16
+updated: 2026-07-18
 sources:
   - docs/CONSTITUTION.md
   - docs/canon/AUDIT_REPORT.md
@@ -95,6 +95,14 @@ D:\mbd AI\
 † `MODELS.md` is already marked historical in-file; it archives once its
 inbound links (bootstrap, configs, SETUP, VISION, README) are repointed.
 
+### Repository-governance extension (v1.2)
+
+The target tree also includes `.github/` for remote review/CI assets,
+`.githooks/` for local mechanical safety, `governance/` for machine-readable
+policy, `docs/repository/` for Git/reconciliation rules, and
+`docs/orchestration/` for the orchestrator program. These boundaries are added
+without moving the working application tree in one big-bang rewrite.
+
 ## Placement rules
 
 1. **Decisions → `docs/adr/`.** One page, why-shaped, superseded by successor
@@ -117,6 +125,10 @@ inbound links (bootstrap, configs, SETUP, VISION, README) are repointed.
 8. **New names are kebab-case.** Existing names survive until their planned
    migration step; renames always travel with inbound-link fixes in the same
    change.
+9. **Repository policy is code.** Human rules live in `docs/repository/`;
+   machine policy lives in `governance/`; GitHub enforcement assets live in
+   `.github/`; local mechanical hooks live in `.githooks/`. None of them grants
+   publication authority.
 
 ## The documentation hierarchy (traceability chain)
 
@@ -134,6 +146,9 @@ Every level cites the level above it; nothing below contradicts anything above
 it. When it does, the lower document is wrong — or an amendment is proposed.
 
 ## Changelog
+
+- 1.2.0 (2026-07-18) - Add repository governance and orchestration program
+  boundaries without moving the working application tree.
 
 - 1.1.0 (2026-07-17) — Tree gains docs/persona/ and docs/handoffs/.
 - 1.0.0 (2026-07-16) — Initial standard, from the Phase 1 audit.

@@ -6,7 +6,7 @@ type: log
 status: active
 owner: toni
 created: 2026-07-12
-updated: 2026-07-17
+updated: 2026-07-18
 ---
 
 # Nero — Progress Tracker
@@ -18,6 +18,14 @@ canonical; older entries may use two legacy numbering eras.
 
 The single place to see where things stand. I update this every increment.
 For the *why* and the long-term plan, see [docs/VISION.md](docs/VISION.md).
+
+**Current priority (2026-07-18): repository governance and orchestrator
+preparation.** Local-only work on `codex/ORCHESTRAION` now includes the live
+GitHub/Git/worktree baseline, protected-trunk policy, disabled ruleset template,
+pinned least-privilege CI, CODEOWNERS, dependency review, CodeQL, `repoctl.py`,
+deterministic verification, reconciliation plan, ADR-0027, and the OR-0 through
+OR-5 roadmap. Remote history, default branch, rulesets, pushes, PRs, and merges
+remain unchanged pending Toni's exact approvals.
 
 **Legend:** ✅ shipped · 🔨 building now · 🧪 in review (PR) · ⏭️ next · 🗓️ planned
 

@@ -5,12 +5,13 @@ layer: core
 type: index
 status: active
 owner: shared
-version: 1.0.0
+version: 1.1.0
 created: 2026-07-16
-updated: 2026-07-16
+updated: 2026-07-18
 related:
   - docs/canon/INDEX.md
   - docs/canon/KNOWLEDGE_STANDARD.md
+  - docs/repository/GIT_POLICY.md
 ---
 
 # Nero Canon — Start Here
@@ -63,6 +64,13 @@ Boundary contracts live in [`docs/specs/`](../specs/): currently
 which memory store) and [skill-lifecycle](../specs/skill-lifecycle.spec.md)
 (how capabilities earn trust). Decisions live in [`docs/adr/`](../adr/README.md).
 
+Repository publication rules live in
+[`docs/repository/GIT_POLICY.md`](../repository/GIT_POLICY.md), and the current
+history repair sequence is
+[`docs/repository/MIGRATION_PLAN.md`](../repository/MIGRATION_PLAN.md). The
+orchestrator program is tracked separately from canonical phase names in
+[`docs/orchestration/ROADMAP.md`](../orchestration/ROADMAP.md).
+
 ## Things a fresh model must not do (the short list)
 
 - Don't touch `data/memory.db` — it belongs to the standalone local app
@@ -83,5 +91,7 @@ Big changes get an ADR. Dated reports (audits, reviews) are immutable once
 their date passes — write a new one.
 
 ## Changelog
+
+- 1.1.0 (2026-07-18) - Add repository governance and orchestrator read paths.
 
 - 1.0.0 (2026-07-16) — Canon layer established (now ADR-0028, Proposed; renumbered during reconciliation).

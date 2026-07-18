@@ -44,5 +44,6 @@ that supersedes it, and set the old one's status to "Superseded by ADR-XXXX".
 | [0024](0024-identity-charter.md) | Identity Evolution Charter: Seven Pillars, Identity Review, North Star | Accepted |
 | [0025](0025-desktop-familiar.md) | Mission Control manifests through an opt-in Desktop Familiar | Accepted (amended v2) |
 | [0026](0026-voidbound-codex.md) | Voidbound Codex is a static local-first game module | Accepted |
+| [0027](0027-repository-governance.md) | Protected-trunk repository governance for orchestrated work | Proposed |
 | [0028](0028-canonical-knowledge-base.md) | Canonical knowledge base + documentation hierarchy | Proposed |
 | [0029](0029-skill-lifecycle.md) | Skill lifecycle — evidence-gated promotion, versioning, rollback | Proposed |

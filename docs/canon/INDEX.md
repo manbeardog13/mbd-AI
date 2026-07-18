@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-257 knowledge files - 83 carrying canon frontmatter - 174 not yet migrated (see MIGRATION_PLAN.md).
+266 knowledge files - 87 carrying canon frontmatter - 179 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -12,14 +12,22 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 |---|---|---|---|---|---|
 | [AGENTS.md](/AGENTS.md) | Nero Host Mode — project instructions | operational | - | shared | unmigrated |
 | [CLAUDE.md](/CLAUDE.md) | Nero Claude Host Mode | operational | - | shared | unmigrated |
+| [CONTRIBUTING.md](/CONTRIBUTING.md) | Contributing to Nero | operational | - | shared | unmigrated |
 | [PROGRESS.md](/PROGRESS.md) | Nero — Progress Tracker | operational | active | toni |  |
-| [README.md](/README.md) | 🧠 mbd-AI — Your Personal, Local AI | operational | - | shared | unmigrated |
+| [README.md](/README.md) | Nero | operational | - | shared | unmigrated |
+| [SECURITY.md](/SECURITY.md) | Security policy | operational | - | shared | unmigrated |
 
 ## .claude
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
 | [.claude/skills/nero-continuity/SKILL.md](/.claude/skills/nero-continuity/SKILL.md) | Nero cross-host continuity adapter (Claude lane) | operational | - | claude-lane | unmigrated |
+
+## .github
+
+| File | Title | Layer | Status | Owner | |
+|---|---|---|---|---|---|
+| [.github/pull_request_template.md](/.github/pull_request_template.md) | .github/pull_request_template.md | operational | - | shared | unmigrated |
 
 ## .pytest_cache
 
@@ -221,6 +229,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/adr/0024-identity-charter.md](/docs/adr/0024-identity-charter.md) | ADR-0024: The Identity Evolution Charter — Seven Pillars, Id | core | - | shared | unmigrated |
 | [docs/adr/0025-desktop-familiar.md](/docs/adr/0025-desktop-familiar.md) | ADR-0025: Mission Control manifests through an opt-in Deskto | core | - | shared | unmigrated |
 | [docs/adr/0026-voidbound-codex.md](/docs/adr/0026-voidbound-codex.md) | ADR-0026: Voidbound Codex is a static local-first game modul | core | - | shared | unmigrated |
+| [docs/adr/0027-repository-governance.md](/docs/adr/0027-repository-governance.md) | ADR-0027: Protected-trunk repository governance for orchestr | core | - | shared | unmigrated |
 | [docs/adr/0028-canonical-knowledge-base.md](/docs/adr/0028-canonical-knowledge-base.md) | ADR-0028: Canonical knowledge base and documentation hierarc | core | - | shared | unmigrated |
 | [docs/adr/0029-skill-lifecycle.md](/docs/adr/0029-skill-lifecycle.md) | ADR-0029: Skill lifecycle — evidence-gated promotion, versio | core | - | shared | unmigrated |
 | [docs/adr/README.md](/docs/adr/README.md) | Architecture Decision Records | core | - | shared | unmigrated |
@@ -284,6 +293,12 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 |---|---|---|---|---|---|
 | [docs/mobile/presence_experience.md](/docs/mobile/presence_experience.md) | NERO Mobile Presence Experience | operational | active | shared |  |
 
+## docs/orchestration
+
+| File | Title | Layer | Status | Owner | |
+|---|---|---|---|---|---|
+| [docs/orchestration/ROADMAP.md](/docs/orchestration/ROADMAP.md) | Nero Orchestrator Delivery Roadmap | operational | active | toni |  |
+
 ## docs/persona
 
 | File | Title | Layer | Status | Owner | |
@@ -294,6 +309,14 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/persona/PRESENCE_PROGRAM.md](/docs/persona/PRESENCE_PROGRAM.md) | Identity Program - the Seven Pillars (living) | operational | active | shared |  |
 | [docs/persona/voice-goldens.md](/docs/persona/voice-goldens.md) | Voice Goldens - reference corpus | core | proposed | shared |  |
 | [docs/persona/VOICE_PATTERNS_MINED.md](/docs/persona/VOICE_PATTERNS_MINED.md) | Voice Patterns Mined - sources and evidence | operational | active | shared |  |
+
+## docs/repository
+
+| File | Title | Layer | Status | Owner | |
+|---|---|---|---|---|---|
+| [docs/repository/GIT_POLICY.md](/docs/repository/GIT_POLICY.md) | Repository Git and Publication Policy | core | proposed | toni |  |
+| [docs/repository/MIGRATION_PLAN.md](/docs/repository/MIGRATION_PLAN.md) | Repository Reconciliation and Governance Activation Plan | operational | active | shared |  |
+| [docs/repository/RESEARCH_2026-07-18.md](/docs/repository/RESEARCH_2026-07-18.md) | Repository Governance Research and Live Baseline | operational | active | codex-lane |  |
 
 ## docs/reviews
 
@@ -342,6 +365,12 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
 | [familiar/README.md](/familiar/README.md) | Nero Void Guardian Desktop Familiar | operational | active | shared |  |
+
+## governance
+
+| File | Title | Layer | Status | Owner | |
+|---|---|---|---|---|---|
+| [governance/README.md](/governance/README.md) | Repository governance | operational | - | shared | unmigrated |
 
 ## presence
 
