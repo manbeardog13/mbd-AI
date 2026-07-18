@@ -73,7 +73,7 @@ def check_frontmatter(root: Path):
         rel = p.relative_to(root).as_posix()
         if rel.startswith("School/"):
             continue  # School adopts the standard under its own protocol
-        meta, _ = parse_frontmatter(p.read_text(encoding="utf-8", errors="replace"))
+        meta, _ = parse_frontmatter(p.read_text(encoding="utf-8-sig", errors="replace"))
         if not meta or ("id" not in meta and "layer" not in meta):
             continue  # unmigrated or non-canon frontmatter (e.g. skills)
         validated += 1
@@ -104,7 +104,7 @@ def check_supersession_banners(root: Path):
         rel = p.relative_to(root).as_posix()
         if rel.startswith("School/"):
             continue
-        text = p.read_text(encoding="utf-8", errors="replace")
+        text = p.read_text(encoding="utf-8-sig", errors="replace")
         meta, body_start = parse_frontmatter(text)
         if not meta or meta.get("status") not in {"superseded", "archived"}:
             continue

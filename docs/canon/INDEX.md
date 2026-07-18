@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-240 knowledge files - 64 carrying canon frontmatter - 176 not yet migrated (see MIGRATION_PLAN.md).
+243 knowledge files - 82 carrying canon frontmatter - 161 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -161,13 +161,13 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/DESIGNphase1remainder.md](/docs/DESIGNphase1remainder.md) | Phase 1 — Remaining Build: Continuation Guide | operational | active | shared |  |
 | [docs/DIRECTIVE.md](/docs/DIRECTIVE.md) | Nero Development Directive | core | superseded | toni |  |
 | [docs/HOST_VOICE.md](/docs/HOST_VOICE.md) | Nero Host Voice status | operational | - | shared | unmigrated |
-| [docs/IDENTITY_EVOLUTION_CHARTER.md](/docs/IDENTITY_EVOLUTION_CHARTER.md) | The Nero Constitution — Identity Evolution Charter | operational | - | shared | unmigrated |
+| [docs/IDENTITY_EVOLUTION_CHARTER.md](/docs/IDENTITY_EVOLUTION_CHARTER.md) | Identity Evolution Charter (Constitution companion) | core | active | toni |  |
 | [docs/NERO_CODEX_MEMORY.md](/docs/NERO_CODEX_MEMORY.md) | Nero Host Mode memory | operational | - | shared | unmigrated |
 | [docs/NERO_CODEX_RUNTIME.md](/docs/NERO_CODEX_RUNTIME.md) | Nero Host Runtime | operational | - | shared | unmigrated |
 | [docs/NERO_CONTINUITY_PRIVACY.md](/docs/NERO_CONTINUITY_PRIVACY.md) | Nero Cross-Host Continuity — Privacy & Limitations | core | active | shared |  |
 | [docs/NERO_GLOBAL_CAPSULE.md](/docs/NERO_GLOBAL_CAPSULE.md) | Nero Global Host Presence — NERO_GLOBAL_CAPSULE_V1 | operational | - | shared | unmigrated |
 | [docs/NERO_GLOBAL_PRESENCE_ACCEPTANCE.md](/docs/NERO_GLOBAL_PRESENCE_ACCEPTANCE.md) | Nero Global Host Presence acceptance matrix | operational | - | shared | unmigrated |
-| [docs/PRESENCE_CONTINUITY_DIRECTIVE.md](/docs/PRESENCE_CONTINUITY_DIRECTIVE.md) | NERO — Presence & Continuity Evolution Directive | operational | - | shared | unmigrated |
+| [docs/PRESENCE_CONTINUITY_DIRECTIVE.md](/docs/PRESENCE_CONTINUITY_DIRECTIVE.md) | Presence & Continuity Evolution Directive | core | active | toni |  |
 | [docs/PROJECT_BRIEF.md](/docs/PROJECT_BRIEF.md) | Nero — Project Status Brief | operational | active | toni |  |
 | [docs/ROADMAP.md](/docs/ROADMAP.md) | Nero Roadmap | operational | active | toni |  |
 | [docs/VISION.md](/docs/VISION.md) | Nero — Vision & Architecture | core | active | toni |  |
@@ -196,10 +196,11 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/adr/0018-skill-lifecycle.md](/docs/adr/0018-skill-lifecycle.md) | ADR-0018: Skill lifecycle — evidence-gated promotion, versio | core | - | shared | unmigrated |
 | [docs/adr/0019-proxima-retirement.md](/docs/adr/0019-proxima-retirement.md) | ADR-0019: Proxima retirement | core | - | shared | unmigrated |
 | [docs/adr/0020-identity-plane-and-engine-handoff.md](/docs/adr/0020-identity-plane-and-engine-handoff.md) | ADR-0020: Stable identity plane, swappable engines, and the  | core | - | shared | unmigrated |
-| [docs/adr/0021-review-inbox.md](/docs/adr/0021-review-inbox.md) | docs/adr/0021-review-inbox.md | core | - | shared | unmigrated |
-| [docs/adr/0022-voice-as-canon.md](/docs/adr/0022-voice-as-canon.md) | docs/adr/0022-voice-as-canon.md | core | - | shared | unmigrated |
-| [docs/adr/0023-presence-program.md](/docs/adr/0023-presence-program.md) | docs/adr/0023-presence-program.md | core | - | shared | unmigrated |
-| [docs/adr/0024-identity-charter.md](/docs/adr/0024-identity-charter.md) | docs/adr/0024-identity-charter.md | core | - | shared | unmigrated |
+| [docs/adr/0021-review-inbox.md](/docs/adr/0021-review-inbox.md) | ADR-0021: Attention architecture — escalate rarely, batch re | core | - | shared | unmigrated |
+| [docs/adr/0022-voice-as-canon.md](/docs/adr/0022-voice-as-canon.md) | ADR-0022: Nero's textual voice is canon — one bible, engine- | core | - | shared | unmigrated |
+| [docs/adr/0023-presence-program.md](/docs/adr/0023-presence-program.md) | ADR-0023: The Presence & Continuity Evolution Program | core | - | shared | unmigrated |
+| [docs/adr/0024-identity-charter.md](/docs/adr/0024-identity-charter.md) | ADR-0024: The Identity Evolution Charter — Seven Pillars, Id | core | - | shared | unmigrated |
+| [docs/adr/0025-desktop-familiar.md](/docs/adr/0025-desktop-familiar.md) | ADR-0025: Mission Control manifests through an opt-in Deskto | core | - | shared | unmigrated |
 | [docs/adr/README.md](/docs/adr/README.md) | Architecture Decision Records | core | - | shared | unmigrated |
 
 ## docs/archive
@@ -222,10 +223,10 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/canon/CANONICAL_STRUCTURE.md](/docs/canon/CANONICAL_STRUCTURE.md) | Canonical Repository Structure | core | proposed | shared |  |
 | [docs/canon/KNOWLEDGE_STANDARD.md](/docs/canon/KNOWLEDGE_STANDARD.md) | Knowledge Organization Standard | core | proposed | shared |  |
 | [docs/canon/MIGRATION_PLAN.md](/docs/canon/MIGRATION_PLAN.md) | Canonical Structure Migration Plan | operational | active | shared |  |
-| [docs/canon/MIGRATION_REPORT_2026-07-17.md](/docs/canon/MIGRATION_REPORT_2026-07-17.md) | Migration Report — Phase 0 + Phase A Checkpoint | operational | - | shared | unmigrated |
+| [docs/canon/MIGRATION_REPORT_2026-07-17.md](/docs/canon/MIGRATION_REPORT_2026-07-17.md) | Migration Report — Phase 0 + Phase A Checkpoint | operational | active | shared |  |
 | [docs/canon/PROXIMA_DEPENDENCY_REPORT.md](/docs/canon/PROXIMA_DEPENDENCY_REPORT.md) | Proxima Dependency Report | operational | active | shared |  |
 | [docs/canon/README.md](/docs/canon/README.md) | Nero Canon — Start Here | core | active | shared |  |
-| [docs/canon/STANDING_POLICIES.md](/docs/canon/STANDING_POLICIES.md) | Standing Policies — earned autonomy registry | operational | - | shared | unmigrated |
+| [docs/canon/STANDING_POLICIES.md](/docs/canon/STANDING_POLICIES.md) | Standing Policies - earned autonomy registry | core | active | toni |  |
 
 ## docs/guides
 
@@ -241,18 +242,18 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [docs/handoffs/2026-07-17-inbox-build.md](/docs/handoffs/2026-07-17-inbox-build.md) | Engine Handoff — Review Inbox Build | operational | - | shared | unmigrated |
+| [docs/handoffs/2026-07-17-inbox-build.md](/docs/handoffs/2026-07-17-inbox-build.md) | Engine Handoff - Review Inbox Build (Codex) | operational | active | shared |  |
 
 ## docs/host
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [docs/host/CAPSULE_V3_PROPOSAL.md](/docs/host/CAPSULE_V3_PROPOSAL.md) | Capsule V3 Proposal — deliberate evolution after reconciliat | operational | - | shared | unmigrated |
+| [docs/host/CAPSULE_V3_PROPOSAL.md](/docs/host/CAPSULE_V3_PROPOSAL.md) | Capsule V3 Proposal - deliberate evolution after reconciliat | operational | proposed | shared |  |
 | [docs/host/CHATGPT_CLAUDE_COUNCIL.md](/docs/host/CHATGPT_CLAUDE_COUNCIL.md) | External Council: OpenAI and Claude inside Nero | operational | active | shared |  |
 | [docs/host/CODEX_CONTINUITY_HANDOFF.md](/docs/host/CODEX_CONTINUITY_HANDOFF.md) | Codex Continuity Handoff | operational | active | shared |  |
 | [docs/host/INTEGRATIONS.md](/docs/host/INTEGRATIONS.md) | Nero integrations - maximum-access mode | operational | active | shared |  |
 | [docs/host/NERO_CLAUDE_GLOBAL_CAPSULE.md](/docs/host/NERO_CLAUDE_GLOBAL_CAPSULE.md) | Nero -- Claude Global Host Presence (canonical source) | core | active | shared |  |
-| [docs/host/NERO_COWORK_PROJECT_CAPSULE.md](/docs/host/NERO_COWORK_PROJECT_CAPSULE.md) | Nero — Cowork Project Capsule (canonical source) | operational | - | shared | unmigrated |
+| [docs/host/NERO_COWORK_PROJECT_CAPSULE.md](/docs/host/NERO_COWORK_PROJECT_CAPSULE.md) | Nero Cowork Project Capsule (canonical source) | core | active | shared |  |
 | [docs/host/NERO_TAUGHT_KNOWLEDGE.md](/docs/host/NERO_TAUGHT_KNOWLEDGE.md) | Nero — Taught Knowledge (Claude transfer log) | operational | active | shared |  |
 
 ## docs/mobile
@@ -265,12 +266,12 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [docs/persona/identity-reviews/2026-07-review-0.md](/docs/persona/identity-reviews/2026-07-review-0.md) | Identity Review #0 — baseline (2026-07-17) | operational | - | shared | unmigrated |
-| [docs/persona/NERO_VOICE_BIBLE.md](/docs/persona/NERO_VOICE_BIBLE.md) | Nero Voice Bible — the textual-voice law | operational | - | shared | unmigrated |
-| [docs/persona/OPERATOR_PATTERNS.md](/docs/persona/OPERATOR_PATTERNS.md) | Operator Patterns — transparent adaptation notes | operational | - | shared | unmigrated |
-| [docs/persona/PRESENCE_PROGRAM.md](/docs/persona/PRESENCE_PROGRAM.md) | Identity Program — the Seven Pillars (living) | operational | - | shared | unmigrated |
-| [docs/persona/voice-goldens.md](/docs/persona/voice-goldens.md) | Voice Goldens — reference corpus | operational | - | shared | unmigrated |
-| [docs/persona/VOICE_PATTERNS_MINED.md](/docs/persona/VOICE_PATTERNS_MINED.md) | Voice Patterns Mined — sources and evidence | operational | - | shared | unmigrated |
+| [docs/persona/identity-reviews/2026-07-review-0.md](/docs/persona/identity-reviews/2026-07-review-0.md) | Identity Review 0 - baseline (2026-07-17) | operational | active | shared |  |
+| [docs/persona/NERO_VOICE_BIBLE.md](/docs/persona/NERO_VOICE_BIBLE.md) | Nero Voice Bible - the textual-voice law | core | proposed | shared |  |
+| [docs/persona/OPERATOR_PATTERNS.md](/docs/persona/OPERATOR_PATTERNS.md) | Operator Patterns - transparent adaptation notes | operational | active | shared |  |
+| [docs/persona/PRESENCE_PROGRAM.md](/docs/persona/PRESENCE_PROGRAM.md) | Identity Program - the Seven Pillars (living) | operational | active | shared |  |
+| [docs/persona/voice-goldens.md](/docs/persona/voice-goldens.md) | Voice Goldens - reference corpus | core | proposed | shared |  |
+| [docs/persona/VOICE_PATTERNS_MINED.md](/docs/persona/VOICE_PATTERNS_MINED.md) | Voice Patterns Mined - sources and evidence | operational | active | shared |  |
 
 ## docs/reviews
 
@@ -283,9 +284,10 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
+| [docs/specs/desktop-familiar.spec.md](/docs/specs/desktop-familiar.spec.md) | Nero Void Guardian Desktop Familiar | core | active | toni |  |
 | [docs/specs/engine-handoff.spec.md](/docs/specs/engine-handoff.spec.md) | Engine Handoff - Implementation Prompt Emission | core | proposed | shared |  |
 | [docs/specs/memory-architecture.spec.md](/docs/specs/memory-architecture.spec.md) | Nero Memory Architecture | core | proposed | shared |  |
-| [docs/specs/review-inbox.spec.md](/docs/specs/review-inbox.spec.md) | Attention Architecture — Escalation Levels, Review Inbox, Da | operational | - | shared | unmigrated |
+| [docs/specs/review-inbox.spec.md](/docs/specs/review-inbox.spec.md) | Attention Architecture - Escalation Levels, Review Inbox, Da | core | active | shared |  |
 | [docs/specs/skill-lifecycle.spec.md](/docs/specs/skill-lifecycle.spec.md) | Nero Skill Lifecycle | core | proposed | shared |  |
 
 ## docs/visual
@@ -308,14 +310,15 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 | [docs/visual/manbeardog_visual_bible.md](/docs/visual/manbeardog_visual_bible.md) | Manbeardog — Visual Bible | core | active | shared |  |
 | [docs/visual/manbeardog_visual_production.md](/docs/visual/manbeardog_visual_production.md) | Manbeardog Visual Production Roadmap | operational | active | shared |  |
 | [docs/visual/multi_device_asset_strategy.md](/docs/visual/multi_device_asset_strategy.md) | Multi-Device Asset Strategy | operational | active | shared |  |
+| [docs/visual/nero-pet.md](/docs/visual/nero-pet.md) | Nero Void Guardian Familiar Visual Standard | operational | active | toni |  |
 | [docs/visual/phase_a_execution_guide.md](/docs/visual/phase_a_execution_guide.md) | Phase A — Manbeardog Character Genesis — Execution Guide | operational | active | shared |  |
-| [docs/visual/README.md](/docs/visual/README.md) | Manbeardog Visual System — Hierarchy | operational | - | shared | unmigrated |
+| [docs/visual/README.md](/docs/visual/README.md) | Manbeardog Visual System — Hierarchy | operational | active | shared |  |
 
 ## familiar
 
 | File | Title | Layer | Status | Owner | |
 |---|---|---|---|---|---|
-| [familiar/README.md](/familiar/README.md) | Nero Desktop Familiar | operational | - | shared | unmigrated |
+| [familiar/README.md](/familiar/README.md) | Nero Void Guardian Desktop Familiar | operational | active | shared |  |
 
 ## presence
 

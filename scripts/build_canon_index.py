@@ -82,7 +82,9 @@ def collect() -> list:
             continue
         rel = "/".join(rel_parts)
         try:
-            text = path.read_text(encoding="utf-8", errors="replace")
+            # utf-8-sig consumes an optional BOM while remaining identical to
+            # utf-8 for ordinary files, so valid frontmatter is never hidden.
+            text = path.read_text(encoding="utf-8-sig", errors="replace")
         except OSError:
             continue
         meta = parse_frontmatter(text)

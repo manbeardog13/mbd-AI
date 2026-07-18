@@ -2,8 +2,9 @@
 # Stop hook — standing rule: keep docs/PROJECT_BRIEF.md current.
 #
 # When Claude stops with nothing left to do, if the project's source has
-# changed since PROJECT_BRIEF.md was last updated, remind Claude (via exit 2 →
-# stderr feedback) to refresh the brief, commit+push it, and say so in chat.
+# changed since PROJECT_BRIEF.md was last updated, report the staleness via
+# exit 2 -> stderr feedback. This hook is advisory only: it never authorizes a
+# file edit, commit, push, merge, or any other Git mutation.
 # On turns that changed nothing, it exits 0 and stays silent.
 
 input=$(cat)
@@ -30,7 +31,7 @@ src_t=$(git log -1 --format=%ct -- \
   docs/VISION.md docs/DIRECTIVE.md 2>/dev/null); src_t=${src_t:-0}
 
 if [ "$src_t" -gt "$brief_t" ]; then
-  echo "Standing rule (keep the brief current): the project's source has changed since docs/PROJECT_BRIEF.md was last updated. Update docs/PROJECT_BRIEF.md to reflect the current state, commit and push it (merge to main), then tell Toni in chat that you've updated the brief." >&2
+  echo "Advisory only: the project's source has changed since docs/PROJECT_BRIEF.md was last updated. Tell Toni that the brief may be stale. Do not edit it, commit, push, merge, or perform any Git mutation unless Toni's current task explicitly authorizes that exact action." >&2
   exit 2
 fi
 

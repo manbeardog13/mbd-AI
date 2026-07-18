@@ -17,8 +17,10 @@ process):
     - UnrealRuntime  — Remote Control API bridge.
 """
 from .base import PresenceRuntime
+from .familiar import FamiliarRuntime
 from .live2d import Live2DRuntime
 from .log import LogRuntime
 from .null import NullRuntime
 
-__all__ = ["PresenceRuntime", "NullRuntime", "LogRuntime", "Live2DRuntime"]
+__all__ = ["PresenceRuntime", "NullRuntime", "LogRuntime", "Live2DRuntime",
+           "FamiliarRuntime"]

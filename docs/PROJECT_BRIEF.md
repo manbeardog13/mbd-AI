@@ -6,7 +6,7 @@ type: report
 status: active
 owner: toni
 created: 2026-07-12
-updated: 2026-07-17
+updated: 2026-07-18
 ---
 
 # Nero — Project Status Brief
@@ -19,6 +19,22 @@ It doubles as a self-contained handoff you can give to an external advisor
 (e.g. ChatGPT) to get sharper guidance: what actually exists today, the known
 gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
+
+*Latest (2026-07-18): **The Review Inbox and Nero Void Guardian Desktop
+Familiar have focused deterministic verification, with runtime interaction
+acceptance still tracked separately.** The Review Inbox is
+a cold, standard-library queue-view with immutable L3 classification,
+policy-gated self-decision, structured print-only gate actions, schema
+migration, kernel locking, crash-safe atomic persistence, delivery-safe briefs,
+and 31 verifier checks. The opt-in WPF Familiar implements the owner-supplied
+`nero-voidcaster` v2 identity through 19 states and 15 exact semantic events,
+with a bounded event surface, reduced-motion and missing-art paths, a cold
+renderer-neutral bridge, custom launcher, and no model, network, shell, voice,
+gate, or autostart authority. Current deterministic Familiar checks cover
+contract shape, atlas geometry/alpha, bridge output, package shape, static
+authority boundaries, and clean compilation; they do not by themselves prove
+every visual, accessibility, or interaction acceptance criterion. ADR-0021 is
+accepted; ADR-0025 records the owner-directed Familiar identity amendment.*
 
 *Latest (2026-07-17): **Canonical knowledge base built and migration executed —
 the repo now governs and audits itself.** `docs/canon/` (standards, generated

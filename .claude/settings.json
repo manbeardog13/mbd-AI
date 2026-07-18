@@ -6,7 +6,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/brief-staleness-check.sh\"",
-            "statusMessage": "Checking PROJECT_BRIEF.md freshness…"
+            "statusMessage": "Checking PROJECT_BRIEF.md freshness (advisory only)…"
           }
         ]
       }

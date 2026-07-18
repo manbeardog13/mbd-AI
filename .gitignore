@@ -46,3 +46,11 @@ data/continuity/
 *.db-wal
 *.db-shm
 *.continuity-export.json
+
+# Desktop Familiar build/runtime artifacts and retired prototype media.
+familiar/bin/*.exe
+familiar/bin/_shot.jpg
+familiar/bin/_nero_proto.png
+familiar/assets/placeholder/
+familiar/runtime/*
+!familiar/runtime/.gitkeep

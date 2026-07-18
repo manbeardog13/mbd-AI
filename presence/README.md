@@ -27,7 +27,8 @@ presence/
 ├── runtime_bridge/                  pluggable renderers behind PresenceRuntime
 │   ├── base.py                      abstract PresenceRuntime
 │   ├── null.py                      NullRuntime — no-op, for tests / headless
-│   └── log.py                       LogRuntime — prints intents, no rendering
+│   ├── log.py                       LogRuntime — prints intents, no rendering
+│   └── familiar.py                  cold bridge to the opt-in WPF Familiar
 └── README.md                        you are here
 ```
 
@@ -140,3 +141,15 @@ encapsulated in the runtime.
 5. **No visual assets in this package.** Rigs, models, textures, shaders
    live outside — inside individual runtime implementations or in a
    dedicated asset location. The `presence/` package is contract + logic.
+6. **The Familiar bridge never launches the Familiar.** It writes only bounded
+   semantic display states after a caller explicitly selects and starts the
+   bridge; process lifecycle remains an explicit user action.
+7. **The Familiar reports only shipped capabilities.** Its current ceiling is
+   L1: ambient glow, a state indicator, and an emergence sequence. Full-body
+   artwork does not imply gaze, gesture, procedural-movement, or environment
+   capabilities.
+8. **Presentation intent is not completion evidence.** A generic
+   `CELEBRATING` intent settles to `all.work_complete`. The bridge emits
+   `task.succeeded` or `git.push_succeeded` only when metadata contains both
+   `confirmed: true` and a bounded, printable `provenance` string from the
+   caller that verified the result.

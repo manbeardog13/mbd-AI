@@ -17,6 +17,7 @@ import json
 import math
 import os
 import re
+import stat
 import sys
 import tempfile
 import time
@@ -140,6 +141,61 @@ def blank() -> dict:
 
 def _state_error(path: Path, detail: str) -> ValueError:
     return ValueError(f"corrupt inbox state {path}: {detail}")
+
+
+def _read_bounded_file(path: Path, limit: int, description: str,
+                       *, missing_ok: bool = False) -> bytes | None:
+    """Read one stable regular file without following a swapped pathname.
+
+    ``O_NOFOLLOW`` closes the symlink race on platforms that provide it. The
+    before/opened/after identity checks retain a fail-closed stdlib-only guard
+    on Windows, where ``os.open`` does not expose the Win32 reparse-point flag.
+    Reading from the opened descriptor also binds the size limit to the bytes
+    consumed instead of to an earlier pathname lookup.
+    """
+    path = Path(path)
+    try:
+        before = os.lstat(path)
+    except FileNotFoundError:
+        if missing_ok:
+            return None
+        raise ValueError(f"{description} missing: {path}") from None
+    if stat.S_ISLNK(before.st_mode) or not stat.S_ISREG(before.st_mode):
+        raise ValueError(f"{description} must be a regular non-link file: {path}")
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0)
+    flags |= getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        fd = os.open(path, flags)
+    except FileNotFoundError:
+        raise ValueError(f"{description} changed while opening: {path}") from None
+    try:
+        opened = os.fstat(fd)
+        try:
+            after = os.lstat(path)
+        except FileNotFoundError:
+            raise ValueError(f"{description} changed while opening: {path}") from None
+        if (not stat.S_ISREG(opened.st_mode)
+                or not os.path.samestat(before, opened)
+                or not os.path.samestat(after, opened)):
+            raise ValueError(f"{description} changed while opening: {path}")
+        if opened.st_size > limit:
+            raise ValueError(f"{description} exceeds {limit} bytes: {path}")
+        chunks, total = [], 0
+        while True:
+            chunk = os.read(fd, min(64 * 1024, limit + 1 - total))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            total += len(chunk)
+            if total > limit:
+                raise ValueError(f"{description} exceeds {limit} bytes: {path}")
+        final = os.fstat(fd)
+        if (final.st_size != opened.st_size
+                or final.st_mtime_ns != opened.st_mtime_ns):
+            raise ValueError(f"{description} changed while reading: {path}")
+        return b"".join(chunks)
+    finally:
+        os.close(fd)
 
 
 def _valid_timestamp(value) -> bool:
@@ -781,13 +837,11 @@ class Store:
             os.close(fd)
 
     def load_raw(self) -> dict:
-        if not self.path.exists():
+        raw = _read_bounded_file(self.path, MAX_STATE_BYTES, "inbox state",
+                                 missing_ok=True)
+        if raw is None:
             return blank()
-        size = self.path.stat().st_size
-        if size > MAX_STATE_BYTES:
-            raise ValueError(
-                f"inbox state exceeds {MAX_STATE_BYTES} bytes: {self.path}")
-        return json.loads(self.path.read_text(encoding="utf-8"))
+        return json.loads(raw.decode("utf-8"))
 
     def load(self) -> dict:
         return validate_state(self.load_raw(), self.path)
@@ -850,9 +904,8 @@ def _csv_field(value: str) -> list[str]:
 
 
 def load_policy_registry(path: Path) -> dict:
-    if not path.exists() or path.stat().st_size > 1024 * 1024:
-        raise ValueError(f"standing-policy registry missing or too large: {path}")
-    raw = path.read_bytes()
+    raw = _read_bounded_file(path, 1024 * 1024, "standing-policy registry")
+    assert raw is not None
     text = raw.decode("utf-8-sig")
     version_match = re.search(r"^version:\s*(\d+\.\d+\.\d+)\s*$", text, re.M)
     if not version_match:
@@ -1120,7 +1173,8 @@ def _read_feed_envelope() -> dict:
                 "paused_context", "resume_hint"}
     if not isinstance(payload, dict) or set(payload) - required - optional or required - set(payload):
         raise ValueError("feed envelope fields are invalid")
-    if payload["v"] != 1:
+    if (isinstance(payload["v"], bool)
+            or not isinstance(payload["v"], int) or payload["v"] != 1):
         raise ValueError("unsupported feed envelope version")
     for field, limit, pattern in (
             ("provider", 20, r"[a-z][a-z0-9-]*"),
@@ -1130,6 +1184,13 @@ def _read_feed_envelope() -> dict:
         if (not isinstance(value, str) or len(value) > limit
                 or not re.fullmatch(pattern, value)):
             raise ValueError(f"feed {field} is invalid")
+    for field in ("title", "source_ref"):
+        if not isinstance(payload[field], str):
+            raise ValueError(f"feed {field} must be a string")
+    for field in ("requested_by", "policy", "rollback", "paused_context",
+                  "resume_hint", "risk"):
+        if field in payload and not isinstance(payload[field], str):
+            raise ValueError(f"feed {field} must be a string")
     return payload
 
 
@@ -1509,13 +1570,22 @@ def _write_backup(path: Path, data: bytes, from_schema: int) -> Path:
     try:
         fd = os.open(backup, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
     except FileExistsError:
-        if backup.read_bytes() != data:
+        existing = _read_bounded_file(
+            backup, len(data), "migration backup")
+        if existing != data:
             raise ValueError(f"migration backup already exists with different bytes: {backup}")
         return backup
-    with os.fdopen(fd, "wb") as handle:
-        handle.write(data)
-        handle.flush()
-        os.fsync(handle.fileno())
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.close(fd)
+        with contextlib.suppress(OSError):
+            os.unlink(backup)
+        raise
     return backup
 
 
@@ -1541,7 +1611,15 @@ def cmd_migrate(store: Store, args) -> dict:
         }
         if not args.apply:
             return result
-        original = store.path.read_bytes()
+        original = _read_bounded_file(
+            store.path, MAX_STATE_BYTES, "inbox state")
+        assert original is not None
+        try:
+            current = json.loads(original.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"inbox state changed during migration: {exc}") from None
+        if current != raw:
+            raise ValueError("inbox state changed during migration")
         backup = _write_backup(store.path, original, from_schema)
         store.save(migrated)
         result.update({"dry_run": False, "backup": str(backup),
@@ -1604,22 +1682,6 @@ def resolve_authority_paths(args) -> tuple[Path, Path]:
     return state, policies
 
 
-def cmd_familiar(store, args):
-    state = store.load()
-    pending = [e for e in state['entries'] if e['status'] == 'pending']
-    blocking = [e for e in pending if e['blocking']]
-    if blocking:
-        line = 'review|' + str(len(blocking)) + ' blocking - ' + printable(blocking[0]['title'], 60)
-    elif pending:
-        line = 'waiting|' + str(len(pending)) + ' in queue, none blocking'
-    else:
-        line = 'idle'
-    out = Path(args.familiar_file)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(line + chr(10), encoding='utf-8')
-    return {'familiar_command': line, 'written_to': str(out)}
-
-
 def build_parser() -> argparse.ArgumentParser:
     p = JsonArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1680,9 +1742,7 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--days", type=int, default=30)
     mig = sub.add_parser("migrate", help="preview or apply schema 1/2 to 3 migration")
     mig.add_argument("--apply", action="store_true",
-                     help="apply migration after a dry-run; writes a .v1.bak backup")
-    f = sub.add_parser("familiar", help="sync one semantic state to the desktop Familiar")
-    f.add_argument("--familiar-file", default=str(ROOT / "familiar" / "runtime" / "command.txt"))
+                     help="apply migration after a dry-run; writes a schema-matched .v1.bak or .v2.bak backup")
     sub.add_parser("status", help="counts + canonical event catalog")
     return p
 
@@ -1712,8 +1772,6 @@ def main(argv=None) -> int:
             result = cmd_brief(store, args)
             print(json.dumps(result, indent=2, ensure_ascii=False)
                   if isinstance(result, dict) else result)
-        elif args.cmd == "familiar":
-            print(json.dumps(cmd_familiar(store, args), indent=2, ensure_ascii=False))
         elif args.cmd == "prune":
             print(json.dumps(cmd_prune(store, args), ensure_ascii=False))
         elif args.cmd == "migrate":
@@ -1741,7 +1799,7 @@ def main(argv=None) -> int:
                           "durability_uncertain": True}, ensure_ascii=False),
               file=sys.stderr)
         return 2
-    except (KeyError, ValueError, TimeoutError, OSError) as exc:
+    except (KeyError, TypeError, ValueError, TimeoutError, OSError) as exc:
         msg = exc.args[0] if isinstance(exc, KeyError) and exc.args else str(exc)
         print(json.dumps({"ok": False, "error": str(msg)}, ensure_ascii=False),
               file=sys.stderr)
