@@ -2,7 +2,7 @@
 
 # Nero Knowledge Index
 
-266 knowledge files - 87 carrying canon frontmatter - 179 not yet migrated (see MIGRATION_PLAN.md).
+267 knowledge files - 88 carrying canon frontmatter - 179 not yet migrated (see MIGRATION_PLAN.md).
 
 Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/README.md` -> this index -> `docs/PROJECT_BRIEF.md`.
 
@@ -316,6 +316,7 @@ Read order for a fresh model: capsule -> `docs/CONSTITUTION.md` -> `docs/canon/R
 |---|---|---|---|---|---|
 | [docs/repository/GIT_POLICY.md](/docs/repository/GIT_POLICY.md) | Repository Git and Publication Policy | core | proposed | toni |  |
 | [docs/repository/MIGRATION_PLAN.md](/docs/repository/MIGRATION_PLAN.md) | Repository Reconciliation and Governance Activation Plan | operational | active | shared |  |
+| [docs/repository/RECONCILIATION_REPORT_2026-07-19.md](/docs/repository/RECONCILIATION_REPORT_2026-07-19.md) | Complete local repository reconciliation report | operational | active | shared |  |
 | [docs/repository/RESEARCH_2026-07-18.md](/docs/repository/RESEARCH_2026-07-18.md) | Repository Governance Research and Live Baseline | operational | active | codex-lane |  |
 
 ## docs/reviews
