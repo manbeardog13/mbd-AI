@@ -8,7 +8,7 @@ import sys
 import tempfile
 import time
 import unittest
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,6 +20,82 @@ SPEC.loader.exec_module(M)
 
 
 class InboxTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == "nt", "Windows 8.3 aliases only")
+    def test_authority_accepts_equivalent_short_and_long_windows_paths(self):
+        import ctypes
+        from ctypes import wintypes
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td).resolve()
+            get_short_path = ctypes.WinDLL(
+                "kernel32", use_last_error=True
+            ).GetShortPathNameW
+            get_short_path.argtypes = [
+                wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD,
+            ]
+            get_short_path.restype = wintypes.DWORD
+            buffer = ctypes.create_unicode_buffer(32768)
+            written = get_short_path(str(root), buffer, len(buffer))
+            if written == 0 or Path(buffer.value) == root:
+                self.skipTest("8.3 aliases are unavailable on this volume")
+
+            M._reject_link_components(Path(buffer.value) / "new" / "state.json", root)
+
+    @unittest.skipUnless(os.name == "nt", "Windows case semantics only")
+    def test_authority_accepts_windows_case_differences(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td).resolve()
+            M._reject_link_components(
+                Path(str(root).swapcase()) / "new" / "state.json",
+                root,
+            )
+
+    def test_authority_rejects_sibling_prefix_and_dotdot_traversal(self):
+        with tempfile.TemporaryDirectory() as td:
+            parent = Path(td)
+            root = parent / "authority"
+            sibling = parent / "authority-escape"
+            root.mkdir()
+            sibling.mkdir()
+            with self.assertRaisesRegex(ValueError, "escapes"):
+                M._reject_link_components(sibling / "state.json", root)
+            with self.assertRaisesRegex(ValueError, "escapes"):
+                M._reject_link_components(root / ".." / sibling.name / "state.json", root)
+
+    def test_authority_allows_nonexistent_descendant(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td).resolve()
+            M._reject_link_components(root / "new" / "state.json", root)
+
+    def test_authority_rejects_symlink_escape_where_supported(self):
+        with tempfile.TemporaryDirectory() as td:
+            parent = Path(td)
+            root, outside = parent / "root", parent / "outside"
+            root.mkdir()
+            outside.mkdir()
+            link = root / "redirect"
+            try:
+                link.symlink_to(outside, target_is_directory=True)
+            except OSError as exc:
+                self.skipTest(f"directory symlinks unavailable: {exc}")
+            with self.assertRaisesRegex(ValueError, "link|escapes"):
+                M._reject_link_components(link / "state.json", root)
+
+    def test_posix_containment_remains_component_aware_and_case_sensitive(self):
+        root = PurePosixPath("/srv/nero")
+        self.assertEqual(
+            M._relative_authority_parts(
+                PurePosixPath("/srv/nero/inbox/state.json"), root, windows=False
+            ),
+            ("inbox", "state.json"),
+        )
+        for candidate in (
+            PurePosixPath("/srv/nero-escape/state.json"),
+            PurePosixPath("/srv/NERO/state.json"),
+        ):
+            with self.assertRaisesRegex(ValueError, "escapes"):
+                M._relative_authority_parts(candidate, root, windows=False)
+
     def test_verifier_suite_green(self):
         r = subprocess.run([sys.executable, str(ROOT / "verify" / "verify_nero_inbox.py")],
                            capture_output=True, text=True, timeout=120)

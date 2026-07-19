@@ -23,7 +23,7 @@ import tempfile
 import time
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 sys.dont_write_bytecode = True
 for _stream in (sys.stdout, sys.stderr):
@@ -39,6 +39,7 @@ MAX_ENTRIES = 10_000
 MAX_EVIDENCE_ITEMS = 100
 MAX_FEED_RECEIPTS = 10_000
 MAX_BRIEF_BYTES = 64 * 1024
+_WINDOWS = os.name == "nt"
 
 L3_TRIGGERS = (
     "human-decision-required",
@@ -1628,21 +1629,87 @@ def cmd_migrate(store: Store, args) -> dict:
 
 
 def _is_link(path: Path) -> bool:
-    return path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction())
+    if path.is_symlink() or (hasattr(path, "is_junction") and path.is_junction()):
+        return True
+    try:
+        attributes = path.lstat().st_file_attributes
+    except (AttributeError, OSError):
+        return False
+    return bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400))
+
+
+def _windows_long_path(path: Path) -> Path:
+    """Expand 8.3 aliases in the longest existing prefix of ``path``."""
+    if not _WINDOWS:
+        return path
+
+    import ctypes
+    from ctypes import wintypes
+
+    missing = []
+    existing = path
+    while not existing.exists():
+        parent = existing.parent
+        if parent == existing:
+            raise ValueError(f"cannot canonicalize authority path: {path}")
+        missing.append(existing.name)
+        existing = parent
+
+    get_long_path = ctypes.WinDLL("kernel32", use_last_error=True).GetLongPathNameW
+    get_long_path.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
+    get_long_path.restype = wintypes.DWORD
+    required = get_long_path(str(existing), None, 0)
+    if required == 0:
+        raise ValueError(f"cannot canonicalize authority path: {path}")
+    buffer = ctypes.create_unicode_buffer(required)
+    written = get_long_path(str(existing), buffer, len(buffer))
+    if written == 0 or written >= len(buffer):
+        raise ValueError(f"cannot canonicalize authority path: {path}")
+
+    expanded = Path(buffer.value)
+    for part in reversed(missing):
+        expanded /= part
+    return expanded
+
+
+def _canonical_alias_path(path: Path) -> Path:
+    absolute = Path(os.path.abspath(path.expanduser()))
+    return _windows_long_path(absolute) if _WINDOWS else absolute
+
+
+def _relative_authority_parts(
+    path: Path,
+    root: Path,
+    *,
+    windows: bool | None = None,
+) -> tuple[str, ...]:
+    """Return component-aware containment, honoring host case semantics."""
+    windows = _WINDOWS if windows is None else windows
+    path_type = PureWindowsPath if windows else PurePosixPath
+    try:
+        return path_type(str(path)).relative_to(path_type(str(root))).parts
+    except ValueError:
+        raise ValueError(f"path escapes its authority root: {path}") from None
 
 
 def _reject_link_components(path: Path, root: Path) -> None:
-    try:
-        relative = path.relative_to(root)
-    except ValueError:
-        raise ValueError(f"path escapes its authority root: {path}") from None
-    current = root
+    canonical_path = _canonical_alias_path(path)
+    canonical_root = _canonical_alias_path(root)
+    relative = _relative_authority_parts(canonical_path, canonical_root)
+    current = canonical_root
     if current.exists() and _is_link(current):
         raise ValueError(f"authority root cannot be a link: {root}")
-    for part in relative.parts:
+    for part in relative:
         current = current / part
         if current.exists() and _is_link(current):
             raise ValueError(f"authority path cannot contain a link: {current}")
+
+    # Resolving after explicit reparse-component rejection catches aliases that
+    # redirect outside the authority root without weakening nonexistent-child
+    # handling (Path.resolve(strict=False) preserves the missing suffix).
+    resolved_path = canonical_path.resolve()
+    resolved_root = canonical_root.resolve()
+    _relative_authority_parts(resolved_path, resolved_root)
 
 
 def resolve_authority_paths(args) -> tuple[Path, Path]:
@@ -1650,9 +1717,12 @@ def resolve_authority_paths(args) -> tuple[Path, Path]:
     requested_policies = Path(os.path.abspath(Path(args.policies).expanduser()))
     test_root_raw = os.environ.get("NERO_INBOX_TEST_ROOT")
     if test_root_raw:
-        test_root = Path(test_root_raw).expanduser().resolve()
-        if (test_root == ROOT or ROOT in test_root.parents
-                or test_root in ROOT.parents):
+        test_root = Path(test_root_raw).expanduser()
+        resolved_test_root = test_root.resolve()
+        resolved_repo_root = ROOT.resolve()
+        if (resolved_test_root == resolved_repo_root
+                or resolved_repo_root in resolved_test_root.parents
+                or resolved_test_root in resolved_repo_root.parents):
             raise ValueError("test authority root must be outside the repository")
         _reject_link_components(requested_state, test_root)
         _reject_link_components(requested_policies, test_root)
