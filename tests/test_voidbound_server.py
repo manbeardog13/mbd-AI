@@ -6,6 +6,7 @@ import threading
 import unittest
 from http.server import ThreadingHTTPServer
 from pathlib import Path
+from unittest import mock
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
@@ -43,7 +44,6 @@ class VoidboundServerTests(unittest.TestCase):
         for path, content_type in [
             ("/adventure/", "text/html"),
             ("/adventure/styles.css", "text/css"),
-            ("/adventure/game.js", "text/javascript"),
             ("/adventure/assets/iskra-v2.webp", "image/webp"),
             ("/adventure/assets/nero-void-guardian-v2.webp", "image/webp"),
             ("/adventure/assets/mia-v2-provisional.webp", "image/webp"),
@@ -54,6 +54,19 @@ class VoidboundServerTests(unittest.TestCase):
                 self.assertEqual(response.status, 200)
                 self.assertIn(content_type, response.headers["Content-Type"])
                 self.assertGreater(len(response.read()), 100)
+
+    def test_javascript_media_type_is_project_owned(self) -> None:
+        for registry_type in ("application/javascript", "text/javascript"):
+            with self.subTest(registry_type=registry_type), mock.patch.object(
+                MODULE.mimetypes, "guess_type", return_value=(registry_type, None)
+            ) as guess_type, self.get("/adventure/game.js") as response:
+                self.assertEqual(response.status, 200)
+                self.assertEqual(
+                    response.headers["Content-Type"],
+                    "text/javascript; charset=utf-8",
+                )
+                self.assertGreater(len(response.read()), 100)
+                guess_type.assert_not_called()
 
     def test_security_headers_deny_network_connections(self) -> None:
         with self.get("/adventure/") as response:

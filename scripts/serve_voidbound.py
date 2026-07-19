@@ -23,6 +23,9 @@ GAME_ROOT = (STATIC_ROOT / "adventure").resolve()
 GAME_ENTRY = (GAME_ROOT / "index.html").resolve()
 SERVER_ID = "nero-voidbound-codex/1"
 CONTENT_TYPE_OVERRIDES = {
+    # Project-owned contract: do not inherit host registry disagreement between
+    # application/javascript and text/javascript for executable assets.
+    ".js": "text/javascript; charset=utf-8",
     ".webp": "image/webp",
 }
 
