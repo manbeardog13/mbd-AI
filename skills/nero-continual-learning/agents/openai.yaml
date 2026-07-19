@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nero Continual Learning"
+  short_description: "Learn from outcomes with evidence-gated skills"
+  default_prompt: "Use $nero-continual-learning to capture verified lessons, improve resource routing, and rehearse weak competencies."

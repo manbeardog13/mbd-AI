@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mbd-ai/nero/voice_events.schema.json",
+  "title": "VoiceEvent",
+  "description": "An event emitted by the Voice Director during synthesis. Consumed by the Presence Director (and any other observer). The Voice Director never knows or cares who is subscribed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "profile", "timestamp_iso"],
+  "properties": {
+    "kind": {
+      "description": "Which event this is.",
+      "type": "string",
+      "enum": [
+        "voice.started",
+        "voice.speaking",
+        "voice.finished",
+        "voice.interrupted"
+      ]
+    },
+    "profile": {
+      "description": "Name of the voice profile that was synthesizing.",
+      "type": "string"
+    },
+    "timestamp_iso": {
+      "description": "ISO-8601 UTC timestamp with 'Z' suffix (e.g. '2026-07-13T14:30:15Z').",
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "description": "Event-specific data. Consumers MUST tolerate missing / unknown keys. Common keys include text_length, sample_rate, duration_s, byte_length, reason.",
+      "type": "object",
+      "additionalProperties": true,
+      "default": {}
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "checks": [
+    {
+      "file": "solution.py",
+      "id": "file",
+      "type": "file_exists",
+      "weight": 2
+    },
+    {
+      "id": "tests",
+      "type": "python_unittest",
+      "weight": 8
+    }
+  ],
+  "department": "04_Software_Engineering",
+  "difficulty": 2,
+  "id": "NS-CODE-001",
+  "max_attempts": 3,
+  "objective": "Fix the bounded Python parser so every supplied regression test passes without deleting or weakening tests.",
+  "output": "solution.py",
+  "pass_grade": 8.7,
+  "schema_version": 1,
+  "status": "DRAFT_PENDING_CLAUDE_REVIEW",
+  "title": "Repair a parser without regression",
+  "virtue_weights": {
+    "change_safety": 0.1,
+    "coding": 0.45,
+    "debugging": 0.15,
+    "testing": 0.3
+  }
+}

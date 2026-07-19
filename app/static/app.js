@@ -9,6 +9,8 @@ const els = {
   input: document.getElementById("input"),
   send: document.getElementById("send"),
   mic: document.getElementById("mic"),
+  council: document.getElementById("council"),
+  councilStatus: document.getElementById("council-status"),
   aiName: document.getElementById("ai-name"),
   statusDot: document.getElementById("status-dot"),
   statusText: document.getElementById("status-text"),
@@ -21,7 +23,6 @@ const els = {
   speakToggle: document.getElementById("speak-toggle"),
   handsfreeToggle: document.getElementById("handsfree-toggle"),
   micLang: document.getElementById("mic-lang"),
-  ttsVoice: document.getElementById("tts-voice"),
   humor: document.getElementById("humor"),
   humorVal: document.getElementById("humor-val"),
   convoMode: document.getElementById("convo-mode"),
@@ -38,6 +39,7 @@ let aiName = "Your AI";
 let ownerName = "friend";
 let busy = false;
 let thinkingEnabled = false;
+let councilReady = false;
 
 // Hide <think>…</think> reasoning from the reply unless thinking is on.
 // Also hides an unclosed <think> mid-stream so tags never flash on screen.
@@ -220,57 +222,134 @@ async function deleteMemory(id, li) {
   } catch (_) { /* ignore */ }
 }
 
-// ---- Voice: speaking (text-to-speech) --------------------------------
-// speechSynthesis is widely supported (including iOS Safari) and works
-// over plain HTTP, so replies can be read aloud on any device.
+// ---- External Council: explicit, user-controlled cloud escalation -----
 
-const ttsSupported = "speechSynthesis" in window;
-
-// Guess the language so replies are spoken with the right voice. Croatian
-// uses these diacritics; if we see them, speak in Croatian, else English.
-function detectLang(text) {
-  return /[čćđšž]/i.test(text) ? "hr-HR" : "en-US";
+function stageLabel(stage) {
+  return {
+    architect: "OpenAI — Architect",
+    builder: "Claude — Builder",
+    reviewer: "OpenAI — Reviewer",
+  }[stage] || stage;
 }
 
-// Names that tend to be smooth, natural female voices across Windows/Mac/mobile.
-const FEMALE_HINTS = [
-  "female", "natural", "zira", "jenny", "aria", "hazel", "amy", "eva", "emma",
-  "sonia", "libby", "natasha", "michelle", "samantha", "victoria", "fiona",
-  "tessa", "karen", "moira", "serena", "google uk english female", "google us english",
-];
+function addCouncilResult(run) {
+  clearEmptyState();
+  const card = document.createElement("section");
+  card.className = "msg ai council-result";
 
-function femaleScore(name) {
-  const n = (name || "").toLowerCase();
-  let score = FEMALE_HINTS.reduce((s, k) => s + (n.includes(k) ? 1 : 0), 0);
-  if (n.includes("male") && !n.includes("female")) score -= 2; // penalize clearly-male
-  return score;
-}
+  const heading = document.createElement("h3");
+  heading.textContent = "External Council";
+  card.appendChild(heading);
 
-function allVoices() {
-  return window.speechSynthesis.getVoices() || [];
-}
-
-// Choose the voice to speak `langCode` in: the user's pick if it fits the
-// language, otherwise the smoothest female voice available for that language.
-function chooseVoice(langCode) {
-  const prefix = langCode.slice(0, 2).toLowerCase();
-  const voices = allVoices();
-  const inLang = voices.filter((v) => (v.lang || "").toLowerCase().startsWith(prefix));
-  const pool = inLang.length ? inLang : voices;
-
-  const picked = localStorage.getItem("ttsVoice");
-  if (picked) {
-    const match = pool.find((v) => v.name === picked);
-    if (match) return match;
+  for (const turn of run.turns || []) {
+    const turnEl = document.createElement("section");
+    turnEl.className = "council-turn";
+    const title = document.createElement("h4");
+    title.textContent = stageLabel(turn.stage);
+    const model = document.createElement("p");
+    model.className = "council-model";
+    model.textContent = turn.model ? `Model: ${turn.model}` : "";
+    const output = document.createElement("pre");
+    // Council text is remote, untrusted content: textContent keeps it inert.
+    output.textContent = turn.text || "(No text returned.)";
+    turnEl.append(title, model, output);
+    card.appendChild(turnEl);
   }
-  return [...pool].sort((a, b) => femaleScore(b.name) - femaleScore(a.name))[0] || null;
+
+  const sent = document.createElement("details");
+  sent.className = "council-sent";
+  const summary = document.createElement("summary");
+  summary.textContent = "What Nero sent outside";
+  sent.appendChild(summary);
+  for (const transmission of run.transmissions || []) {
+    const label = document.createElement("p");
+    label.textContent = `${transmission.provider} · ${stageLabel(transmission.stage)}`;
+    const content = document.createElement("pre");
+    content.textContent = transmission.project_content || "";
+    sent.append(label, content);
+  }
+  card.appendChild(sent);
+
+  const note = document.createElement("p");
+  note.className = "council-note";
+  note.textContent = run.notice || "Council output is not stored in Nero's memory.";
+  card.appendChild(note);
+  els.messages.appendChild(card);
+  scrollToBottom();
+  return card;
 }
 
-// Nero's own local neural voice (Kokoro) when available, else the browser voice.
+function updateCouncilButton() {
+  const hasText = els.input.value.trim().length > 0;
+  els.council.disabled = busy || !councilReady || !hasText;
+}
+
+async function loadCouncilStatus() {
+  try {
+    const state = await (await fetch("/api/collaboration/status")).json();
+    councilReady = !!state.configured;
+    els.councilStatus.textContent = state.message || "External Council status unavailable.";
+    els.council.title = councilReady
+      ? "Ask OpenAI and Claude. Sends only the text you type after confirmation."
+      : "Set up External Council in config.yaml to use it.";
+  } catch (_) {
+    councilReady = false;
+    els.councilStatus.textContent = "External Council status could not be checked.";
+  }
+  updateCouncilButton();
+}
+
+async function runCouncil(text) {
+  if (busy || !councilReady || !text.trim()) return;
+  const approved = window.confirm(
+    "External Council will send only the text you typed to OpenAI and Claude. " +
+    "It will not send Nero's saved memories, normal chat history, local files, or API keys. Continue?"
+  );
+  if (!approved) return;
+
+  stopSpeaking();
+  busy = true;
+  els.send.disabled = true;
+  updateCouncilButton();
+  addMessage("user", `External Council request:\n${text}`);
+  els.input.value = "";
+  autoGrow();
+  updateComposerButtons();
+  els.statusText.textContent = "External Council is coordinating OpenAI and Claude…";
+
+  try {
+    const response = await fetch("/api/collaboration", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ task: text, mode: "plan-build-review", confirmed: true }),
+    });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.detail || "External Council could not complete the handoff.");
+    addCouncilResult(body);
+    els.statusText.textContent = "External Council handoff complete. Review it before acting.";
+  } catch (err) {
+    addMessage("ai", `**External Council stopped:** ${err.message}`);
+    els.statusText.textContent = "External Council stopped before completing.";
+  } finally {
+    busy = false;
+    els.send.disabled = false;
+    updateComposerButtons();
+    loadCouncilStatus();
+  }
+}
+
+// ---- Voice: speaking (text-to-speech) --------------------------------
+// Single production path: /api/speak -> Nero's canonical voice (nero_prime).
+// No browser SpeechSynthesis fallback — the Voice Director is the ONLY path.
+// If a sentence can't be voiced (unsupported language, engine unavailable),
+// the server returns 204 with an X-Voice-Reason header and the frontend
+// silently skips playback rather than substituting a foreign voice.
+
 let neuralVoice = false;    // set from GET /api/voice on boot
 let audioCtx = null;        // Web Audio context — unlocked once by a user tap
 let currentSource = null;   // the playing buffer source, so we can stop it (barge-in)
 let speechAbort = false;    // set on barge-in to halt a sentence-by-sentence read
+let lastVoiceReason = null; // most recent X-Voice-Reason from /api/speak (for UI hints)
 
 function getAudioCtx() {
   const AC = window.AudioContext || window.webkitAudioContext;
@@ -302,47 +381,26 @@ function unlockAudio() {
       src.start(0);
     }
   } catch (_) { /* ignore */ }
-  // Also prime the browser's audio + speech (the Croatian / fallback path).
+  // Prime the browser's <audio> element too — a fresh Audio() call also
+  // needs to have happened once inside a user gesture on iOS.
   try {
     const a = new Audio(SILENT_WAV);
     a.volume = 0;
     a.play().then(() => a.pause()).catch(() => {});
-    if (ttsSupported) {
-      const u = new SpeechSynthesisUtterance(" ");
-      u.volume = 0;
-      window.speechSynthesis.speak(u);
-    }
   } catch (_) { /* ignore */ }
 }
 ["pointerdown", "touchend", "keydown"].forEach((ev) =>
   window.addEventListener(ev, unlockAudio, { once: true }));
 
-// Stop whatever Nero is currently saying — neural clip and/or browser speech,
-// and abort any pending sentence-by-sentence read.
+// Stop whatever Nero is currently saying, and abort any pending
+// sentence-by-sentence read. Neural audio only — there is no browser
+// SpeechSynthesis path to cancel.
 function stopSpeaking() {
   speechAbort = true;
   if (currentSource) {
     try { currentSource.stop(); } catch (_) { /* already stopped */ }
     currentSource = null;   // 'onended' fires → resolves any awaiting playback
   }
-  if (ttsSupported) window.speechSynthesis.cancel();
-}
-
-// Speak via the browser's built-in voices — the fallback, and (for now) the
-// path for Croatian, until Nero's local Croatian voice lands.
-function speakBrowser(text) {
-  if (!ttsSupported || !text.trim()) return Promise.resolve();
-  return new Promise((resolve) => {
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = detectLang(text);
-    const voice = chooseVoice(utter.lang);
-    if (voice) utter.voice = voice;
-    utter.rate = 0.98;   // a touch calmer
-    utter.pitch = 1.05;  // a touch brighter — smoother, "glassier"
-    utter.onend = resolve;
-    utter.onerror = resolve;
-    window.speechSynthesis.speak(utter);
-  });
 }
 
 // Play WAV bytes through Web Audio (reliable on iOS once the context is
@@ -372,18 +430,27 @@ async function playNeural(bytes) {
   }
 }
 
-// Fetch synthesized audio for one sentence (English → Nero's neural voice), or
-// null to signal the browser-voice fallback (Croatian, or neural unavailable).
+// Fetch synthesized audio for one sentence — Nero's canonical voice only.
+// Returns ArrayBuffer on success, null on 204 (unsupported language, engine
+// unavailable, etc.). Records the reason from the X-Voice-Reason header so
+// the UI can eventually surface hints.
 async function fetchSpeech(sentence) {
-  if (!(neuralVoice && detectLang(sentence) === "en-US")) return null;
+  if (!neuralVoice) return null;
   try {
     const res = await fetch("/api/speak", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: sentence }),
     });
-    if (res.ok && res.status !== 204) return await res.arrayBuffer();
-  } catch (_) { /* fall back to the browser voice */ }
+    if (res.ok && res.status !== 204) {
+      lastVoiceReason = null;
+      return await res.arrayBuffer();
+    }
+    // 204 — record why so the caller can decide whether to hint the user.
+    lastVoiceReason = res.headers.get("X-Voice-Reason") || "unknown";
+  } catch (_) {
+    lastVoiceReason = "network-error";
+  }
   return null;
 }
 
@@ -397,7 +464,9 @@ function splitSentences(text) {
 // Speak a reply sentence-by-sentence, so audio starts as soon as the FIRST
 // sentence is synthesized instead of after the whole paragraph. Prefetches the
 // next sentence's audio while the current one plays, so it flows without gaps.
-// Resolves when done (or interrupted), so hands-free waits for her to finish.
+// Sentences that come back 204 (unsupported language, engine unavailable) are
+// simply skipped — the reply text stays visible on screen but goes silent for
+// that sentence. Resolves when done (or interrupted).
 async function speak(text) {
   const sentences = splitSentences(text);
   if (!sentences.length) return;
@@ -411,27 +480,9 @@ async function speak(text) {
     if (speechAbort) break;
     if (audio) {
       await playNeural(audio);
-    } else {
-      await speakBrowser(sentences[i]);
     }
+    // else: silent skip. Text is already rendered in the chat pane.
   }
-}
-
-// Fill the voice picker with the installed voices, best female first.
-function populateVoicePicker() {
-  if (!ttsSupported) return;
-  const voices = [...allVoices()].sort((a, b) => femaleScore(b.name) - femaleScore(a.name));
-  if (!voices.length) return;
-  const saved = localStorage.getItem("ttsVoice");
-  els.ttsVoice.innerHTML = "";
-  for (const v of voices) {
-    const opt = document.createElement("option");
-    opt.value = v.name;
-    opt.textContent = `${v.name} (${v.lang})`;
-    if (v.name === saved) opt.selected = true;
-    els.ttsVoice.appendChild(opt);
-  }
-  if (!saved && voices[0]) localStorage.setItem("ttsVoice", voices[0].name);
 }
 
 // ---- Voice: listening (speech-to-text) -------------------------------
@@ -503,7 +554,7 @@ if (!sttSupported) {
 
 function startListening() {
   if (!sttSupported || listening || busy) return;
-  stopSpeaking(); // don't hear ourselves (neural clip or browser speech)
+  stopSpeaking(); // don't hear ourselves — barge-in on any playing neural clip
   try {
     els.input.value = "";
     recognition.lang = els.micLang.value || "en-US"; // English or Croatian
@@ -558,6 +609,7 @@ function updateComposerButtons() {
   const hasText = els.input.value.trim().length > 0;
   els.send.hidden = !hasText;
   els.convoMode.hidden = hasText;
+  updateCouncilButton();
 }
 
 // Enter to send, Shift+Enter for a new line.
@@ -572,6 +624,8 @@ els.mic.addEventListener("click", () => {
   if (listening) stopListening();
   else startListening();
 });
+
+els.council.addEventListener("click", () => runCouncil(els.input.value));
 
 els.newChat.addEventListener("click", async () => {
   await fetch("/api/new", { method: "POST" });
@@ -641,14 +695,6 @@ function loadVoicePrefs() {
   els.speakToggle.checked = localStorage.getItem("speak") === "1";
   els.handsfreeToggle.checked = localStorage.getItem("handsfree") === "1";
   els.micLang.value = localStorage.getItem("micLang") || "en-US";
-  if (ttsSupported) {
-    populateVoicePicker();
-    // Voices often load asynchronously; refresh the list when they arrive.
-    window.speechSynthesis.onvoiceschanged = populateVoicePicker;
-  } else {
-    // No browser voices to pick from (the neural voice needs no picker).
-    els.ttsVoice.parentElement.style.display = "none";
-  }
   updateSpeakVisibility();
   if (!sttSupported) {
     els.handsfreeToggle.parentElement.style.display = "none";
@@ -656,10 +702,10 @@ function loadVoicePrefs() {
   }
 }
 
-// Nero can speak if the browser has voices OR her local neural voice is ready.
+// Nero can speak iff the neural voice (server-side Kokoro) is available.
+// The browser SpeechSynthesis path was removed — Nero is one voice or none.
 function updateSpeakVisibility() {
-  els.speakToggle.parentElement.style.display =
-    (ttsSupported || neuralVoice) ? "" : "none";
+  els.speakToggle.parentElement.style.display = neuralVoice ? "" : "none";
 }
 
 // Ask the server whether Nero's local neural voice is available.
@@ -678,11 +724,6 @@ els.handsfreeToggle.addEventListener("change", () =>
   localStorage.setItem("handsfree", els.handsfreeToggle.checked ? "1" : "0"));
 els.micLang.addEventListener("change", () =>
   localStorage.setItem("micLang", els.micLang.value));
-els.ttsVoice.addEventListener("change", () => {
-  localStorage.setItem("ttsVoice", els.ttsVoice.value);
-  // This picker chooses the *browser* fallback voice, so preview that one.
-  if (els.speakToggle.checked) { stopSpeaking(); speakBrowser("Hi, this is how I sound."); }
-});
 
 // ---- Humor dial (live, TARS-style) ----------------------------------
 
@@ -724,6 +765,7 @@ els.humor.addEventListener("input", () => {
   await loadConfig();
   showEmptyState();
   await Promise.all([loadStatus(), loadHistory(), loadMemories(), loadSettings()]);
+  await loadCouncilStatus();
   els.input.focus();
   setInterval(loadStatus, 30000);
 })();

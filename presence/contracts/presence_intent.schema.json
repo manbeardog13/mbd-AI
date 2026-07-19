@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mbd-ai/nero/presence_intent.schema.json",
+  "title": "PresenceIntent",
+  "description": "The semantic intent the brain sends to the Presence Director. Never contains animation-specific detail. Renderers interpret this into visible motion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["state"],
+  "properties": {
+    "state": {
+      "description": "High-level state Nero should be in.",
+      "type": "string",
+      "enum": [
+        "absent",
+        "emerging",
+        "idle",
+        "listening",
+        "thinking",
+        "speaking",
+        "alert",
+        "celebrating",
+        "concerned",
+        "dissolving"
+      ]
+    },
+    "emotion": {
+      "description": "Emotional coloring on top of the state.",
+      "type": "string",
+      "enum": [
+        "neutral",
+        "focused",
+        "warm",
+        "amused",
+        "protective",
+        "concerned"
+      ],
+      "default": "neutral"
+    },
+    "intensity": {
+      "description": "How strongly to express state + emotion. 0 = imperceptible, 1 = max the runtime supports.",
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 0.5
+    },
+    "voice_profile": {
+      "description": "Which voice profile is speaking (hint for runtime coordination).",
+      "type": "string",
+      "default": "nero_prime"
+    },
+    "metadata": {
+      "description": "Escape-hatch renderer-specific hints. Runtimes MUST tolerate unknown keys.",
+      "type": "object",
+      "additionalProperties": true,
+      "default": {}
+    }
+  }
+}

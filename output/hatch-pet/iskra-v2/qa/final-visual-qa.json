@@ -1,0 +1,12 @@
+{
+  "visual_qa": "pass",
+  "qa_note": "All used frames preserve Iskra's identity and required accents, the motion states read cleanly, and the ordered direction loop remains attached, stable, and semantically correct.",
+  "review_warnings": [
+    "Blind ambiguity at 135, 157.5, 247.5, and 337.5 is accepted because labeled landmarks and loop context confirm both axes.",
+    "Continuity hole flags at 000, 022.5, 202.5, 315, and 337.5 are natural open ear-tip gaps with no visible interior defect.",
+    "090 to 112.5 and 180 to 202.5 center shifts are head-and-ear articulation with stable lower bodies.",
+    "Chroma cleanup and extended atlas validation both pass."
+  ],
+  "repair_rows": [],
+  "repair_notes": []
+}

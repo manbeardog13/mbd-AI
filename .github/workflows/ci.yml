@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository-policy:
+    name: repository-policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.14"
+      - name: Verify repository governance
+        run: python verify/verify_repository_governance.py
+      - name: Verify canonical documentation
+        run: python verify/verify_canon.py
+      - name: Check generated knowledge index
+        run: python scripts/build_canon_index.py --check
+      - name: Compile policy tooling
+        run: python -m py_compile scripts/repoctl.py verify/verify_repository_governance.py
+
+  python-tests:
+    name: python-tests-${{ matrix.python-version }}
+    runs-on: windows-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.13"
+          - "3.14"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install runtime and test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt -r requirements-dev.txt
+      - name: Run application and governance tests
+        run: python -m pytest tests -q
+      - name: Verify continuity Windows path authority
+        run: python verify/verify_continuity_windows_path.py
+      - name: Run continuity tests
+        run: python -m pytest continuity/tests -q
+      - name: Run School control-plane tests
+        run: python -m pytest School/tooling/test_schoolctl.py School/tooling/test_task_graders.py -q

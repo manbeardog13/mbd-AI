@@ -39,6 +39,11 @@ VENV_PYTHON = VENV_DIR / ("Scripts" if IS_WINDOWS else "bin") / (
     "python.exe" if IS_WINDOWS else "python"
 )
 OLLAMA_HOST = "http://127.0.0.1:11434"
+HOSTED_ONLY_HARD_DISABLED = True
+DISABLED_MESSAGE = (
+    "Local Nero bootstrap is hard-disabled. Use zero-start Codex Host Presence; "
+    "Ollama, local models, and the project server will not be installed or started."
+)
 
 
 # ---- pretty output ----------------------------------------------------
@@ -241,7 +246,7 @@ def ensure_models() -> None:
             die(
                 f"Couldn't download '{model}'.\n"
                 "    Make sure Ollama is running, then re-run this script.\n"
-                "    (You can pick different models in config.yaml — see docs/MODELS.md)"
+                "    (You can pick different models in config.yaml — see docs/guides/MODELS.md)"
             )
         ok("Ready")
 
@@ -255,7 +260,11 @@ def launch() -> None:
 
 # ---- main -------------------------------------------------------------
 
-def main() -> None:
+def main() -> int:
+    if HOSTED_ONLY_HARD_DISABLED:
+        print(DISABLED_MESSAGE, file=sys.stderr)
+        return 2
+
     setup_only = "--setup-only" in sys.argv[1:]
     banner()
     check_python()
@@ -268,14 +277,15 @@ def main() -> None:
         starter = "start.bat" if IS_WINDOWS else "./start.sh"
         print(f"    Everything is ready. Start Nero any time with:  {starter}")
         print("    (or:  python bootstrap.py )")
-        return
+        return 0
 
     launch()
+    return 0
 
 
 if __name__ == "__main__":
     try:
-        main()
+        raise SystemExit(main())
     except KeyboardInterrupt:
         print("\nStopped.")
         sys.exit(0)

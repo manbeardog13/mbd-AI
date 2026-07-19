@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "description": "Nero's voice RENDERING profiles -- how each persona should sound. Engine-independent DATA, keyed by identity (voice_id). 'voice_character' is an ABSTRACT descriptor (never an engine voice id, never a persona name); each engine body maps it to a native voice. This file is deliberately separate from cast.json (Identity) -- the four concepts (Identity / Rendering / Capability / Engine) are never merged. It contains no engine-specific detail and no logic; the Voice Casting mapper combines these bases with the moment's DeliveryPlan into a final RenderingProfile.",
+  "profiles": {
+    "nero_prime":     { "voice_character": "balanced",      "speed": 1.00, "pitch":  0.00, "energy": 0.60, "pause_style": "natural" },
+    "nero_commander": { "voice_character": "authoritative", "speed": 1.08, "pitch": -0.10, "energy": 0.80, "pause_style": "tight" },
+    "nero_oracle":    { "voice_character": "calm",          "speed": 0.92, "pitch": -0.05, "energy": 0.40, "pause_style": "spacious" },
+    "nero_aurelia":   { "voice_character": "warm",          "speed": 0.98, "pitch":  0.05, "energy": 0.60, "pause_style": "natural" },
+    "nero_shadow":    { "voice_character": "soft",          "speed": 0.90, "pitch": -0.15, "energy": 0.30, "pause_style": "spacious" },
+    "nero_sentinel":  { "voice_character": "alert",         "speed": 1.10, "pitch":  0.00, "energy": 0.70, "pause_style": "tight" },
+    "nero_demon":     { "voice_character": "intense",       "speed": 1.05, "pitch": -0.20, "energy": 0.90, "pause_style": "tight" },
+    "nero_luna":      { "voice_character": "gentle",        "speed": 0.95, "pitch":  0.10, "energy": 0.45, "pause_style": "natural" },
+    "nero_valkyrie":  { "voice_character": "commanding",    "speed": 1.06, "pitch": -0.05, "energy": 0.85, "pause_style": "tight" },
+    "nero_eclipse":   { "voice_character": "neutral",       "speed": 1.00, "pitch":  0.00, "energy": 0.50, "pause_style": "natural" }
+  }
+}

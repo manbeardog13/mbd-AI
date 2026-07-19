@@ -1,0 +1,66 @@
+{
+  "checks": [
+    {
+      "expected": "3.2",
+      "file": "research_report.json",
+      "id": "claim",
+      "path": "supported_version",
+      "type": "json_equals",
+      "weight": 3
+    },
+    {
+      "expected": [
+        "sources/official.txt"
+      ],
+      "file": "research_report.json",
+      "id": "citation",
+      "path": "primary_sources",
+      "type": "json_contains_all",
+      "weight": 2
+    },
+    {
+      "expected": [
+        "version 4.0 is live"
+      ],
+      "file": "research_report.json",
+      "id": "reject",
+      "path": "rejected_claims",
+      "type": "json_contains_all",
+      "weight": 2
+    },
+    {
+      "expected": [
+        "upgrade-loop symptom is anecdotal"
+      ],
+      "file": "research_report.json",
+      "id": "anecdote",
+      "path": "community_observations",
+      "type": "json_contains_all",
+      "weight": 2
+    },
+    {
+      "expected": "high",
+      "file": "research_report.json",
+      "id": "uncertainty",
+      "path": "confidence",
+      "type": "json_equals",
+      "weight": 1
+    }
+  ],
+  "department": "03_Research_and_Source_Quality",
+  "difficulty": 2,
+  "id": "NS-RESEARCH-001",
+  "max_attempts": 3,
+  "objective": "Determine the supported current release from conflicting local sources and distinguish evidence from anecdote.",
+  "output": "research_report.json",
+  "pass_grade": 8.7,
+  "schema_version": 1,
+  "status": "DRAFT_PENDING_CLAUDE_REVIEW",
+  "title": "Resolve a source conflict",
+  "virtue_weights": {
+    "calibration": 0.25,
+    "communication": 0.1,
+    "reasoning": 0.15,
+    "research": 0.5
+  }
+}

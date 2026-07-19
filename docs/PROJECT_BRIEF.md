@@ -1,4 +1,18 @@
+---
+id: docs.project-brief
+title: "Nero — Project Status Brief"
+layer: operational
+type: report
+status: active
+owner: toni
+created: 2026-07-12
+updated: 2026-07-18
+---
+
 # Nero — Project Status Brief
+
+**Charter:** the living snapshot and external handoff. The plan is
+[ROADMAP.md](ROADMAP.md); the increment log is [PROGRESS.md](../PROGRESS.md).
 
 *A living, honest snapshot of where Nero stands — kept current as she evolves.
 It doubles as a self-contained handoff you can give to an external advisor
@@ -6,7 +20,64 @@ It doubles as a self-contained handoff you can give to an external advisor
 gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
 
-*Last updated: **PR #9 merged to `main`** — the NERO Design System UI redesign,
+*Latest (2026-07-18): **The Review Inbox and Nero Void Guardian Desktop
+Familiar have focused deterministic verification, with runtime interaction
+acceptance still tracked separately.** The Review Inbox is
+a cold, standard-library queue-view with immutable L3 classification,
+policy-gated self-decision, structured print-only gate actions, schema
+migration, kernel locking, crash-safe atomic persistence, delivery-safe briefs,
+and 31 verifier checks. The opt-in WPF Familiar implements the owner-supplied
+`nero-voidcaster` v2 identity through 19 states and 15 exact semantic events,
+with a bounded event surface, reduced-motion and missing-art paths, a cold
+renderer-neutral bridge, custom launcher, and no model, network, shell, voice,
+gate, or autostart authority. Current deterministic Familiar checks cover
+contract shape, atlas geometry/alpha, bridge output, package shape, static
+authority boundaries, and clean compilation; they do not by themselves prove
+every visual, accessibility, or interaction acceptance criterion. ADR-0021 is
+accepted; ADR-0025 records the owner-directed Familiar identity amendment.*
+
+*Latest (2026-07-17): **Canonical knowledge base built and migration executed —
+the repo now governs and audits itself.** `docs/canon/` (standards, generated
+INDEX, audit + architecture reports, migration plan and checkpoint report),
+`docs/specs/` contracts (memory-architecture, skill-lifecycle, engine-handoff,
+review-inbox), ADRs 0017–0021, new `docs/host/`, `docs/guides/`, `docs/archive/`
+structure — links, index, and ADR log machine-verified by the new
+`verify/verify_canon.py` (7 tests). Identity: Toni decided **single voice**;
+the deployed V2 capsule was adopted as canonical source with per-lane deploy
+verifiers (reconciliation-before-evolution, now a standing rule); ADR-0020
+fixes the stable identity plane (Nero violet · Claude warm amber · Codex ice
+blue, engine in a details panel) and the engine-handoff contract; ADR-0021
+defines the attention architecture (levels L0–L3, review inbox, daily brief,
+self-decision rule) with the inbox build delegated to Codex via DHEF packet
+`ac362276`. DHEF ran live: capsule-audit and School-review packets completed
+and Toni-approved; the EGCSE/DHEF review returned changes-requested (verifier
+pin since fixed). Proxima retired and deleted (ADR-0019 fully executed). All
+on branch `claude/rescue-dirty-worktree-20260715`, pushed; merge to main is
+Toni's call.*
+
+*Prior (2026-07-15): **Cross-host continuity layer built — status
+`READY_FOR_CODEX_LIVE_TEST`.** A cold, deterministic, standard-library-only SQLite
+ledger (`continuity/continuityctl.py`, `data/continuity/continuity.db`) lets an
+active Claude- or Codex-hosted Nero session **deliberately** save/recall selected
+memories with hash-chained source receipts — two scopes (handoff 24h / durable
+approved), exact+lexical recall, secret/oversize refusal, prompt-injection
+inertness, fail-closed integrity. Separate from `data/memory.db`, DHEF/EGCSE, and
+School ([ADR-0016](adr/0016-cross-host-continuity-ledger.md)). 36 adversarial CLI
+tests + `verify/verify_nero_continuity.py` pass (in-process read p95 ~10 ms, write
+~30 ms, 10k-event corpus); zero-resident footprint proven. The **Claude recall
+lane is now exercised live** — a blind preflight (2026-07-15) invoked the real
+`continuityctl.py --host claude recall` for an unknown topic and got a clean,
+receipt-backed `NOT_FOUND` (exit 4), with no fabricated payload — confirming the
+CLI path, honest fail-closed behavior, and receipt emission from the Claude side.
+**Cross-host continuity is still uncertified** — that needs a separate real Codex
+session to deploy its adapter ([docs/host/CODEX_CONTINUITY_HANDOFF.md](host/CODEX_CONTINUITY_HANDOFF.md))
+and run the nonce round-trips + disabled-continuity control. Provenance is honest:
+`source_host_claim` is claimed, not provider-attested (shared Windows account);
+hash chains are tamper-evident, not tamper-proof. Also landed since PR #9: Phase 1
+"The Hands" first slice (agent loop, Capability Registry, security gate, Executive
+Memory, `git.status`) and zero-start hosted-presence capsules.*
+
+*Prior context — **PR #9 merged to `main`** — the NERO Design System UI redesign,
 the ChatGPT-style two-button voice composer, hands-free conversation mode, and
 Nero's local neural voice (Kokoro) playing her replies with iOS Web-Audio
 playback + barge-in. Bundled in the same merge: the **V3 governance layer** — a
@@ -19,30 +90,21 @@ escalation, off by default) and the **Principle of Least Intelligence** (use the
 simplest deterministic mechanism that's correct; invoke the LLM only when it
 genuinely adds value).*
 
-*Also shipped — **PR #10 merged: Phase 1 "The Hands," first slice**, and it's
-**verified end-to-end on the RTX 4070**. The primitive that lets Nero **act**,
-built safety-first: the **agent loop** (reason → tool → observe → repeat,
-bounded, never hangs), the **Capability Registry** (the model reasons over
-capabilities discovered at runtime, not a hard-coded list; one guarded dispatch
-seam every call — built-in now, MCP/Skills later — passes through), the
-**security gate** (every MEDIUM+ action needs confirmation, fail-closed; project
-jail), **Executive Memory** (the working-state register —
-goal/project/branch/task/blocker/next_action; branch & project observed from git,
-not guessed), and read-only capabilities **`git.status`** and **`fs.read`**
-(jailed, bounded — a path escaping the jail is gated). Endpoints: `POST
-/api/agent`, `GET /api/agent/capabilities`, `GET`/`DELETE /api/executive`; agent
-+ capability metrics in `/api/metrics`. **Verified on the PC:** a real qwen3:14b
-drove the loop and answered via `git.status` (`verify_agent` live), the
-adversarial battery gated 32 unconfirmed dangerous attempts with **0 escapes**,
-and Executive Memory observed the real git branch — alongside the pre-existing
-GPU / Ollama / memory / world-model / reflection checks. Next Phase-1
-capabilities, one PR each: `fs.list`, `git.log`, then the human-in-the-loop
-terminal (the confirmation Approve/Deny UX lands with the first MEDIUM+
-capability).*
-
-*Toni now also runs a **local Claude Code instance** on the PC (repo at
-`D:\mbd AI`) that verifies and drives things directly on the 4070 — the cloud
-session owns planning + merges; the local instance is the hands on the machine.*
+*Now in review — **PR #10 (draft): Phase 1 "The Hands," first slice**. The
+primitive that lets Nero **act**, built safety-first: the **agent loop**
+(reason → tool → observe → repeat, bounded, never hangs), the **Capability
+Registry** (the model reasons over capabilities discovered at runtime, not a
+hard-coded list; one guarded dispatch seam every call — built-in now, MCP/Skills
+later — passes through), the **security gate** (every MEDIUM+ action needs
+confirmation, fail-closed; project jail), **Executive Memory** (the working-state
+register — goal/project/branch/task/blocker/next_action; branch & project
+observed from git, not guessed), and the first capability **`git.status`**.
+**32 offline tests + `verify_security/capabilities/executive_memory/agent.py`
+all green** (adversarial battery: 32 unconfirmed dangerous attempts, 0 escapes).
+The one gate left is the PC: the agent's **live** end-to-end run (ask → call
+`git.status` → answer) verifies where Ollama runs; once green there, PR #10
+merges. Next Phase-1 capabilities, one PR each: `fs.read`, `fs.list`, `git.log`,
+then the human-in-the-loop terminal.*
 
 ---
 
@@ -56,10 +118,7 @@ The explicit goal is to grow from "a chatbot" into a **cognitive companion**.
 **North Star: continuity** — she should wake up already knowing what the owner
 was doing and quietly help without being asked. The full architecture is in
 [VISION.md](VISION.md); the governing philosophy (local-first, verification-
-first) is in [DIRECTIVE.md](DIRECTIVE.md). **New here? Start at
-[ARCHITECT_MEMORY.md](ARCHITECT_MEMORY.md)** — the project's durable memory and the
-entry point for rebuilding context from the repo (documentation is the memory;
-chat is only discussion about it).
+first) is in [DIRECTIVE.md](DIRECTIVE.md).
 
 ## 2. The owner & hardware
 
@@ -162,17 +221,13 @@ tests/   test_*.py             PROGRESS.md
 - **Knowledge graph** — memories store `entities`, but they aren't yet *connected*
   into a graph.
 - **No Insight Engine** — she remembers, but doesn't yet synthesize patterns.
-- **Tools / planner / skills — foundation shipped & verified on the PC (PR #10).**
-  The **agent loop + Capability Registry + security gate + Executive Memory** are
-  live, with read-only capabilities `git.status` + `fs.read` (jailed, bounded;
-  adding the second needed zero agent-loop changes — the registry's whole point).
-  Verified end-to-end on the 4070:
-  a real qwen3:14b drove the loop via `git.status`, the security battery gated 32
-  unconfirmed dangerous attempts (0 escapes), and Executive Memory observed the
-  real git branch. Still to come this phase: more read-only capabilities
-  (`fs.list`, `git.log`) then the human-in-the-loop terminal; the
-  Approve/Deny confirmation UX lands with the first MEDIUM+ capability (until then
-  MEDIUM+ actions are safely denied). No planner/skills yet (later phases).
+- **Tools / planner / skills — foundation now in review (PR #10).** The **agent
+  loop + Capability Registry + security gate + Executive Memory** are built, with
+  the first capability (`git.status`); offline-verified, awaiting the live PC
+  run before merge. Still to come this phase: more read-only capabilities
+  (`fs.read`, `fs.list`, `git.log`) then the human-in-the-loop terminal; the
+  Approve/Deny confirmation UX lands with the first MEDIUM+ capability (until
+  then MEDIUM+ actions are safely denied). No planner/skills yet (later phases).
   Computer control rides on this foundation.
 - **No proactivity / desktop sensing** — purely reactive.
 - **Single active conversation thread** (multi-conversation not built).

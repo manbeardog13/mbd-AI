@@ -1,20 +1,21 @@
-"""Start your personal AI.
+"""Legacy local Nero launcher, permanently disabled for hosted-only Host Mode.
 
     python run.py
 
 Then open the printed address in your browser. On the same machine that's
 http://localhost:8080 . From your phone or laptop over Tailscale, use your
-PC's Tailscale address instead (see docs/REMOTE_ACCESS.md).
+PC's Tailscale address instead (see docs/guides/REMOTE_ACCESS.md).
 """
 from __future__ import annotations
 
 import socket
 import sys
 
-import uvicorn
-
-from app import db
-from app.config import load_config
+HOSTED_ONLY_HARD_DISABLED = True
+DISABLED_MESSAGE = (
+    "Local Nero is hard-disabled. Use zero-start Codex Host Presence; "
+    "no local model, server, database, or voice process will be started."
+)
 
 
 def _port_busy(port: int) -> bool:
@@ -24,7 +25,15 @@ def _port_busy(port: int) -> bool:
         return s.connect_ex(("127.0.0.1", port)) == 0
 
 
-def main() -> None:
+def main() -> int:
+    if HOSTED_ONLY_HARD_DISABLED:
+        print(DISABLED_MESSAGE, file=sys.stderr)
+        return 2
+
+    import uvicorn
+    from app import db
+    from app.config import load_config
+
     db.init_db()
     cfg = load_config()
 
@@ -42,7 +51,7 @@ def main() -> None:
             print(f"       lsof -ti tcp:{cfg.port} | xargs kill")
         print("     (Or set a different `port:` in config.yaml.)")
         print()
-        return
+        return 1
 
     print()
     print(f"  ── {cfg.ai_name} ──")
@@ -52,7 +61,8 @@ def main() -> None:
     print()
 
     uvicorn.run("app.main:app", host=cfg.host, port=cfg.port, log_level="info")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

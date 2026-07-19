@@ -10,9 +10,11 @@ from __future__ import annotations
 from ..registry import Registry
 from .fs_read import FsRead
 from .git_status import GitStatus
+from ..integrations import register_integration_capabilities
 
 
 def register_builtins(registry: Registry) -> None:
     """Register every built-in capability onto `registry`."""
     registry.register(GitStatus())
     registry.register(FsRead())
+    register_integration_capabilities(registry)

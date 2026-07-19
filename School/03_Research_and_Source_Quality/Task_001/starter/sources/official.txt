@@ -1,0 +1,1 @@
+Official release notes, updated 2026-07-01: current stable version is 3.2.

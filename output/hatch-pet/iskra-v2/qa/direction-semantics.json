@@ -1,0 +1,118 @@
+{
+  "ok": true,
+  "review_basis": "Independent labeled row QA plus three-worker blind consensus",
+  "directions": [
+    {
+      "direction": "000",
+      "verdict": "pass",
+      "expected": "up",
+      "observed": "Centered face with raised pupils, lifted muzzle, and upright ears",
+      "reason": "Unmistakable up cardinal in labeled and blind review."
+    },
+    {
+      "direction": "022.5",
+      "verdict": "pass",
+      "expected": "up-right",
+      "observed": "Pupils and nose shift screen-right while the eye line and muzzle remain raised",
+      "reason": "Both horizontal and vertical axes passed blind and labeled review."
+    },
+    {
+      "direction": "045",
+      "verdict": "pass",
+      "expected": "up-right",
+      "observed": "Clear rightward yaw with elevated pupils, muzzle, and ears",
+      "reason": "Progressive up-right pose passed blind and labeled review."
+    },
+    {
+      "direction": "067.5",
+      "verdict": "pass",
+      "expected": "up-right",
+      "observed": "Strong screen-right nose and pupil displacement with a remaining upward head angle",
+      "reason": "Labeled loop and blind majority confirm the intended quadrant."
+    },
+    {
+      "direction": "090",
+      "verdict": "pass",
+      "expected": "right",
+      "observed": "Nose, muzzle, pupils, and facial plane project toward screen-right",
+      "reason": "Unmistakable screen-right cardinal in labeled and blind review."
+    },
+    {
+      "direction": "112.5",
+      "verdict": "pass",
+      "expected": "down-right",
+      "observed": "Rightward yaw remains clear while pupils, eyelids, and muzzle begin lowering",
+      "reason": "Both axes passed; the measured center shift is head and ear articulation without a lower-body pop."
+    },
+    {
+      "direction": "135",
+      "verdict": "warning",
+      "expected": "down-right",
+      "observed": "Nose and visible face remain screen-right while lowered pupils, lids, and muzzle read down",
+      "reason": "Blind horizontal classification was ambiguous, but labeled normal-size review confirms down-right and the loop does not reverse."
+    },
+    {
+      "direction": "157.5",
+      "verdict": "warning",
+      "expected": "down-right",
+      "observed": "Mostly centered-down head with a small remaining screen-right bias and softened ears",
+      "reason": "Blind horizontal classification was ambiguous by design near vertical; labeled review confirms one ordinary step before 180."
+    },
+    {
+      "direction": "180",
+      "verdict": "pass",
+      "expected": "down",
+      "observed": "Symmetric frontal face with lowered pupils, eyelids, muzzle, and softened ears",
+      "reason": "Unmistakable down cardinal in labeled and blind review."
+    },
+    {
+      "direction": "202.5",
+      "verdict": "pass",
+      "expected": "down-left",
+      "observed": "Nose and both pupils sit screen-left while the eye line and muzzle remain lowered",
+      "reason": "Both axes passed blind and labeled review."
+    },
+    {
+      "direction": "225",
+      "verdict": "pass",
+      "expected": "down-left",
+      "observed": "Stronger leftward nose and pupil shift with bowed brow and lowered muzzle",
+      "reason": "Both axes passed blind and labeled review."
+    },
+    {
+      "direction": "247.5",
+      "verdict": "warning",
+      "expected": "down-left",
+      "observed": "Nose and pupils remain clearly screen-left with a subtle downward gaze and muzzle angle",
+      "reason": "Blind vertical classification was ambiguous, but labeled normal-size review confirms down-left with no quadrant reversal."
+    },
+    {
+      "direction": "270",
+      "verdict": "pass",
+      "expected": "left",
+      "observed": "Broad near-frontal head with nose and both pupils clearly left of center",
+      "reason": "Redesigned scale-safe cardinal is unmistakably screen-left in labeled and blind review."
+    },
+    {
+      "direction": "292.5",
+      "verdict": "pass",
+      "expected": "up-left",
+      "observed": "Nose and pupils stay screen-left while raised muzzle and elevated gaze add up",
+      "reason": "Both axes passed blind and labeled review."
+    },
+    {
+      "direction": "315",
+      "verdict": "pass",
+      "expected": "up-left",
+      "observed": "Left-biased nose and pupils with lifted eye line, muzzle, and upright ears",
+      "reason": "Both axes passed and scale remains continuous."
+    },
+    {
+      "direction": "337.5",
+      "verdict": "warning",
+      "expected": "up-left",
+      "observed": "Raised pupils and muzzle with a subtle remaining screen-left nose and pupil offset",
+      "reason": "Blind horizontal classification was ambiguous near vertical; labeled review and the stable 337.5-to-000 boundary confirm up-left."
+    }
+  ]
+}

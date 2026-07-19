@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "specVersion": "2.0.0",
+  "id": "nero-voidcaster",
+  "displayName": "Nero",
+  "runtimeName": "Nero Companion Runtime",
+  "description": "An opt-in, presentation-only pixel-art desktop companion that visualizes confirmed Nero, Claude, Codex, and system activity. It has no cognition, orchestration, gate, publication, shell, network, memory, model, or voice authority.",
+  "status": "implemented-runtime-contract",
+  "updated": "2026-07-18",
+  "identity": {
+    "role": "Void Guardian visual manifestation of hosted orchestration",
+    "personality": ["capable", "wry", "protective", "playful", "never saccharine"],
+    "silhouetteLocks": [
+      "female void elf proportions",
+      "high twin magenta ponytails",
+      "long pointed ears",
+      "plain thick black wayfarer sunglasses",
+      "obsidian-black plate armor",
+      "snarling wolf-head pauldrons with glowing violet eyes",
+      "heavy two-handed mace"
+    ],
+    "weaponLock": {
+      "name": "Jeklik's Crusher — Mongoose Thunder",
+      "rules": [
+        "preserve the mace-head silhouette",
+        "keep the weapon visibly heavy and expensive",
+        "blackened polished metal with emerald, violet, and electric-blue energy accents",
+        "lightning may intensify but must not obscure the weapon"
+      ]
+    },
+    "prohibitedDrift": [
+      "no generic wizard robes",
+      "no pastel or cute armor replacement",
+      "no ornamental sunglasses",
+      "no single ponytail or loose hair",
+      "no holy-gold Nero aura",
+      "no weapon substitution",
+      "no muddy blending of Claude, Codex, and Nero colors"
+    ]
+  },
+  "assets": {
+    "basePath": "assets/nero/",
+    "runtimeAtlas": {
+      "file": "nero-voidcaster-v2.png",
+      "sha256": "601be5731c34bc6a6a022ee9abf27f426c2d1372794ba1b1f5d7481826e04d55",
+      "format": "PNG RGBA8",
+      "pixelSize": {"width": 1536, "height": 416},
+      "layout": {
+        "columns": 8,
+        "rows": 2,
+        "cellWidth": 192,
+        "cellHeight": 208,
+        "indexing": "row-major, zero-based",
+        "cropFormula": "x=(index%8)*192, y=floor(index/8)*208, width=192, height=208"
+      },
+      "alphaExpectation": "transparent background; no visible chroma-key pixels",
+      "scaling": "nearest-neighbor at integer scale factors"
+    },
+    "provenance": [
+      {
+        "file": "nero-voidcaster-v2-source.png",
+        "sha256": "12f2dd1217fd44e59fc4e8bbec65e2489a8b92fec1cfd70568ff99b2c82b7560",
+        "purpose": "generated source atlas retained for visual provenance; not loaded by the runtime"
+      },
+      {
+        "file": "nero-voidcaster-v2-alpha.png",
+        "sha256": "b237629206d8ee72044fb40c10ba4af65831df3d1af477e6afd161eef752705c",
+        "purpose": "transparent alpha master retained for future repair work; not loaded by the runtime"
+      },
+      {
+        "file": "nero-voidcaster.ico",
+        "sha256": "480e4c34f9efe7e7a66832034868c2354edb8ada14578befb777e86f1ba307c9",
+        "purpose": "compiled executable icon"
+      }
+    ],
+    "frameGroups": {
+      "idle_breathe": [0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1],
+      "attentive": [8, 9, 10, 11],
+      "action": [12, 13, 14, 15, 14, 13],
+      "thinking": [11, 12, 11, 10]
+    },
+    "fallbackSprite": "runtimeAtlas:idle_breathe",
+    "fallbackRegistry": {
+      "boot_arrival": "idle_breathe",
+      "idle_bored_tail_twirl": "idle_breathe",
+      "idle_banana_gag": "idle_breathe",
+      "dual_agent_ascension": "action",
+      "task_failure": "idle_breathe",
+      "critical_alert": "idle_breathe",
+      "repository_push": "action",
+      "dismiss_goodnight": "idle_breathe"
+    }
+  },
+  "visualLanguage": {
+    "nero": {"primary": ["#FF2DAA", "#B533FF", "#6D28D9"], "metal": ["#07090F", "#171B25", "#657083"], "accent": "#55CFFF"},
+    "claude": {"primary": ["#E58A3A", "#F2B84B", "#FFE0A3"], "motifs": ["warm ribbons", "paper fragments", "circular runes", "embers"]},
+    "codex": {"primary": ["#DFF7FF", "#8DE3FF", "#45BFFF"], "motifs": ["blueprint grids", "wireframes", "hexagons", "scan lines", "crystalline shards"]},
+    "combinedRule": "Keep all three systems spatially distinct: Claude clockwise, Codex counterclockwise, Nero pulsing from armor and void core.",
+    "background": "transparent",
+    "pixelPolicy": "nearest-neighbor scaling only; integer scale factors preferred"
+  },
+  "runtime": {
+    "renderer": "sprite-state-machine",
+    "targetFps": 60,
+    "animationFpsDefault": 12,
+    "maxConcurrentEmitters": 5,
+    "reducedMotionSupported": true,
+    "eventQueue": {"ordering": "priority-then-time", "maxDepth": 32, "coalesceRepeatedEventsWithinMs": 750},
+    "eventChannel": {"kind": "ordered-atomic-spool", "directory": "runtime/command.d", "maxPending": 32, "maxPendingBytes": 16384, "envelopeFields": ["event", "label", "confirmed", "provenance"], "acknowledgement": "delete-after-ui-acceptance", "rejection": "quarantine-.bad"},
+    "interruptPolicy": {"criticalMayInterrupt": true, "successWaitsForCritical": true, "idleIsAlwaysInterruptible": true},
+    "safeFallback": "idle_breathe"
+  },
+  "states": [
+    {"id": "boot_arrival", "category": "system", "loop": false, "fps": 12, "durationMs": 1400, "priority": 70, "sprite": "runtimeAtlas", "frames": "frameGroup:idle_breathe", "fx": ["magenta_materialize"], "next": "idle_breathe", "implementation": "base-frame-fallback"},
+    {"id": "idle_breathe", "category": "idle", "loop": true, "fps": 8, "durationMs": null, "priority": 0, "sprite": "runtimeAtlas", "frames": "frameGroup:idle_breathe", "fx": ["armor_glint_low"], "next": null, "implementation": "shipped"},
+    {"id": "idle_look_cursor", "category": "idle", "loop": false, "fps": 10, "durationMs": 900, "priority": 5, "sprite": "runtimeAtlas", "frames": "frameGroup:attentive", "fx": ["single_void_spark"], "next": "idle_breathe", "implementation": "shipped"},
+    {"id": "idle_bored_tail_twirl", "category": "idle", "loop": false, "fps": 12, "durationMs": 1800, "priority": 5, "sprite": "runtimeAtlas", "frames": "frameGroup:idle_breathe", "fx": [], "next": "idle_breathe", "implementation": "base-frame-fallback"},
+    {"id": "idle_banana_gag", "category": "idle", "loop": false, "fps": 10, "durationMs": 2400, "priority": 5, "sprite": "runtimeAtlas", "frames": "frameGroup:idle_breathe", "fx": ["tiny_question_rune"], "next": "idle_breathe", "implementation": "base-frame-fallback"},
+    {"id": "listen_name_called", "category": "dialogue", "loop": false, "fps": 12, "durationMs": 650, "priority": 35, "sprite": "runtimeAtlas", "frames": "frameGroup:attentive", "fx": ["cursor_spark"], "next": "thinking", "implementation": "shipped"},
+    {"id": "thinking", "category": "dialogue", "loop": true, "fps": 8, "durationMs": null, "priority": 30, "sprite": "runtimeAtlas", "frames": "frameGroup:thinking", "fx": ["three_dot_orbit"], "next": null, "implementation": "shipped"},
+    {"id": "speaking", "category": "dialogue", "loop": true, "fps": 10, "durationMs": null, "priority": 30, "sprite": "runtimeAtlas", "frames": "frameGroup:idle_breathe", "fx": ["bubble_tail_pulse"], "next": null, "implementation": "shipped"},
+    {"id": "claude_channel", "category": "agent", "loop": true, "fps": 12, "durationMs": null, "priority": 45, "sprite": "runtimeAtlas", "frames": "frameGroup:idle_breathe", "fx": ["claude_amber_circle"], "next": null, "implementation": "shipped"},
+    {"id": "codex_build", "category": "agent", "loop": true, "fps": 12, "durationMs": null, "priority": 45, "sprite": "runtimeAtlas", "frames": "frameGroup:idle_breathe", "fx": ["codex_ice_hexagon"], "next": null, "implementation": "shipped"},
+    {"id": "dual_agent_ascension", "category": "agent", "loop": true, "fps": 16, "durationMs": null, "priority": 60, "sprite": "runtimeAtlas", "frames": "frameGroup:action", "fx": ["claude_amber_circle", "codex_ice_hexagon", "nero_void_diamond"], "next": null, "implementation": "base-frame-fallback"},
+    {"id": "task_success", "category": "result", "loop": false, "fps": 14, "durationMs": 1500, "priority": 50, "sprite": "runtimeAtlas", "frames": "frameGroup:action", "fx": ["hard_success_ring"], "next": "idle_breathe", "implementation": "shipped"},
+    {"id": "task_failure", "category": "result", "loop": false, "fps": 12, "durationMs": 1700, "priority": 65, "sprite": "runtimeAtlas", "frames": "frameGroup:idle_breathe", "fx": ["red_violet_fault_badge"], "next": "attention_required", "implementation": "base-frame-fallback"},
+    {"id": "attention_required", "category": "system", "loop": true, "fps": 8, "durationMs": null, "priority": 80, "sprite": "runtimeAtlas", "frames": "frameGroup:action", "fx": ["raised_hand_badge"], "next": null, "implementation": "shipped"},
+    {"id": "critical_alert", "category": "system", "loop": true, "fps": 12, "durationMs": null, "priority": 100, "sprite": "runtimeAtlas", "frames": "frameGroup:idle_breathe", "fx": ["critical_badge"], "next": null, "implementation": "base-frame-fallback"},
+    {"id": "repository_push", "category": "result", "loop": false, "fps": 14, "durationMs": 1200, "priority": 45, "sprite": "runtimeAtlas", "frames": "frameGroup:action", "fx": ["codex_ice_hexagon"], "next": "idle_breathe", "implementation": "base-frame-fallback"},
+    {"id": "run_to_anchor", "category": "movement", "loop": true, "fps": 14, "durationMs": null, "priority": 25, "sprite": "runtimeAtlas", "frames": "frameGroup:idle_breathe", "fx": [], "next": null, "implementation": "shipped-drag-settle"},
+    {"id": "dismiss_goodnight", "category": "system", "loop": false, "fps": 10, "durationMs": 1600, "priority": 40, "sprite": "runtimeAtlas", "frames": "frameGroup:idle_breathe", "fx": ["magenta_dissolve"], "next": "hidden", "implementation": "base-frame-fallback"},
+    {"id": "hidden", "category": "system", "loop": true, "fps": 1, "durationMs": null, "priority": -1, "sprite": null, "frames": null, "fx": [], "next": null, "implementation": "runtime-only"}
+  ],
+  "events": [
+    {"event": "runtime.started", "condition": "pet enabled", "state": "boot_arrival", "priority": 70},
+    {"event": "user.mentions_nero", "condition": "wake phrase or direct address", "state": "listen_name_called", "priority": 35},
+    {"event": "nero.thinking", "condition": "response pending and no agent-specific work", "state": "thinking", "priority": 30},
+    {"event": "nero.speaking", "condition": "dialogue text streaming", "state": "speaking", "priority": 30},
+    {"event": "claude.started", "condition": "Claude active and Codex inactive", "state": "claude_channel", "priority": 45},
+    {"event": "codex.started", "condition": "Codex active and Claude inactive", "state": "codex_build", "priority": 45},
+    {"event": "agents.dual_active", "condition": "Claude and Codex active concurrently for at least 750ms", "state": "dual_agent_ascension", "priority": 60},
+    {"event": "task.succeeded", "condition": "foreground task completed successfully", "state": "task_success", "priority": 50},
+    {"event": "task.failed", "condition": "foreground task failed", "state": "task_failure", "priority": 65},
+    {"event": "user.action_required", "condition": "approval, decision, or missing input", "state": "attention_required", "priority": 80},
+    {"event": "system.critical", "condition": "security, data-loss, or integrity risk", "state": "critical_alert", "priority": 100},
+    {"event": "git.push_succeeded", "condition": "repository push confirmed", "state": "repository_push", "priority": 45},
+    {"event": "pet.reposition", "condition": "anchor changed", "state": "run_to_anchor", "priority": 25},
+    {"event": "pet.dismiss", "condition": "user dismisses pet", "state": "dismiss_goodnight", "priority": 40},
+    {"event": "all.work_complete", "condition": "no work and no unresolved attention state", "state": "idle_breathe", "priority": 1}
+  ],
+  "dialogue": {
+    "bubble": {
+      "theme": "dark translucent enchanted pixel glass",
+      "maxVisibleLines": 10,
+      "autoGrow": true,
+      "scrollAfterMax": true,
+      "openDurationMs": 250,
+      "typewriterCharactersPerSecond": 52,
+      "thinkingDelayMs": 280,
+      "channelAccents": {"nero": "#FF2DAA", "claude": "#F2B84B", "codex": "#8DE3FF"},
+      "reduceMotionBehavior": "instant open, no shimmer, whole-word text reveal"
+    },
+    "greetings": [
+      "Welcome back.",
+      "Good to see you again.",
+      "What's today's adventure?",
+      "Need another impossible problem solved?"
+    ],
+    "never": ["claim success before confirmation", "hide a failure", "impersonate Claude or Codex", "spam repeated notifications"]
+  },
+  "audio": {
+    "enabledByDefault": false,
+    "masterVolume": 0.35,
+    "typewriterBleps": true,
+    "ttsAfterTypewriter": false,
+    "cues": {"success": "violet_chime", "failure": "mace_bonk_low", "critical": "wolf_growl_short", "dualAgent": "void_ascension_rise"}
+  },
+  "interactions": {
+    "click": "zoom slightly, face cursor, open focused dialogue bubble",
+    "doubleClick": "open Mission Control",
+    "drag": "run or hop to new taskbar anchor, then settle",
+    "hover": "eye glint and subtle head tracking",
+    "rightClick": "open compact pet controls",
+    "escape": "close bubble without dismissing Nero"
+  },
+  "accessibility": {
+    "reducedMotion": "replace orbiting and screen-edge effects with static badges and crossfades",
+    "photosensitivity": "cap flashes at 2Hz and eliminate full-screen white frames",
+    "colorIndependence": "pair every agent color with a unique shape and motion motif",
+    "screenReader": "announce state changes using concise truthful labels"
+  },
+  "acceptanceCriteria": [
+    "Nero remains recognizable at 1x, 2x, and 3x integer scale",
+    "Claude, Codex, and Nero are identifiable without reading labels",
+    "dual-agent mode preserves all three visual identities",
+    "critical states preempt decorative states",
+    "every missing asset falls back to idle_breathe without crashing",
+    "no animation falsely reports completion",
+    "reduced-motion mode retains all semantic information",
+    "sprite crop map is verified before production slicing"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "base_repository_revision": "9e6f53e62fabc0530c5f330647d518111f57bcd2",
+  "branch": "codex/nero-mission-control-m1",
+  "verification_scope": "working-tree verifier repair based on the base revision",
+  "recorded_utc": "2026-07-15T07:01:43.2844184Z",
+  "tested_working_tree_sha256": {
+    "verify/verify_nero_continuity.py": "06a1dfe422aac78a947bf09846f3e68c5476c8916c1b002fca1af984594ffbd9",
+    "continuity/tests/test_verifier_guards.py": "251effdf9e26d574e0c8f3b82aac2a3f20ef8360b9fbe9ff0245615937d93de5",
+    "continuity/tests/test_continuity.py": "2b7ecb993d05e5e4ebd06546529dbb99b06621d0f51b5959e0e9c5d7f1ce35ab"
+  },
+  "git_clean_blob_oid": {
+    "verify/verify_nero_continuity.py": "d5957a37c05c94c704ecbf0819437b0d087cc176",
+    "continuity/tests/test_verifier_guards.py": "c78c641d6eba3eed4177f4a93e79dff932db7b2d",
+    "continuity/tests/test_continuity.py": "438496c450407319ac6604f325a8fb6e3df0f2b1"
+  },
+  "content_identity_note": "SHA-256 identifies the exact working-tree bytes exercised. Git blob OIDs identify the canonical clean-filtered bytes that will be committed when core.autocrlf normalizes line endings.",
+  "python_version": "Python 3.12.13",
+  "sqlite_version": "3.50.4",
+  "remote_writes": false,
+  "commands": [
+    {
+      "cmd": ".venv\\Scripts\\python.exe -m unittest continuity.tests.test_verifier_guards -v",
+      "exit_code": 0,
+      "result": "Ran 14 tests / OK"
+    },
+    {
+      "cmd": ".venv\\Scripts\\python.exe -m unittest continuity.tests.test_continuity -v",
+      "exit_code": 0,
+      "result": "Ran 36 tests / OK"
+    },
+    {
+      "cmd": ".venv\\Scripts\\python.exe verify\\verify_nero_continuity.py",
+      "exit_code": 0,
+      "result": "all_pass=true; 14/14 gates; 120/120 semantic cold-read samples and 120/120 semantic cold-write samples succeeded; canonical protected root D:\\mbd AI"
+    }
+  ]
+}

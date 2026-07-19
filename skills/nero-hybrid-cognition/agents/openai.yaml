@@ -1,0 +1,5 @@
+interface:
+  display_name: "Nero Hybrid Cognition"
+  short_description: "Coordinate Codex and Claude with verified learning"
+  default_prompt: "Use $nero-hybrid-cognition to split this work safely across available hosted Nero lanes and merge verified evidence."
+

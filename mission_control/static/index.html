@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0a0c11">
+  <title>Nero Mission Control</title>
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to Mission Control</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Mission Control navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">N</div>
+        <div>
+          <strong>Nero</strong>
+          <span>Mission Control</span>
+        </div>
+      </div>
+
+      <nav class="nav-list" aria-label="Sections">
+        <a class="nav-item is-active" href="#overview"><span aria-hidden="true">◈</span> Overview</a>
+        <a class="nav-item" href="#git"><span aria-hidden="true">⑂</span> Git intelligence</a>
+        <a class="nav-item" href="#workers"><span aria-hidden="true">◇</span> Workers</a>
+        <a class="nav-item" href="#planner"><span aria-hidden="true">☷</span> Planner</a>
+        <a class="nav-item" href="#verification"><span aria-hidden="true">◎</span> Verification</a>
+        <a class="nav-item" href="#attention"><span aria-hidden="true">!</span> Needs attention</a>
+        <a class="nav-item" href="#approvals"><span aria-hidden="true">✓</span> Approvals</a>
+        <a class="nav-item" href="#timeline"><span aria-hidden="true">⌁</span> Timeline</a>
+      </nav>
+
+      <div class="sidebar-foot">
+        <div class="mode-chip"><span class="status-dot status-ok"></span> Manual launch</div>
+        <p>Hosted presence remains zero-start. Remote writes are disabled.</p>
+      </div>
+    </aside>
+
+    <main id="main" class="main">
+      <header class="topbar">
+        <div>
+        <p class="eyebrow">Nero Core</p>
+          <h1 id="greeting">Hello, Toni.</h1>
+        </div>
+        <div class="topbar-actions">
+          <time id="clock" aria-label="Local time">--:--</time>
+          <button id="refresh-all" class="icon-button" type="button" aria-label="Refresh dashboard">↻</button>
+          <div id="health-pill" class="health-pill" role="status"><span class="status-dot"></span> Connecting</div>
+        </div>
+      </header>
+
+      <section id="overview" class="overview-card" aria-labelledby="overview-title">
+        <div class="overview-copy">
+          <p class="eyebrow">Current mission</p>
+          <h2 id="overview-title">Measuring repository state</h2>
+          <p id="mission-detail" class="muted">Nero Core is collecting deterministic state.</p>
+        </div>
+        <div class="overview-stats" aria-label="Core status">
+          <div><span>Active step</span><strong id="active-step">—</strong></div>
+          <div><span>Decision state</span><strong id="decision-state">—</strong></div>
+          <div><span>Audit integrity</span><strong id="verification-state">—</strong></div>
+          <div><span>Approvals</span><strong id="approval-count">0</strong></div>
+        </div>
+        <div class="read-only-banner" role="note">
+          <span aria-hidden="true">⌾</span>
+          <span><strong>Milestone 2 guard:</strong> a Core-owned receipt is required for trusted completion; caller identity is not authenticated. Remote repository writes are unavailable.</span>
+        </div>
+      </section>
+
+      <div class="dashboard-grid">
+        <section id="git" class="panel panel-wide" aria-labelledby="git-title">
+          <div class="panel-head">
+            <div>
+          <p class="eyebrow">Measured locally</p>
+              <h2 id="git-title">Git intelligence</h2>
+            </div>
+            <div class="button-row">
+              <button id="fetch-state" class="button button-secondary" type="button">Fetch &amp; refresh</button>
+              <button class="button" type="button" disabled aria-describedby="remote-write-note">Push</button>
+            </div>
+          </div>
+          <p id="git-relationship" class="relationship">Remote relationship unavailable until refresh.</p>
+          <div class="metric-grid">
+            <div class="metric"><span>Local branch</span><strong id="git-branch">—</strong></div>
+            <div class="metric"><span>Upstream</span><strong id="git-upstream">—</strong></div>
+            <div class="metric"><span>Ahead</span><strong id="git-ahead">—</strong></div>
+            <div class="metric"><span>Behind</span><strong id="git-behind">—</strong></div>
+            <div class="metric"><span>Modified</span><strong id="git-modified">—</strong></div>
+            <div class="metric"><span>Untracked</span><strong id="git-untracked">—</strong></div>
+            <div class="metric"><span>Staged</span><strong id="git-staged">—</strong></div>
+            <div class="metric"><span>Conflicts</span><strong id="git-conflicts">—</strong></div>
+          </div>
+          <div class="git-details">
+            <div><span>Worktree</span><code id="git-worktree">—</code></div>
+            <div><span>Remote</span><code id="git-remote">—</code></div>
+            <div><span>Last fetch</span><strong id="git-fetch">Never by Core</strong></div>
+            <div><span>Fetch access</span><strong id="git-auth">Not checked</strong></div>
+            <div><span>Tracked-branch evidence</span><strong id="git-fresh">Not fresh</strong></div>
+            <div><span>Write lease</span><strong id="git-lease">Available</strong></div>
+            <div><span>Pending state</span><strong id="git-pending">Unknown</strong></div>
+            <div><span>Last commit</span><strong id="git-commit">—</strong></div>
+          </div>
+          <p id="git-errors" class="helper" role="status">Checking required Git probes.</p>
+          <p id="remote-write-note" class="helper">Remote mutation requires a future verified capability plus a visible approval. Approval evidence alone never executes it.</p>
+        </section>
+
+        <section id="workers" class="panel" aria-labelledby="workers-title">
+          <div class="panel-head">
+            <div>
+          <p class="eyebrow">Provider not contacted</p>
+              <h2 id="workers-title">Packet adapters</h2>
+            </div>
+            <span class="count-chip" id="worker-count">2</span>
+          </div>
+          <div id="worker-list" class="worker-list" aria-live="polite"></div>
+        </section>
+
+        <section id="planner" class="panel panel-wide" aria-labelledby="planner-title">
+          <div class="panel-head">
+            <div>
+          <p class="eyebrow">Evidence gated</p>
+              <h2 id="planner-title">Planner &amp; task queue</h2>
+            </div>
+            <button id="new-task" class="button button-primary" type="button">New task</button>
+          </div>
+          <div id="task-list" class="task-list" aria-live="polite"></div>
+        </section>
+
+        <section id="attention" class="panel" aria-labelledby="attention-title">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Actionable evidence</p>
+              <h2 id="attention-title">Needs attention</h2>
+            </div>
+            <span class="count-chip" id="attention-count">0</span>
+          </div>
+          <div id="attention-list" class="attention-list" aria-live="polite"></div>
+        </section>
+
+        <section id="verification" class="panel panel-wide" aria-labelledby="verification-title">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Core-owned evidence</p>
+              <h2 id="verification-title">Verification authority</h2>
+            </div>
+            <div class="panel-statuses">
+              <span class="count-chip" id="verification-backend-state">Checking backend</span>
+              <span class="count-chip" id="verification-run-count">0 runs</span>
+            </div>
+          </div>
+          <p class="helper verification-intro">Profiles are code-owned and content-addressed. A task's pinned profile digest cannot be replaced; changed harness content fails closed.</p>
+          <div class="verification-layout">
+            <div>
+              <h3>Available profiles</h3>
+              <div id="verification-profile-list" class="verification-list" aria-live="polite"></div>
+            </div>
+            <div>
+              <h3>Recent evidence</h3>
+              <div id="verification-run-list" class="verification-list" aria-live="polite"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="approvals" class="panel" aria-labelledby="approvals-title">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Local approval records</p>
+              <h2 id="approvals-title">Pending approvals</h2>
+            </div>
+          </div>
+          <p class="helper">Caller identity is not authenticated. Loopback access reduces exposure but is not authorization.</p>
+          <div id="approval-list" class="approval-list" aria-live="polite"></div>
+        </section>
+
+        <section id="timeline" class="panel panel-wide" aria-labelledby="timeline-title">
+          <div class="panel-head">
+            <div>
+          <p class="eyebrow">Audit evidence</p>
+              <h2 id="timeline-title">Action timeline</h2>
+            </div>
+            <label class="compact-field">Filter
+              <select id="event-filter">
+                <option value="">All events</option>
+                <option value="task.">Tasks</option>
+                <option value="lease.">Leases</option>
+                <option value="git.">Git</option>
+                <option value="approval.">Approvals</option>
+                <option value="verification.">Verification</option>
+              </select>
+            </label>
+          </div>
+          <ol id="event-list" class="event-list" aria-live="polite"></ol>
+        </section>
+
+        <section class="panel" aria-labelledby="health-title">
+          <div class="panel-head">
+            <div>
+          <p class="eyebrow">Fail closed</p>
+              <h2 id="health-title">Internal state integrity</h2>
+            </div>
+          </div>
+          <dl id="health-list" class="health-list"></dl>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="task-dialog" aria-labelledby="task-dialog-title">
+    <form id="task-form" method="dialog">
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Bounded work</p>
+          <h2 id="task-dialog-title">Create a task</h2>
+        </div>
+        <button id="close-task" class="icon-button" type="button" aria-label="Close">×</button>
+      </div>
+      <label>Objective
+        <textarea name="objective" rows="3" maxlength="2000" required placeholder="Describe the measurable outcome"></textarea>
+      </label>
+      <label>Acceptance criteria <span class="muted">one per line</span>
+        <textarea name="criteria" rows="4" placeholder="Tests pass&#10;Branch relationship verified"></textarea>
+      </label>
+      <div class="form-row">
+        <label>Priority
+          <input name="priority" type="number" value="50" min="0" max="100">
+        </label>
+        <label class="check-field">
+          <input name="write_required" type="checkbox">
+          <span>Requires repository write lease</span>
+        </label>
+      </div>
+      <label>Verification profile
+        <select id="task-profile" name="verification_profile_id">
+          <option value="">No profile pinned yet</option>
+        </select>
+        <span class="helper field-helper">A profile fixes what Nero Core is allowed to verify; it never accepts an operator-entered command.</span>
+      </label>
+      <div class="dialog-actions">
+        <button id="cancel-task" class="button button-secondary" type="button">Cancel</button>
+        <button class="button button-primary" type="submit">Queue task</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
