@@ -30,6 +30,7 @@ import os
 import random
 import re
 import sqlite3
+import stat
 import sys
 import time
 import uuid
@@ -113,6 +114,80 @@ def sha256_of(obj) -> str:
 # Path safety
 # ---------------------------------------------------------------------------
 
+_FILE_ATTRIBUTE_REPARSE_POINT = getattr(
+    stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x00000400
+)
+
+
+def _path_is_within(candidate: str, root: str, *, windows: bool) -> bool:
+    """Compare paths component-wise, with Windows case rules when requested."""
+    path_module = __import__("ntpath" if windows else "posixpath")
+    try:
+        common = path_module.commonpath([candidate, root])
+    except ValueError:
+        return False
+    if windows:
+        return path_module.normcase(common) == path_module.normcase(root)
+    return common == root
+
+
+def _windows_reparse_metadata(path: Path, *, lstat_fn=None) -> tuple[int, int]:
+    """Return Windows attributes and reparse tag without following name links."""
+    lstat_fn = lstat_fn or os.lstat
+    info = lstat_fn(path)
+    attributes = getattr(info, "st_file_attributes", None)
+    if attributes is None:
+        raise ContinuityError(
+            "UNAVAILABLE", f"Windows path attributes unavailable: {path}"
+        )
+    return int(attributes), int(getattr(info, "st_reparse_tag", 0) or 0)
+
+
+def _reject_windows_reparse_points(existing: list[Path], *, metadata_fn=None) -> None:
+    """Reject every actual Windows reparse point; 8.3 aliases have no such bit."""
+    metadata_fn = metadata_fn or _windows_reparse_metadata
+    for ancestor in existing:
+        attributes, tag = metadata_fn(ancestor)
+        if attributes & _FILE_ATTRIBUTE_REPARSE_POINT:
+            raise ContinuityError(
+                "UNAVAILABLE",
+                "reparse-point in path rejected: "
+                f"{ancestor} attributes=0x{attributes:08X} tag=0x{tag:08X}",
+            )
+
+
+def _canonical_windows_path(
+    candidate: str,
+    existing_root: str,
+    *,
+    realpath_fn=None,
+) -> str:
+    """Expand case/8.3 aliases only after all existing components are non-reparse."""
+    realpath_fn = realpath_fn or os.path.realpath
+    resolved_root = realpath_fn(existing_root)
+    resolved_candidate = realpath_fn(candidate)
+    if not _path_is_within(resolved_candidate, resolved_root, windows=True):
+        raise ContinuityError("UNAVAILABLE", "resolved path escapes existing authority")
+    return resolved_candidate
+
+
+def _validate_windows_path(
+    candidate: str,
+    existing: list[Path],
+    *,
+    reject_fn=None,
+    canonical_fn=None,
+) -> str:
+    """Validate before and after resolution so alias expansion adds no race window."""
+    if not existing:
+        raise ContinuityError("UNAVAILABLE", "no existing path authority")
+    reject_fn = reject_fn or _reject_windows_reparse_points
+    canonical_fn = canonical_fn or _canonical_windows_path
+    reject_fn(existing)
+    canonical = canonical_fn(candidate, str(existing[0]))
+    reject_fn(existing)
+    return canonical
+
 def validate_db_path(raw: str) -> str:
     """Reject traversal / symlink / reparse-point escapes; return an abs path.
 
@@ -140,21 +215,21 @@ def validate_db_path(raw: str) -> str:
             if probe.parent == probe:
                 break
             probe = probe.parent
-    for anc in existing:
-        try:
+    try:
+        if os.name == "nt":
+            # Windows case normalization and 8.3 expansion also make realpath()
+            # differ. Inspect the actual reparse attribute instead of treating a
+            # spelling change as proof of redirection. Unknown tags stay denied.
+            return _validate_windows_path(str(p), existing)
+
+        for anc in existing:
             if anc.is_symlink():
                 raise ContinuityError("UNAVAILABLE", "symlink/reparse-point in path rejected")
             # os.path.realpath divergence on an existing component => a link.
             if anc.exists() and os.path.realpath(str(anc)) != os.path.normpath(str(anc)):
-                # Allow benign case-normalization differences on Windows by
-                # comparing case-insensitively there.
-                if os.name == "nt":
-                    if os.path.realpath(str(anc)).lower() != os.path.normpath(str(anc)).lower():
-                        raise ContinuityError("UNAVAILABLE", "reparse-point in path rejected")
-                else:
-                    raise ContinuityError("UNAVAILABLE", "symlink in path rejected")
-        except OSError as exc:
-            raise ContinuityError("UNAVAILABLE", f"path check failed: {exc}")
+                raise ContinuityError("UNAVAILABLE", "symlink in path rejected")
+    except OSError as exc:
+        raise ContinuityError("UNAVAILABLE", f"path check failed: {exc}")
     return str(p)
 
 
