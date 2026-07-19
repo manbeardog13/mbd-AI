@@ -98,8 +98,13 @@ class InboxTests(unittest.TestCase):
 
     def test_verifier_suite_green(self):
         r = subprocess.run([sys.executable, str(ROOT / "verify" / "verify_nero_inbox.py")],
-                           capture_output=True, text=True, timeout=120)
-        self.assertEqual(r.returncode, 0, r.stdout[-800:])
+                           capture_output=True, text=True, encoding="utf-8",
+                           errors="strict", timeout=120)
+        self.assertEqual(
+            r.returncode,
+            0,
+            f"stdout={r.stdout!r}\nstderr={r.stderr!r}",
+        )
 
     def test_persistent_lock_file_is_reused(self):
         with tempfile.TemporaryDirectory() as td:

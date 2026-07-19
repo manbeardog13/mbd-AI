@@ -51,12 +51,98 @@ def run(*args, state=None, policies=None, stdin=""):
     env = os.environ.copy()
     if state:
         env["NERO_INBOX_TEST_ROOT"] = str(state.parent)
-    return subprocess.run(cmd, capture_output=True, text=True, input=stdin,
-                          timeout=30, env=env)
+    return subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="strict",
+        input=stdin,
+        timeout=30,
+        env=env,
+    )
 
 
 def output(result):
     return result.stdout + result.stderr
+
+
+def _process_evidence(result: subprocess.CompletedProcess) -> str:
+    return (
+        f"command={result.args!r}; returncode={result.returncode}; "
+        f"stdout={result.stdout!r}; stderr={result.stderr!r}; encoding='utf-8'"
+    )
+
+
+def _successful_text(result: subprocess.CompletedProcess, operation: str) -> str:
+    evidence = _process_evidence(result)
+    if result.returncode != 0:
+        raise AssertionError(f"{operation} subprocess failed: {evidence}")
+    if not isinstance(result.stdout, str):
+        raise AssertionError(f"{operation} stdout is not text: {evidence}")
+    if not isinstance(result.stderr, str):
+        raise AssertionError(f"{operation} stderr is not text: {evidence}")
+    return result.stdout.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def require_brief_output(
+    result: subprocess.CompletedProcess,
+    expected_marker: str,
+) -> tuple[str, str]:
+    stdout = _successful_text(result, "brief render")
+    evidence = _process_evidence(result)
+    if not stdout:
+        raise AssertionError(f"brief render produced empty stdout: {evidence}")
+
+    missing = []
+    if expected_marker not in stdout:
+        missing.append(repr(expected_marker))
+    if "reading time" not in stdout.casefold():
+        missing.append("reading-time field")
+    brief_ids = [
+        line.removeprefix("Brief ID:").strip()
+        for line in stdout.splitlines()
+        if line.startswith("Brief ID:")
+    ]
+    if len(brief_ids) != 1 or not brief_ids[0]:
+        missing.append("one non-empty Brief ID field")
+    if missing:
+        raise AssertionError(
+            f"brief render missing {', '.join(missing)}: {evidence}"
+        )
+    return stdout, brief_ids[0]
+
+
+def require_acknowledgement(
+    result: subprocess.CompletedProcess,
+    expected_brief_id: str,
+) -> dict:
+    stdout = _successful_text(result, "brief acknowledgement")
+    evidence = _process_evidence(result)
+    if not stdout:
+        raise AssertionError(f"brief acknowledgement produced empty stdout: {evidence}")
+    try:
+        payload = json.loads(stdout)
+    except json.JSONDecodeError as exc:
+        raise AssertionError(
+            f"brief acknowledgement is not valid JSON ({exc}): {evidence}"
+        ) from None
+    if not isinstance(payload, dict):
+        raise AssertionError(
+            f"brief acknowledgement JSON is not an object: {evidence}"
+        )
+    acknowledged = payload.get("acknowledged")
+    if not isinstance(acknowledged, str) or not acknowledged:
+        raise AssertionError(
+            "brief acknowledgement missing required non-empty 'acknowledged' "
+            f"field: {evidence}"
+        )
+    if acknowledged != expected_brief_id:
+        raise AssertionError(
+            f"brief acknowledgement mismatch: expected {expected_brief_id!r}, "
+            f"got {acknowledged!r}; {evidence}"
+        )
+    return payload
 
 
 def main() -> int:
@@ -636,19 +722,19 @@ def main() -> int:
         def brief_delivery_ack():
             before = json.loads(state.read_text(encoding="utf-8"))
             r = run("brief", state=state)
-            assert "reading time" in r.stdout.lower()
-            assert "Today's summary:" in r.stdout and "Brief ID:" in r.stdout
-            first, after_render = r.stdout, json.loads(state.read_text(encoding="utf-8"))
+            first, rendered_brief_id = require_brief_output(r, "Today's summary:")
+            after_render = json.loads(state.read_text(encoding="utf-8"))
             assert after_render["last_brief_at"] == before["last_brief_at"]
             brief_id = after_render["pending_brief"]["id"]
+            assert rendered_brief_id == brief_id
             r = run("brief", state=state)
-            assert r.stdout == first
+            replay, replay_brief_id = require_brief_output(r, "Today's summary:")
+            assert replay == first and replay_brief_id == brief_id
             after_replay = json.loads(state.read_text(encoding="utf-8"))
             assert after_replay["revision"] == after_render["revision"]
             r = run("brief", "--ack", brief_id, state=state)
-            ack = json.loads(r.stdout)
+            require_acknowledgement(r, brief_id)
             after_ack = json.loads(state.read_text(encoding="utf-8"))
-            assert ack["acknowledged"] == brief_id
             assert after_ack["pending_brief"] is None
             assert after_ack["last_brief_at"] == after_render["pending_brief"]["through_at"]
             return "render replays byte-for-byte; explicit receipt advances watermark"
@@ -662,12 +748,14 @@ def main() -> int:
             }
             for mode, marker in expected.items():
                 r = run("brief", "--mode", mode, state=state)
-                assert r.returncode == 0 and marker in r.stdout
-                assert r.stdout.rstrip().splitlines()[-1].startswith(
-                    "Estimated reading time:")
+                rendered, rendered_brief_id = require_brief_output(r, marker)
+                assert rendered.rstrip().splitlines()[-1].startswith(
+                    "Estimated reading time:"
+                )
                 pending = json.loads(state.read_text(encoding="utf-8"))["pending_brief"]
+                assert rendered_brief_id == pending["id"]
                 r = run("brief", "--ack", pending["id"], state=state)
-                assert r.returncode == 0
+                require_acknowledgement(r, pending["id"])
             return "explicit detailed/highlights/minimum modes retain honest reading time"
         check("adaptive brief modes", adaptive_brief_modes)
 
