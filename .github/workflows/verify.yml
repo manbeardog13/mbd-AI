@@ -1,0 +1,33 @@
+name: verify
+
+# Nero's quality gate in CI: the offline unit tests plus the subsystem
+# verifiers that don't need a GPU/Ollama. Mirrors what runs locally, so a
+# green check here means the offline contract holds. (Live GPU/Ollama checks
+# stay on the owner's PC — see verify/README.md and the 0/2/other contract.)
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Unit tests (offline)
+        run: |
+          for t in tests/test_*.py; do
+            echo "== $t =="
+            python "$t"
+          done
+      - name: Verify Mission Control (offline + live route checks)
+        run: python verify/verify_mission_control.py
