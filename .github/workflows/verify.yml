@@ -1,33 +1,92 @@
-name: verify
-
-# Nero's quality gate in CI: the offline unit tests plus the subsystem
-# verifiers that don't need a GPU/Ollama. Mirrors what runs locally, so a
-# green check here means the offline contract holds. (Live GPU/Ollama checks
-# stay on the owner's PC — see verify/README.md and the 0/2/other contract.)
+name: Repository verification
 
 on:
-  push:
-    branches: ["**"]
   pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  verify:
-    name: verify
+  repository-policy:
+    name: repository-policy
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          python-version: "3.11"
+          persist-credentials: false
+      - name: Enforce workflow safety policy
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          failures = []
+          for path in sorted(Path(".github/workflows").glob("*.y*ml")):
+              text = path.read_text(encoding="utf-8")
+              if re.search(r"(?m)^\s*pull_request_target\s*:", text):
+                  failures.append(f"{path}: pull_request_target is forbidden")
+              for line_number, line in enumerate(text.splitlines(), 1):
+                  match = re.match(r"\s*uses:\s*([^\s#]+)", line)
+                  if match and not re.fullmatch(r"[^@\s]+@[0-9a-f]{40}", match.group(1)):
+                      failures.append(
+                          f"{path}:{line_number}: action must use a full commit SHA"
+                      )
+
+          if failures:
+              raise SystemExit("\n".join(failures))
+
+  python-tests:
+    name: python-tests-${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.13"
+          - "3.14"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
       - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+      - name: Run offline test suite
+        shell: bash
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Unit tests (offline)
-        run: |
-          for t in tests/test_*.py; do
-            echo "== $t =="
-            python "$t"
+          shopt -s nullglob
+          test_files=(tests/test_*.py)
+          if (( ${#test_files[@]} == 0 )); then
+            echo "No offline test files found" >&2
+            exit 1
+          fi
+          for test_file in "${test_files[@]}"; do
+            echo "== ${test_file} =="
+            python "${test_file}"
           done
-      - name: Verify Mission Control (offline + live route checks)
+      - name: Verify Mission Control
         run: python verify/verify_mission_control.py
+
+  dependency-review:
+    name: dependency-review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
