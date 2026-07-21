@@ -3,6 +3,9 @@
 Serves the chat web app and exposes a small API the browser talks to:
 
   GET  /                  -> the chat page
+  GET  /mission-control   -> the Mission Control operating screen
+  GET  /api/host          -> honest host telemetry (measured or unavailable)
+  POST /api/council/dispatch -> stage files for Claude · Architect (adapter)
   GET  /api/config        -> your AI's name / your name (for the UI)
   GET  /api/status        -> is the local model reachable?
   GET  /api/history       -> messages in the current conversation
@@ -21,6 +24,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+try:  # optional dependency — powers honest /api/host telemetry when installed
+    import psutil  # type: ignore
+except Exception:  # noqa: BLE001 - contained; telemetry is honestly "unavailable" without it
+    psutil = None  # type: ignore
 
 from . import db, memory, tts, world_model
 from .agent import loop as agent_loop, state as agent_state
@@ -87,6 +95,12 @@ class AgentIn(BaseModel):
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/mission-control")
+def mission_control() -> FileResponse:
+    """The Mission Control operating screen (the Companion's command surface)."""
+    return FileResponse(STATIC_DIR / "mission-control.html")
 
 
 @app.get("/api/config")
@@ -301,6 +315,59 @@ def metrics() -> dict:
         "agent": agent_loop.METRICS,
         "capabilities": cap_metrics,
     }
+
+
+# ---- Mission Control (honest host telemetry + Council dispatch) ----
+
+@app.get("/api/host")
+def host_telemetry() -> dict:
+    """Real, measured host telemetry for the Mission Control panel.
+
+    Honesty is the whole point of this endpoint (see the acceptance directive):
+    a gauge is drawn by the UI **only** when the response attests
+    ``"simulated": false`` — which we return **exclusively** for values we have
+    actually measured. CPU/RAM/disk come from ``psutil``; there is no
+    vendor-neutral GPU source, so ``gpu`` is ``null`` with a stated reason (the
+    UI then draws no GPU gauge). When no measurement source exists we do **not**
+    fabricate a fallback — we return ``503`` so the panel shows "Disconnected".
+    """
+    if psutil is None:
+        # No measured source. Per the contract, fail rather than invent values.
+        raise HTTPException(
+            status_code=503,
+            detail="No measured host telemetry source is connected (install psutil).",
+        )
+    vm = psutil.virtual_memory()
+    du = psutil.disk_usage(str(ROOT))
+    return {
+        "simulated": False,  # attested: every value below is measured, not invented
+        "cpu": psutil.cpu_percent(interval=None),
+        "ram": vm.percent,
+        "ram_total_gb": round(vm.total / 1_000_000_000, 1),
+        "disk": du.percent,
+        "disk_total_gb": round(du.total / 1_000_000_000),
+        "gpu": None,
+        "gpu_reason": "No vendor-neutral GPU source is connected on this host.",
+        "local_runtime": "Active",  # this Companion process is serving
+    }
+
+
+@app.post("/api/council/dispatch")
+async def council_dispatch() -> Response:
+    """Stage the operator's instruction + files for Claude · Architect.
+
+    The Mission Control command surface POSTs ``multipart/form-data``
+    (``prompt``, ``target=claude``, ``role=architect``, ``files``). A real
+    Claude adapter is not wired in this repo yet, so — rather than pretend files
+    were delivered — we return ``503``. The browser honours that by showing
+    "Not sent" and **retaining every staged file locally** (nothing is uploaded
+    anywhere). When an adapter is added, forward here and return ``2xx`` only on
+    a genuine success.
+    """
+    raise HTTPException(
+        status_code=503,
+        detail="Claude · Architect adapter is not connected. Files were not sent.",
+    )
 
 
 # ---- Voice (local neural text-to-speech) ----

@@ -15,6 +15,22 @@ and session-continuity entry point.
   then the **human-in-the-loop terminal**, then the Approve/Deny **confirmation
   UX** with the first MEDIUM+ (write) capability.
 
+## 🧪 In review (PR)
+- **Mission Control — Quantum OLED screen** 🧪 — the Companion's command surface
+  at `GET /mission-control`, implemented offline (vanilla HTML/CSS/JS, no React
+  runtime) from the Claude Design handoff. A grayscale operating environment
+  where **Nero — the celestial being — is the only colour** (her deterministic
+  projected-3D field, nine states), with signal colour reserved for meaning
+  (amber = authority, red = block, green = safe). **Honesty-first data:**
+  `GET /api/host` renders a gauge only when it attests `simulated:false` (real
+  `psutil` CPU/RAM/disk; GPU null + reason; **503, never fabricated**, when no
+  measured source) and `POST /api/council/dispatch` returns an honest **503**
+  until a Claude adapter is wired — the UI says `Not sent` and **retains files
+  locally**. Chat UI untouched (adds a Mission Control link). Rendered in
+  headless Chromium across states + both telemetry paths (0 JS errors);
+  `tests/test_mission_control.py` + `verify/verify_mission_control.py` green.
+  Design: `docs/DESIGN-mission-control.md`.
+
 ## ✅ Shipped (on `main`)
 - **Phase 1 — "The Hands" · first slice** ✅ (PR #10) — the primitive that lets
   Nero *act*, **verified end-to-end on the RTX 4070**: the **agent loop**

@@ -1,0 +1,345 @@
+/* ============================================================================
+   NERO — Mission Control  ·  Quantum OLED, grayscale operating environment
+   ----------------------------------------------------------------------------
+   Design law (see docs/DESIGN-mission-control.md):
+     • Structure is grayscale — the operator's six-tone ramp. Nothing here
+       invents color.
+     • Nero — the celestial being at the centre — keeps her colors. Her field,
+       core, brand orb, the filaments reaching out from her, and the cursor
+       light are the only vivid hues in the room.
+     • Signal color is used only where it MEANS something: amber = operator
+       authority, red = a genuine block, green = safe / live / approve.
+   Refined to a premium bar: floating cards, layered ambient shadow, hairline
+   borders, engineered spring motion, monumental numerals, quiet metadata.
+   Ported from the Claude Design source to offline vanilla CSS (no runtime).
+   ============================================================================ */
+
+:root{
+  /* — Operator surface ramp (the six grays) — */
+  --oled:#070707;      /* shell / deepest base            */
+  --void:#0e0f0f;      /* stage floor                     */
+  --panel:#141414;     /* nav · status · context rail     */
+  --glass:#1c1c1c;     /* card surface                    */
+  --glass2:#252525;    /* elevated · hover                */
+  --line:#343534;      /* borders · dividers · top surface*/
+
+  /* — Neutral text (structure, not Nero) — */
+  --white:#f3f4f4; --text:#d6d8d8; --muted:#8b8d8d; --faint:#565857;
+
+  /* — Nero · the celestial being keeps her colors — */
+  --cyan:#58f3ff; --blue:#4b7cff; --violet:#9b82ff; --aqua:#5fe0b0; --ice:#c9f6ff;
+
+  /* — Signal color, used sparingly, only where it carries meaning — */
+  --amber:#f0a34a;  /* operator authority   */
+  --red:#ff6d73;    /* genuine block        */
+  --green:#5fe0b0;  /* safe · live · approve */
+
+  /* — Hairline edges derived from the grays (no blue tint) — */
+  --edge:rgba(255,255,255,.055);
+  --edge-2:rgba(255,255,255,.09);
+
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --spring:cubic-bezier(.16,1,.3,1);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:var(--text);
+  font-family:Inter,"SF Pro Display","Segoe UI Variable","Segoe UI",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input{font:inherit;color:inherit}button{border:0;background:none}input{outline:none}
+::selection{background:rgba(255,255,255,.14)}
+::-webkit-scrollbar{width:7px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.14)}
+
+/* — Motion — engineered, never playful — */
+@keyframes breathe{0%,100%{opacity:.55;transform:scale(.985)}50%{opacity:.92;transform:scale(1.015)}}
+@keyframes pulse{0%,100%{opacity:.5;box-shadow:0 0 0 0 rgba(95,224,176,0)}50%{opacity:1;box-shadow:0 0 14px 1px rgba(95,224,176,.22)}}
+@keyframes filament{to{stroke-dashoffset:-160}}
+@keyframes scan{0%{transform:translateY(-110%);opacity:0}15%{opacity:.5}80%{opacity:.14}100%{transform:translateY(840%);opacity:0}}
+@keyframes shimmer{0%{transform:translateX(-120%)}100%{transform:translateX(260%)}}
+@keyframes rise{from{opacity:0;transform:translateY(12px) scale(.99)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{
+  animation-duration:.001ms!important;animation-iteration-count:1!important;
+  scroll-behavior:auto!important;transition-duration:.001ms!important}}
+
+/* — Shell & stage — a subtly graded near-black, never dead-flat — */
+.shell{position:fixed;inset:0;background:var(--oled);overflow:hidden}
+.stage{position:absolute;left:50%;top:50%;width:1820px;height:780px;transform:translate(-50%,-50%);
+  transform-origin:center;display:flex;overflow:hidden;isolation:isolate;
+  background:
+    radial-gradient(62% 108% at 58% 46%,rgba(88,243,255,.045),transparent 60%),
+    radial-gradient(40% 66% at 44% 42%,rgba(75,124,255,.028),transparent 72%),
+    radial-gradient(120% 120% at 12% 8%,rgba(255,255,255,.018),transparent 46%),
+    linear-gradient(150deg,var(--void) 0%,var(--oled) 58%,#000 100%)}
+.stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);
+  background-size:48px 48px;mask-image:radial-gradient(circle at 56% 50%,#000 0%,transparent 70%)}
+/* Nero's light following the operator — subtle, hers */
+.cursor-aura{position:absolute;width:540px;height:540px;border-radius:50%;pointer-events:none;z-index:2;
+  background:radial-gradient(circle,rgba(88,243,255,.07),rgba(75,124,255,.02) 34%,transparent 68%);
+  mix-blend-mode:screen;will-change:transform;filter:blur(2px);opacity:.9}
+
+/* — Glass — floating physical objects, neutral, layered ambient shadow — */
+.glass{position:relative;background:
+    linear-gradient(150deg,rgba(255,255,255,.03),rgba(255,255,255,.008) 46%,rgba(255,255,255,.02)),
+    var(--glass);
+  border:1px solid var(--edge);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.045),
+    inset 0 -1px 0 rgba(0,0,0,.4),
+    0 1px 2px rgba(0,0,0,.5),
+    0 10px 24px rgba(0,0,0,.4),
+    0 34px 80px rgba(0,0,0,.5);
+  backdrop-filter:blur(26px) saturate(105%);-webkit-backdrop-filter:blur(26px) saturate(105%)}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.07),transparent 22%,transparent 72%,rgba(255,255,255,.03));
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);padding:1px;mask-composite:exclude;opacity:.7}
+.glass::after{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;
+  border:1px solid rgba(255,255,255,.03);filter:url(#glassWarp);opacity:.4}
+.glass-focus{background:
+    linear-gradient(150deg,rgba(255,255,255,.045),rgba(255,255,255,.012) 44%,rgba(255,255,255,.03)),
+    var(--glass2);
+  border-color:var(--edge-2);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 1px 2px rgba(0,0,0,.5),
+    0 14px 34px rgba(0,0,0,.46),
+    0 44px 104px rgba(0,0,0,.58)}
+
+.eyebrow{font-family:"Cascadia Code","JetBrains Mono",ui-monospace,monospace;font-size:9px;font-weight:600;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+.mono{font-family:"Cascadia Code","JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+/* — Navigation — grayscale rail, glides open on hover — */
+.nav{position:relative;z-index:30;width:76px;height:100%;flex:none;padding:18px 12px;display:flex;flex-direction:column;
+  gap:4px;overflow:hidden;background:linear-gradient(180deg,var(--panel),var(--oled));
+  border-right:1px solid var(--edge);backdrop-filter:blur(36px);transition:width .46s var(--spring);white-space:nowrap}
+.nav:hover,.nav:focus-within{width:238px}
+.brand{display:flex;align-items:center;gap:14px;height:46px;padding:0 8px;margin-bottom:12px}
+/* Nero's brand orb — her light */
+.brand-mark{width:30px;height:30px;flex:none;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 48% 44%,#fff 0%,var(--ice) 16%,var(--cyan) 35%,rgba(75,124,255,.34) 58%,transparent 76%);
+  box-shadow:0 0 22px rgba(88,243,255,.22);animation:breathe 7s ease-in-out infinite}
+.brand-mark::after{content:"";position:absolute;inset:7px;border:1px solid rgba(255,255,255,.4);border-radius:50%}
+.brand-copy{opacity:0;transform:translateX(-8px);transition:.34s var(--ease)}
+.nav:hover .brand-copy,.nav:focus-within .brand-copy{opacity:1;transform:none}
+.brand-name{font-size:13px;font-weight:650;letter-spacing:.24em;color:var(--white)}
+.brand-sub{margin-top:3px;font-size:8px;letter-spacing:.28em;color:var(--faint)}
+.nav-item{height:44px;display:flex;align-items:center;gap:15px;padding:0 12px;border-radius:14px;
+  color:var(--muted);cursor:pointer;transition:background .26s var(--ease),color .26s var(--ease),transform .26s var(--spring);position:relative}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--text);transform:translateX(2px)}
+.nav-item.active{color:var(--white);background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.01))}
+/* the one small Nero cue — where her attention rests */
+.nav-item.active::before{content:"";position:absolute;left:3px;width:2px;height:18px;border-radius:3px;
+  background:var(--cyan);box-shadow:0 0 12px rgba(88,243,255,.75)}
+.nav-icon{width:22px;height:22px;flex:none;display:grid;place-items:center}
+.nav-icon svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.45}
+.nav-label{font-size:12.5px;font-weight:500;opacity:0;transition:.3s var(--ease)}
+.nav:hover .nav-label,.nav:focus-within .nav-label{opacity:1}
+.nav-spacer{flex:1}.nav-divider{height:1px;margin:6px 10px;background:var(--edge)}
+
+/* — Main column — */
+.main{position:relative;z-index:5;flex:1;min-width:0;height:100%;display:flex;flex-direction:column}
+.statusbar{height:68px;flex:none;padding:0 26px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--edge);background:linear-gradient(180deg,rgba(20,20,20,.6),rgba(7,7,7,.15));backdrop-filter:blur(20px)}
+.status-left,.status-right{display:flex;align-items:center;gap:17px}
+.title{font-size:12px;font-weight:650;letter-spacing:.28em;color:var(--white)}
+.status-sep{width:1px;height:15px;background:var(--line)}
+.status-pill{display:flex;align-items:center;gap:8px;font-size:8.5px;font-weight:650;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--muted)}
+.status-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);
+  animation:pulse 3.6s ease-in-out infinite}
+.sim-badge{padding:7px 10px;border-radius:9px;border:1px solid rgba(240,163,74,.26);background:rgba(240,163,74,.05);
+  color:var(--amber);font-size:8px;font-weight:650;letter-spacing:.15em;text-transform:uppercase}
+.clock{font-size:10.5px;letter-spacing:.14em;color:var(--muted)}
+.workspace{position:relative;flex:1;min-height:0;overflow:hidden}
+
+/* — Orchestration panel (recedes: supporting information) — */
+.orchestration{position:absolute;z-index:15;left:24px;top:28px;width:346px;padding:20px 20px 17px;border-radius:26px;
+  animation:rise .7s var(--ease) backwards;animation-delay:.06s}
+.panel-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.active-count{font-size:9px;color:var(--muted);letter-spacing:.12em}
+.orch-list{display:flex;flex-direction:column;gap:4px}
+.orch-row{position:relative;padding:10px 3px 11px;border-bottom:1px solid var(--edge);cursor:pointer;
+  transition:padding .28s var(--spring)}
+.orch-row:last-child{border-bottom:0}
+.orch-top{display:flex;align-items:center;justify-content:space-between}
+.orch-role{font-size:12.5px;font-weight:560;color:var(--text)}
+.orch-model{font-size:8.5px;letter-spacing:.05em;color:var(--faint)}
+.orch-action{margin-top:6px;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--rowColor,var(--muted))}
+.orch-trace{height:1px;margin-top:9px;background:rgba(255,255,255,.05);overflow:hidden;border-radius:2px}
+.orch-trace span{display:block;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+  animation:shimmer 3.6s linear infinite}
+.orch-row.selected{padding-left:12px}
+.orch-row.selected::before{content:"";position:absolute;left:0;top:12px;bottom:13px;width:2px;border-radius:3px;
+  background:var(--rowColor,var(--muted));box-shadow:0 0 10px var(--rowColor,transparent)}
+.orch-footer{margin-top:12px;padding-top:12px;border-top:1px solid var(--edge);display:flex;justify-content:space-between;
+  font-size:8.5px;color:var(--faint)}
+
+/* — The Nero field — the visual anchor, transparent, dominant, hers — */
+.field-zone{position:absolute;z-index:5;left:330px;right:0;top:0;bottom:106px;overflow:hidden}
+.field-zone::before{content:"";position:absolute;left:50%;top:46%;width:620px;height:620px;transform:translate(-50%,-50%);
+  border-radius:50%;background:radial-gradient(circle,rgba(88,243,255,.085),rgba(75,124,255,.022) 36%,transparent 69%);
+  filter:blur(10px);animation:breathe 9s ease-in-out infinite;pointer-events:none}
+.field-canvas-wrap{position:absolute;left:50%;top:47%;width:570px;height:570px;transform:translate(-50%,-50%);pointer-events:none}
+.field-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;background:transparent}
+.field-label{position:absolute;left:50%;top:calc(47% + 170px);transform:translateX(-50%);width:420px;text-align:center;z-index:4}
+.field-state{font-size:18px;font-weight:500;letter-spacing:.005em;color:var(--white);text-shadow:0 0 22px rgba(88,243,255,.16);
+  transition:color .5s var(--ease)}
+.field-desc{margin-top:7px;font-size:9px;letter-spacing:.14em;color:var(--muted)}
+.field-scan{position:absolute;left:50%;top:16%;width:390px;height:1px;transform:translateX(-50%);
+  background:linear-gradient(90deg,transparent,rgba(118,229,255,.42),transparent);box-shadow:0 0 12px rgba(88,243,255,.18);
+  animation:scan 7s linear infinite;opacity:.12}
+
+.council-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.filament{fill:none;stroke-width:.18;stroke-dasharray:3 5;animation:filament 13s linear infinite}
+.filament.idle{animation:none;opacity:.24}
+.filament.warning{stroke-dasharray:1.7 3.5;animation-duration:7s}
+/* Council nodes — grayscale cards; they are agents beside Nero, not Nero */
+.council-node{position:absolute;z-index:8;width:152px;padding:12px 14px;border-radius:18px;transform:translate(-50%,-50%);
+  cursor:pointer;transition:transform .34s var(--spring),border-color .28s var(--ease),background .28s var(--ease);--node:var(--muted)}
+.council-node:hover,.council-node.selected{transform:translate(-50%,-50%) scale(1.04);
+  border-color:color-mix(in srgb,var(--node) 40%,var(--edge-2));
+  background:linear-gradient(150deg,rgba(255,255,255,.05),rgba(255,255,255,.012) 50%,color-mix(in srgb,var(--node) 6%,transparent)),var(--glass2)}
+.council-role{font-size:11.5px;font-weight:600;color:var(--white)}
+.council-model{margin-top:3px;font-size:8px;letter-spacing:.08em;color:var(--faint)}
+.council-status{display:flex;align-items:center;gap:7px;margin-top:9px;font-size:8px;font-weight:650;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--node)}
+.council-status::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--node);box-shadow:0 0 9px var(--node)}
+/* Ownership collision — operator authority, amber */
+.overlap{position:absolute;z-index:10;left:79%;top:43%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;
+  padding:8px 11px;border-radius:12px;border:1px solid rgba(240,163,74,.28);background:rgba(37,25,12,.6);backdrop-filter:blur(18px);
+  color:var(--amber);font-size:8px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+  box-shadow:0 14px 45px rgba(0,0,0,.44);transition:transform .3s var(--spring),border-color .28s}
+.overlap:hover{transform:translate(-50%,-50%) scale(1.03);border-color:rgba(240,163,74,.45)}
+.overlap::before{content:"△";font-size:11px}
+
+/* — State selector — Nero's states; active carries her faint cyan — */
+.state-control{position:absolute;z-index:12;left:50%;bottom:34px;transform:translateX(-50%);display:flex;align-items:center;
+  padding:4px;border-radius:17px;background:rgba(14,15,15,.6);border:1px solid var(--edge);backdrop-filter:blur(24px)}
+.state-btn{height:28px;padding:0 11px;border-radius:13px;color:var(--faint);font-size:7.5px;font-weight:650;letter-spacing:.1em;
+  text-transform:uppercase;cursor:pointer;transition:.24s var(--ease);white-space:nowrap}
+.state-btn:hover{color:var(--text)}
+.state-btn.active{color:var(--ice);background:rgba(88,243,255,.08);box-shadow:inset 0 0 0 1px rgba(119,229,255,.16)}
+
+/* — Command surface — the primary action, elevated above the field — */
+.command{position:absolute;z-index:24;left:392px;right:24px;bottom:22px;min-height:78px;border-radius:26px;
+  padding:12px 14px 12px 18px;display:flex;align-items:center;gap:12px;
+  transition:min-height .34s var(--spring),border-color .28s var(--ease),box-shadow .28s var(--ease),transform .28s var(--spring)}
+.command.dragging,.command:focus-within{border-color:var(--edge-2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 18px 44px rgba(0,0,0,.5),0 52px 118px rgba(0,0,0,.6),0 0 46px rgba(88,243,255,.05)}
+.command-main{flex:1;min-width:0}
+.command-row{display:flex;align-items:center;gap:10px}
+.command-input{width:100%;border:0;background:transparent;color:var(--white);font-size:13.5px;font-weight:420}
+.command-input::placeholder{color:var(--faint)}
+.context-line{margin-top:7px;display:flex;align-items:center;gap:8px;min-height:19px}
+.target-chip{display:flex;align-items:center;gap:7px;padding:4px 7px;border-radius:8px;background:rgba(255,255,255,.03);
+  border:1px solid var(--edge);font-size:8px;color:var(--muted);letter-spacing:.08em}
+.target-chip::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--muted)}
+.file-chips{display:flex;align-items:center;gap:6px;overflow:hidden}
+.file-chip{display:flex;align-items:center;max-width:170px;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.04);
+  border:1px solid var(--edge);color:var(--text);font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  animation:rise .34s var(--spring) both}
+.file-chip button{margin-left:6px;color:var(--faint);cursor:pointer;line-height:1}
+.file-chip button:hover{color:var(--text)}
+.command-action{width:36px;height:36px;border-radius:13px;background:rgba(255,255,255,.03);border:1px solid var(--edge);
+  display:grid;place-items:center;color:var(--muted);cursor:pointer;transition:.24s var(--ease)}
+.command-action:hover{color:var(--text);background:rgba(255,255,255,.06);border-color:var(--edge-2);transform:translateY(-1px)}
+/* Primary action — pearl white, no hue (targets Claude, not Nero) */
+.send{height:40px;padding:0 15px;border-radius:14px;display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,#ffffff,#d7dadb);color:#0b0c0c;font-size:9px;font-weight:720;letter-spacing:.1em;
+  text-transform:uppercase;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.4);transition:.24s var(--spring)}
+.send:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.send:active{transform:translateY(0) scale(.97)}
+.send:disabled{opacity:.28;cursor:default;transform:none;box-shadow:none}
+.dispatch-note{position:absolute;left:18px;right:18px;bottom:-22px;font-size:8px;letter-spacing:.06em;color:var(--muted)}
+.dispatch-note.error{color:var(--amber)}
+.dispatch-note.success{color:var(--green)}
+.drop-overlay{position:absolute;inset:6px;border-radius:21px;border:1px dashed rgba(118,229,255,.32);
+  background:rgba(9,20,23,.5);display:flex;align-items:center;justify-content:center;gap:9px;color:var(--ice);font-size:10px;
+  letter-spacing:.09em;text-transform:uppercase;pointer-events:none;opacity:0;transition:.2s var(--ease)}
+
+/* — Context surface (information cards — quietly recede) — */
+.context{position:relative;z-index:28;width:372px;height:100%;flex:none;padding:19px 18px 26px;overflow-y:auto;
+  border-left:1px solid var(--edge);background:linear-gradient(180deg,var(--panel),var(--oled));backdrop-filter:blur(36px)}
+.context-title{height:40px;display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.context-live{font-size:8px;color:var(--faint)}
+.context-stack{display:flex;flex-direction:column;gap:13px}
+.context-card{padding:18px;border-radius:22px;animation:rise .7s var(--ease) backwards}
+.context-card:nth-child(1){animation-delay:.1s}.context-card:nth-child(2){animation-delay:.16s}
+.context-card:nth-child(3){animation-delay:.22s}.context-card:nth-child(4){animation-delay:.28s}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.data-badge{padding:4px 7px;border-radius:7px;border:1px solid var(--edge);background:rgba(255,255,255,.02);
+  font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.data-badge.live{border-color:rgba(95,224,176,.2);color:var(--green);background:rgba(95,224,176,.05)}
+.data-badge.warn{border-color:rgba(240,163,74,.24);color:var(--amber);background:rgba(240,163,74,.05)}
+.repo-name{font-size:15px;font-weight:620;color:var(--white)}
+.repo-branch{font-size:9px;color:var(--muted)}
+.repo-metrics{display:flex;gap:24px;margin-top:14px}
+.repo-metric{display:flex;flex-direction:column}
+.repo-number{font-size:19px;font-weight:600;color:var(--white);letter-spacing:-.01em}
+.repo-label{margin-top:2px;font-size:7.5px;letter-spacing:.13em;color:var(--faint)}
+.repo-summary{margin-top:14px;padding-top:13px;border-top:1px solid var(--edge);font-size:11px;line-height:1.5;color:var(--muted)}
+.repo-summary .mono{color:var(--text)}
+.telemetry-placeholder{padding:12px 0 4px}
+.placeholder-title{font-size:12px;font-weight:540;color:var(--text)}
+.placeholder-copy{margin-top:7px;font-size:10px;line-height:1.55;color:var(--muted)}
+.metric{margin-top:12px}.metric:first-child{margin-top:0}
+.metric-head{display:flex;align-items:flex-end;justify-content:space-between}
+.metric-name{font-size:11px;color:var(--text)}
+.metric-value{font-size:12px;color:var(--white)}
+.metric-sub{font-size:8px;color:var(--faint);margin-left:5px}
+.metric-track{height:2px;margin-top:7px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+.metric-track span{display:block;height:100%;width:var(--metric,0%);
+  background:linear-gradient(90deg,rgba(255,255,255,.35),rgba(255,255,255,.75));transition:width .8s var(--spring)}
+.gpu-null{margin-top:14px;padding:11px;border-radius:13px;background:rgba(255,255,255,.02);border:1px solid var(--edge)}
+.gpu-null strong{font-size:10.5px;color:var(--text)}
+.gpu-null div{margin-top:5px;font-size:8.5px;line-height:1.45;color:var(--muted)}
+.health{margin-top:15px;padding-top:13px;border-top:1px solid var(--edge);display:flex;flex-direction:column;gap:8px}
+.health-row{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;color:var(--text)}
+.health-state{display:flex;align-items:center;gap:6px;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--green)}
+.health-state::before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.approvals{display:flex;flex-direction:column;gap:9px}
+.approval{padding:12px 13px;border-radius:15px;background:rgba(255,255,255,.02);border:1px solid var(--edge);
+  animation:rise .34s var(--spring) both}
+.approval-title{font-size:11.5px;font-weight:540;color:var(--text);line-height:1.35}
+.approval-meta{margin-top:7px;font-size:8px;letter-spacing:.05em;color:var(--faint)}
+.approval-actions{display:flex;gap:6px;margin-top:10px}
+.small-btn{height:27px;padding:0 9px;border-radius:9px;background:rgba(255,255,255,.03);border:1px solid var(--edge);
+  font-size:7.5px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;color:var(--muted);
+  transition:.2s var(--ease)}
+.small-btn:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.small-btn.approve{color:var(--green);border-color:rgba(95,224,176,.18)}
+.small-btn.reject{color:var(--red);border-color:rgba(255,109,115,.16)}
+.memory-item{display:flex;gap:10px;align-items:flex-start;margin-top:11px}
+/* Memory is Nero's recall — her cue */
+.memory-dot{width:5px;height:5px;border-radius:50%;flex:none;margin-top:5px;background:var(--cyan);box-shadow:0 0 8px currentColor}
+.memory-copy{font-size:10.5px;line-height:1.45;color:var(--muted)}
+
+svg.defs{position:absolute;width:0;height:0}
+
+/* ── Polish & accessibility pass ───────────────────────────────────────────
+   Engineered micro-interactions + visible keyboard focus. Focus is Nero's
+   cue (a soft cyan ring); tap compresses; receding cards still feel tactile. */
+:focus{outline:none}
+:focus-visible{outline:none;
+  box-shadow:0 0 0 1px rgba(88,243,255,.5),0 0 0 4px rgba(88,243,255,.12)}
+.nav-item:focus-visible,.state-btn:focus-visible,.small-btn:focus-visible,
+.command-action:focus-visible,.send:focus-visible,.council-node:focus-visible,
+.overlap:focus-visible,.brand:focus-visible,.file-chip button:focus-visible{
+  box-shadow:0 0 0 1px rgba(88,243,255,.55),0 0 0 4px rgba(88,243,255,.14)}
+.command-input:focus{outline:none}
+
+/* Tap compresses, then releases — engineered, never bouncy. */
+.small-btn:active,.state-btn:active,.command-action:active,.nav-item:active{transform:scale(.96)}
+.council-node:active{transform:translate(-50%,-50%) scale(.99)}
+
+/* Even the information cards answer to the pointer — a barely-there lift. */
+.context-card{transition:transform .32s var(--spring),box-shadow .32s var(--ease)}
+.context-card:hover{transform:translateY(-2px)}
+.orchestration{transition:transform .32s var(--spring)}
+.orchestration:hover{transform:translateY(-1px)}
+
+/* Below the fixed operating environment we letterbox to true black. */

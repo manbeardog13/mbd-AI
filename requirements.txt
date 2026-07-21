@@ -5,3 +5,4 @@ fastapi==0.115.6         # web server framework
 uvicorn[standard]==0.34.0 # the server that runs FastAPI
 httpx==0.28.1            # talks to your local Ollama model
 pyyaml==6.0.2            # reads your config.yaml
+psutil==6.1.1            # optional: real host telemetry for /api/host (Mission Control)
