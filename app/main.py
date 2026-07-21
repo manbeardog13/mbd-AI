@@ -25,10 +25,18 @@ from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+import io
+import socket
+
 try:  # optional dependency — powers honest /api/host telemetry when installed
     import psutil  # type: ignore
 except Exception:  # noqa: BLE001 - contained; telemetry is honestly "unavailable" without it
     psutil = None  # type: ignore
+
+try:  # optional — renders a scan-to-open QR on /connect when installed
+    import segno  # type: ignore
+except Exception:  # noqa: BLE001 - contained; /connect still shows the URL without it
+    segno = None  # type: ignore
 
 from . import db, memory, tts, world_model
 from .agent import loop as agent_loop, state as agent_state
@@ -101,6 +109,12 @@ def index() -> FileResponse:
 def mission_control() -> FileResponse:
     """The Mission Control operating screen (the Companion's command surface)."""
     return FileResponse(STATIC_DIR / "mission-control.html")
+
+
+@app.get("/connect")
+def connect_page() -> FileResponse:
+    """A device-connect helper: how to reach this Companion from phone/tablet."""
+    return FileResponse(STATIC_DIR / "connect.html")
 
 
 @app.get("/api/config")
@@ -368,6 +382,73 @@ async def council_dispatch() -> Response:
         status_code=503,
         detail="Claude · Architect adapter is not connected. Files were not sent.",
     )
+
+
+def _lan_ipv4s() -> list[str]:
+    """This host's LAN IPv4 addresses (for reaching Nero from phone/tablet).
+
+    Best-effort and offline: resolves the hostname and asks the OS which local
+    address it would route out of. Loopback and link-local are excluded.
+    """
+    ips: set[str] = set()
+    try:
+        for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+            ip = info[4][0]
+            if not ip.startswith(("127.", "169.254.")):
+                ips.add(ip)
+    except Exception:  # noqa: BLE001 - contained; discovery is best-effort
+        pass
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(("192.168.255.255", 1))  # selects the egress iface; sends nothing
+            ip = s.getsockname()[0]
+            if not ip.startswith(("127.", "169.254.")):
+                ips.add(ip)
+        finally:
+            s.close()
+    except Exception:  # noqa: BLE001 - contained
+        pass
+    return sorted(ips)
+
+
+@app.get("/api/connect")
+def connect_info() -> dict:
+    """Where to reach Mission Control from other devices on this network.
+
+    Returns this host's LAN URLs (and localhost), plus an optional scan-to-open
+    QR SVG for the primary device URL when the optional ``segno`` package is
+    installed. Nothing is measured or invented — these are this machine's own
+    addresses. Off-network access is via Tailscale (see docs/REMOTE_ACCESS.md).
+    """
+    cfg = load_config()
+    port = cfg.port
+    ips = _lan_ipv4s()
+    hosts = ["localhost", *ips]
+    urls = [{"label": ("This PC" if h == "localhost" else h), "host": h,
+             "mission_control": f"http://{h}:{port}/mission-control",
+             "base": f"http://{h}:{port}/"} for h in hosts]
+    primary = f"http://{ips[0]}:{port}/mission-control" if ips else f"http://localhost:{port}/mission-control"
+
+    qr_svg = None
+    if segno is not None and ips:
+        try:
+            buf = io.BytesIO()
+            segno.make(primary, error="m").save(
+                buf, kind="svg", scale=5, border=2, dark="#c9f6ff", light="#141414"
+            )
+            qr_svg = buf.getvalue().decode("utf-8")
+        except Exception:  # noqa: BLE001 - QR is a bonus; never break the page
+            qr_svg = None
+
+    return {
+        "hostname": socket.gethostname(),
+        "port": port,
+        "lan_ips": ips,
+        "urls": urls,
+        "primary_url": primary,
+        "qr_svg": qr_svg,
+    }
 
 
 # ---- Voice (local neural text-to-speech) ----

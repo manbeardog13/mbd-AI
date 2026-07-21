@@ -84,6 +84,36 @@ def test_structure_is_grayscale_nero_keeps_color():
     assert "--cyan:#58f3ff" in CSS  # Nero keeps her colours
 
 
+CONNECT = (STATIC / "connect.html").read_text(encoding="utf-8")
+MANIFEST = (STATIC / "mission-control.webmanifest").read_text(encoding="utf-8")
+
+
+def test_pwa_installable_for_phone_tablet():
+    # Home-screen icon path: manifest linked + Apple touch meta + orb icons.
+    assert 'rel="manifest"' in HTML and "mission-control.webmanifest" in HTML
+    assert "apple-touch-icon" in HTML
+    assert '"start_url": "/mission-control"' in MANIFEST
+    assert "mission-control-512.png" in MANIFEST
+    for png in ["mission-control-192.png", "mission-control-512.png", "mission-control-180.png"]:
+        assert (STATIC / png).exists(), png
+
+
+def test_device_connect_page_and_routes():
+    assert "/api/connect" in CONNECT and "Add to Home Screen" in CONNECT
+    assert '"/connect"' in MAIN and '"/api/connect"' in MAIN
+    # Devices link is discoverable from Mission Control.
+    assert 'href="/connect"' in HTML
+    # QR is optional — the endpoint must not hard-require segno.
+    assert "segno is not None" in MAIN
+
+
+def test_windows_launcher_and_icon_present():
+    scripts = ROOT / "scripts"
+    for f in ["mission-control.ps1", "install-desktop-icon.ps1",
+              "Create Desktop Icon.cmd", "nero-mission-control.ico", "make_icon.py"]:
+        assert (scripts / f).exists(), f
+
+
 def _run() -> int:
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for fn in tests:

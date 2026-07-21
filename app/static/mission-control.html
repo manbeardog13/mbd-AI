@@ -4,8 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#070707">
 <title>NERO · Mission Control</title>
-<link rel="icon" href="/static/icon.svg">
+<link rel="icon" href="/static/mission-control-192.png">
+<!-- Installable on phone/tablet: "Add to Home Screen" gives a launch icon. -->
+<link rel="manifest" href="/static/mission-control.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mission Control">
+<link rel="apple-touch-icon" href="/static/mission-control-180.png">
 <link rel="stylesheet" href="/static/mission-control.css">
 </head>
 <body>
@@ -50,6 +57,10 @@
         </div>
         <div class="status-right">
           <span class="sim-badge" title="Computer-use actions are constitutionally simulation-bound">COMPUTER USE · SIMULATION</span>
+          <a class="devices-link" href="/connect" title="Reach Mission Control from your phone or tablet">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 18h2"/></svg>
+            <span>Devices</span>
+          </a>
           <span id="clock" class="clock mono">--:--:--</span>
         </div>
       </header>

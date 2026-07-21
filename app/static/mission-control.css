@@ -154,6 +154,11 @@ button,input{font:inherit;color:inherit}button{border:0;background:none}input{ou
 .sim-badge{padding:7px 10px;border-radius:9px;border:1px solid rgba(240,163,74,.26);background:rgba(240,163,74,.05);
   color:var(--amber);font-size:8px;font-weight:650;letter-spacing:.15em;text-transform:uppercase}
 .clock{font-size:10.5px;letter-spacing:.14em;color:var(--muted)}
+.devices-link{display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:9px;border:1px solid var(--edge);
+  background:rgba(255,255,255,.02);color:var(--muted);font-size:8.5px;font-weight:650;letter-spacing:.13em;
+  text-transform:uppercase;text-decoration:none;transition:.22s var(--ease)}
+.devices-link:hover{color:var(--text);border-color:var(--edge-2);background:rgba(255,255,255,.05);transform:translateY(-1px)}
+.devices-link svg{opacity:.8}
 .workspace{position:relative;flex:1;min-height:0;overflow:hidden}
 
 /* — Orchestration panel (recedes: supporting information) — */

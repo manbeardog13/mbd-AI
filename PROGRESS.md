@@ -29,7 +29,12 @@ and session-continuity entry point.
   locally**. Chat UI untouched (adds a Mission Control link). Rendered in
   headless Chromium across states + both telemetry paths (0 JS errors);
   `tests/test_mission_control.py` + `verify/verify_mission_control.py` green.
-  Design: `docs/DESIGN-mission-control.md`.
+  **Launch & reach:** a Windows **desktop icon** (`scripts/install-desktop-icon.ps1`
+  → launcher that starts Nero if needed and opens the screen; Nero-orb `.ico`),
+  and **phone/tablet access on the same Wi-Fi** — the server already binds
+  `0.0.0.0`, Mission Control is an installable **PWA** (Add-to-Home-Screen icon),
+  and **`/connect`** (Devices link) shows the LAN URL + a scan-to-open QR
+  (optional `segno`). Design: `docs/DESIGN-mission-control.md`.
 
 ## ✅ Shipped (on `main`)
 - **Phase 1 — "The Hands" · first slice** ✅ (PR #10) — the primitive that lets

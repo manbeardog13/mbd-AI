@@ -121,7 +121,32 @@ their meaning.
 - Rendered in headless Chromium across idle/thinking/executing/waiting and both
   telemetry paths (Live + Disconnected) with zero JS errors.
 
-## 8. Known deviations (kept honest)
+## 8. Launcher & device access
+
+**Desktop icon (Windows).** `scripts/install-desktop-icon.ps1` (double-click
+`scripts/Create Desktop Icon.cmd`) drops a **NERO Mission Control** shortcut on
+the desktop, icon `scripts/nero-mission-control.ico` (Nero's orb, regenerable
+via `scripts/make_icon.py`). It runs `scripts/mission-control.ps1`, which starts
+the Companion if it isn't already up (`.venv\Scripts\python.exe run.py`, or
+`start.bat` on first run), waits for the port, then opens `/mission-control`.
+
+**Phone & tablet (same Wi-Fi).** The server already binds `0.0.0.0` (config
+default), so any device on the LAN reaches `http://<pc-ip>:<port>/mission-control`.
+Discovery is built in:
+- **`GET /connect`** (+ `GET /api/connect`) shows this machine's LAN URL(s) with
+  tap-to-open links, a **scan-to-open QR** (optional `segno`; degrades to the
+  URL when absent), and Add-to-Home-Screen guidance. Reachable from the
+  **Devices** link in the Mission Control status bar.
+- Mission Control is a **PWA** (`mission-control.webmanifest` + Apple touch
+  meta, orb PNG icons): "Add to Home Screen" gives phone/tablet a real launch
+  icon. It is a fixed 21:9 environment scaled to fit — best in landscape /
+  on a tablet; a portrait phone letterboxes.
+- Off-network access stays private over Tailscale (`docs/REMOTE_ACCESS.md`).
+
+Both `psutil` (telemetry) and `segno` (QR) are **optional** — guarded imports;
+the features degrade honestly when absent.
+
+## 9. Known deviations (kept honest)
 
 - The state selector and approval buttons are a compact segmented control
   (~27–28 px), matching the design source rather than the 44 px touch target;

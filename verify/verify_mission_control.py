@@ -97,6 +97,16 @@ def live_checks() -> None:
     check("chat page still serves and links Mission Control",
           r.status_code == 200 and "/mission-control" in r.text)
 
+    r = c.get("/connect")
+    check("GET /connect -> 200 device helper", r.status_code == 200)
+    r = c.get("/api/connect")
+    if r.status_code == 200:
+        d = r.json()
+        check("GET /api/connect returns this host's URLs",
+              isinstance(d.get("urls"), list) and len(d["urls"]) >= 1 and "port" in d)
+    else:
+        check("GET /api/connect responds", False)
+
 
 def main() -> int:
     print("Mission Control — verification")

@@ -1,0 +1,16 @@
+{
+  "name": "NERO Mission Control",
+  "short_name": "Mission Control",
+  "description": "The NERO Companion's command surface.",
+  "start_url": "/mission-control",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#070707",
+  "theme_color": "#070707",
+  "icons": [
+    { "src": "/static/mission-control-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/static/mission-control-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/static/mission-control-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
