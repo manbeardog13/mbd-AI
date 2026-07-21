@@ -3,6 +3,9 @@
 Serves the chat web app and exposes a small API the browser talks to:
 
   GET  /                  -> the chat page
+  GET  /mission-control   -> the Mission Control operating screen
+  GET  /api/host          -> honest host telemetry (measured or unavailable)
+  POST /api/council/dispatch -> stage files for Claude · Architect (adapter)
   GET  /api/config        -> your AI's name / your name (for the UI)
   GET  /api/status        -> is the local model reachable?
   GET  /api/history       -> messages in the current conversation
@@ -21,6 +24,19 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+import io
+import socket
+
+try:  # optional dependency — powers honest /api/host telemetry when installed
+    import psutil  # type: ignore
+except Exception:  # noqa: BLE001 - contained; telemetry is honestly "unavailable" without it
+    psutil = None  # type: ignore
+
+try:  # optional — renders a scan-to-open QR on /connect when installed
+    import segno  # type: ignore
+except Exception:  # noqa: BLE001 - contained; /connect still shows the URL without it
+    segno = None  # type: ignore
 
 from . import db, memory, tts, world_model
 from .agent import loop as agent_loop, state as agent_state
@@ -87,6 +103,18 @@ class AgentIn(BaseModel):
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/mission-control")
+def mission_control() -> FileResponse:
+    """The Mission Control operating screen (the Companion's command surface)."""
+    return FileResponse(STATIC_DIR / "mission-control.html")
+
+
+@app.get("/connect")
+def connect_page() -> FileResponse:
+    """A device-connect helper: how to reach this Companion from phone/tablet."""
+    return FileResponse(STATIC_DIR / "connect.html")
 
 
 @app.get("/api/config")
@@ -300,6 +328,126 @@ def metrics() -> dict:
         "voice": tts.METRICS,
         "agent": agent_loop.METRICS,
         "capabilities": cap_metrics,
+    }
+
+
+# ---- Mission Control (honest host telemetry + Council dispatch) ----
+
+@app.get("/api/host")
+def host_telemetry() -> dict:
+    """Real, measured host telemetry for the Mission Control panel.
+
+    Honesty is the whole point of this endpoint (see the acceptance directive):
+    a gauge is drawn by the UI **only** when the response attests
+    ``"simulated": false`` — which we return **exclusively** for values we have
+    actually measured. CPU/RAM/disk come from ``psutil``; there is no
+    vendor-neutral GPU source, so ``gpu`` is ``null`` with a stated reason (the
+    UI then draws no GPU gauge). When no measurement source exists we do **not**
+    fabricate a fallback — we return ``503`` so the panel shows "Disconnected".
+    """
+    if psutil is None:
+        # No measured source. Per the contract, fail rather than invent values.
+        raise HTTPException(
+            status_code=503,
+            detail="No measured host telemetry source is connected (install psutil).",
+        )
+    vm = psutil.virtual_memory()
+    du = psutil.disk_usage(str(ROOT))
+    return {
+        "simulated": False,  # attested: every value below is measured, not invented
+        "cpu": psutil.cpu_percent(interval=None),
+        "ram": vm.percent,
+        "ram_total_gb": round(vm.total / 1_000_000_000, 1),
+        "disk": du.percent,
+        "disk_total_gb": round(du.total / 1_000_000_000),
+        "gpu": None,
+        "gpu_reason": "No vendor-neutral GPU source is connected on this host.",
+        "local_runtime": "Active",  # this Companion process is serving
+    }
+
+
+@app.post("/api/council/dispatch")
+async def council_dispatch() -> Response:
+    """Stage the operator's instruction + files for Claude · Architect.
+
+    The Mission Control command surface POSTs ``multipart/form-data``
+    (``prompt``, ``target=claude``, ``role=architect``, ``files``). A real
+    Claude adapter is not wired in this repo yet, so — rather than pretend files
+    were delivered — we return ``503``. The browser honours that by showing
+    "Not sent" and **retaining every staged file locally** (nothing is uploaded
+    anywhere). When an adapter is added, forward here and return ``2xx`` only on
+    a genuine success.
+    """
+    raise HTTPException(
+        status_code=503,
+        detail="Claude · Architect adapter is not connected. Files were not sent.",
+    )
+
+
+def _lan_ipv4s() -> list[str]:
+    """This host's LAN IPv4 addresses (for reaching Nero from phone/tablet).
+
+    Best-effort and offline: resolves the hostname and asks the OS which local
+    address it would route out of. Loopback and link-local are excluded.
+    """
+    ips: set[str] = set()
+    try:
+        for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+            ip = info[4][0]
+            if not ip.startswith(("127.", "169.254.")):
+                ips.add(ip)
+    except Exception:  # noqa: BLE001 - contained; discovery is best-effort
+        pass
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(("192.168.255.255", 1))  # selects the egress iface; sends nothing
+            ip = s.getsockname()[0]
+            if not ip.startswith(("127.", "169.254.")):
+                ips.add(ip)
+        finally:
+            s.close()
+    except Exception:  # noqa: BLE001 - contained
+        pass
+    return sorted(ips)
+
+
+@app.get("/api/connect")
+def connect_info() -> dict:
+    """Where to reach Mission Control from other devices on this network.
+
+    Returns this host's LAN URLs (and localhost), plus an optional scan-to-open
+    QR SVG for the primary device URL when the optional ``segno`` package is
+    installed. Nothing is measured or invented — these are this machine's own
+    addresses. Off-network access is via Tailscale (see docs/REMOTE_ACCESS.md).
+    """
+    cfg = load_config()
+    port = cfg.port
+    ips = _lan_ipv4s()
+    hosts = ["localhost", *ips]
+    urls = [{"label": ("This PC" if h == "localhost" else h), "host": h,
+             "mission_control": f"http://{h}:{port}/mission-control",
+             "base": f"http://{h}:{port}/"} for h in hosts]
+    primary = f"http://{ips[0]}:{port}/mission-control" if ips else f"http://localhost:{port}/mission-control"
+
+    qr_svg = None
+    if segno is not None and ips:
+        try:
+            buf = io.BytesIO()
+            segno.make(primary, error="m").save(
+                buf, kind="svg", scale=5, border=2, dark="#c9f6ff", light="#141414"
+            )
+            qr_svg = buf.getvalue().decode("utf-8")
+        except Exception:  # noqa: BLE001 - QR is a bonus; never break the page
+            qr_svg = None
+
+    return {
+        "hostname": socket.gethostname(),
+        "port": port,
+        "lan_ips": ips,
+        "urls": urls,
+        "primary_url": primary,
+        "qr_svg": qr_svg,
     }
 
 

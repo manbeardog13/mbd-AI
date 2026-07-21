@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#070707">
+<title>NERO · Mission Control</title>
+<link rel="icon" href="/static/mission-control-192.png">
+<!-- Installable on phone/tablet: "Add to Home Screen" gives a launch icon. -->
+<link rel="manifest" href="/static/mission-control.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mission Control">
+<link rel="apple-touch-icon" href="/static/mission-control-180.png">
+<link rel="stylesheet" href="/static/mission-control.css">
+</head>
+<body>
+<div class="shell">
+  <svg class="defs" aria-hidden="true"><defs><filter id="glassWarp" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.012 0.034" numOctaves="1" seed="13" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.6" xChannelSelector="R" yChannelSelector="B"/>
+  </filter></defs></svg>
+
+  <div id="stage" class="stage" data-screen-label="NERO Companion Mission Control">
+    <div id="cursor-aura" class="cursor-aura"></div>
+
+    <!-- Navigation — a Companion nav shell; Mission Control is the live screen. -->
+    <nav class="nav" aria-label="Primary navigation">
+      <button class="brand" id="brand" title="Back to Companion" aria-label="Back to Companion">
+        <span class="brand-mark"></span>
+        <span class="brand-copy"><span class="brand-name">NERO</span><span class="brand-sub mono">COMPANION</span></span>
+      </button>
+      <button class="nav-item active" aria-current="page" aria-label="Mission Control"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></svg></span><span class="nav-label">Mission Control</span></button>
+      <button class="nav-item" aria-label="Projects"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="4"/></svg></span><span class="nav-label">Projects</span></button>
+      <button class="nav-item" aria-label="Repositories"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="5" rx="2"/><rect x="5" y="14" width="14" height="5" rx="2"/></svg></span><span class="nav-label">Repositories</span></button>
+      <button class="nav-item" aria-label="Council"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="2"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/><path d="m11 8-4 7m6-7 4 7"/></svg></span><span class="nav-label">Council</span></button>
+      <button class="nav-item" aria-label="Voice"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="9" y="4" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v3"/></svg></span><span class="nav-label">Voice</span></button>
+      <button class="nav-item" aria-label="Memory"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="m12 4 7 8-7 8-7-8 7-8Z"/></svg></span><span class="nav-label">Memory</span></button>
+      <button class="nav-item" aria-label="Knowledge"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M12 5v14M5 12h14"/></svg></span><span class="nav-label">Knowledge</span></button>
+      <button class="nav-item" aria-label="Workflows"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/><path d="m9 9 6 6"/></svg></span><span class="nav-label">Workflows</span></button>
+      <button class="nav-item" aria-label="GitHub"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M8 19c-4 1.2-4-2-5-2.4M14 21v-3.2c0-.9.3-1.6.8-2-2.7-.3-5.5-1.3-5.5-5.8 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.6.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.5-2.8 5.5-5.5 5.8.5.4.8 1.2.8 2.4V21"/></svg></span><span class="nav-label">GitHub</span></button>
+      <button class="nav-item" aria-label="Local models"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="4"/><circle cx="12" cy="12" r="3"/></svg></span><span class="nav-label">Local Models</span></button>
+      <button class="nav-item" aria-label="Cloud models"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .6-8A6 6 0 0 0 6.3 8.2 5 5 0 0 0 7 18Z"/></svg></span><span class="nav-label">Cloud Models</span></button>
+      <button class="nav-item" aria-label="Analytics"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 18V9m5 9V5m5 13v-6m4 6V3"/></svg></span><span class="nav-label">Analytics</span></button>
+      <div class="nav-spacer"></div><div class="nav-divider"></div>
+      <button class="nav-item" aria-label="Settings"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a8 8 0 0 0-1.7-1L14.5 3h-5L9 6.1a8 8 0 0 0-1.7 1l-2.4-1-2 3.4L5 11a7 7 0 0 0 0 2l-2.1 1.5 2 3.4 2.4-1a8 8 0 0 0 1.7 1l.5 3.1h5l.5-3.1a8 8 0 0 0 1.7-1l2.4 1 2-3.4L19 13a7 7 0 0 0 .1-1Z"/></svg></span><span class="nav-label">Settings</span></button>
+    </nav>
+
+    <main class="main">
+      <header class="statusbar">
+        <div class="status-left">
+          <span class="title">MISSION CONTROL</span>
+          <span class="status-sep"></span>
+          <span class="status-pill"><span class="status-dot"></span>CORE · SEALED</span>
+          <span class="status-pill">COMPANION · ACTIVE</span>
+        </div>
+        <div class="status-right">
+          <span class="sim-badge" title="Computer-use actions are constitutionally simulation-bound">COMPUTER USE · SIMULATION</span>
+          <a class="devices-link" href="/connect" title="Reach Mission Control from your phone or tablet">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 18h2"/></svg>
+            <span>Devices</span>
+          </a>
+          <span id="clock" class="clock mono">--:--:--</span>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <section class="orchestration glass" aria-label="Live orchestration">
+          <div class="panel-heading">
+            <span class="eyebrow">Live orchestration</span>
+            <span id="active-count" class="active-count mono">4 ACTIVE</span>
+          </div>
+          <div id="orch-list" class="orch-list"></div>
+          <div class="orch-footer mono"><span>OWNER REGISTER · ONLINE</span><span>COLLISION GATE · ARMED</span></div>
+        </section>
+
+        <section class="field-zone" aria-label="Nero orchestration field">
+          <div class="field-canvas-wrap"><canvas id="field-canvas" class="field-canvas"></canvas></div>
+          <div id="field-scan" class="field-scan"></div>
+          <svg id="filaments" class="council-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+          <div id="council-layer"></div>
+          <button id="overlap" class="overlap mono" title="Two agents claim the auth module — operator decision required">Ownership overlap · auth module</button>
+          <div class="field-label">
+            <div id="field-state" class="field-state">Idle</div>
+            <div id="field-desc" class="field-desc mono">Systems nominal · standing by</div>
+          </div>
+          <div id="state-control" class="state-control" role="tablist" aria-label="Nero field state">
+            <button class="state-btn active" data-state="idle" role="tab">Idle</button>
+            <button class="state-btn" data-state="listening" role="tab">Listening</button>
+            <button class="state-btn" data-state="thinking" role="tab">Thinking</button>
+            <button class="state-btn" data-state="planning" role="tab">Planning</button>
+            <button class="state-btn" data-state="reviewing" role="tab">Reviewing</button>
+            <button class="state-btn" data-state="executing" role="tab">Executing</button>
+            <button class="state-btn" data-state="speaking" role="tab">Speaking</button>
+            <button class="state-btn" data-state="waiting" role="tab">Waiting</button>
+            <button class="state-btn" data-state="offline" role="tab">Offline</button>
+          </div>
+        </section>
+
+        <section id="command" class="command glass glass-focus" aria-label="Command surface">
+          <div id="drop-overlay" class="drop-overlay">Drop files for Claude · Architect</div>
+          <input id="file-input" type="file" multiple hidden>
+          <button id="attach" class="command-action" aria-label="Attach files"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 12.5 14.8 5.7a4 4 0 0 1 5.7 5.6l-8.8 8.8a6 6 0 0 1-8.5-8.5l8.1-8.1"/></svg></button>
+          <div class="command-main">
+            <div class="command-row"><input id="prompt" class="command-input" placeholder="Describe an outcome, or drop files for Claude…" autocomplete="off"></div>
+            <div class="context-line">
+              <span class="target-chip mono">CLAUDE · ARCHITECT</span>
+              <div id="file-chips" class="file-chips"></div>
+            </div>
+          </div>
+          <button id="voice" class="command-action" aria-label="Voice input"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg></button>
+          <button id="send" class="send" disabled><span>Send to Claude</span><span aria-hidden="true">↗</span></button>
+          <div id="dispatch-note" class="dispatch-note mono">Files remain local until a Claude adapter is connected.</div>
+        </section>
+      </section>
+    </main>
+
+    <aside class="context" aria-label="Context surface">
+      <div class="context-title"><span class="eyebrow">Context surface</span><span class="context-live mono">ADAPTIVE</span></div>
+      <div class="context-stack">
+
+        <section class="context-card glass">
+          <div class="card-top"><span class="eyebrow">Repository</span><span class="data-badge">Preview</span></div>
+          <div><span class="repo-name">mbd-AI</span><span class="repo-branch mono"> · main</span></div>
+          <div class="repo-metrics">
+            <div class="repo-metric"><span class="repo-number mono" data-count="248" data-prefix="+">+248</span><span class="repo-label mono">ADDED</span></div>
+            <div class="repo-metric"><span class="repo-number mono" data-count="63" data-prefix="−">−63</span><span class="repo-label mono">REMOVED</span></div>
+            <div class="repo-metric"><span class="repo-number mono" data-count="7">7</span><span class="repo-label mono">FILES</span></div>
+          </div>
+          <div class="repo-summary">2 ahead on <span class="mono">auth-refactor</span> · awaiting Council review</div>
+        </section>
+
+        <section class="context-card glass">
+          <div class="card-top"><span class="eyebrow">Host telemetry</span><span id="telemetry-badge" class="data-badge warn">Disconnected</span></div>
+          <div id="telemetry-body"></div>
+        </section>
+
+        <section class="context-card glass">
+          <div class="card-top"><span class="eyebrow">Approvals</span><span id="approval-count" class="data-badge warn">2 pending</span></div>
+          <div id="approvals" class="approvals"></div>
+        </section>
+
+        <section class="context-card glass">
+          <div class="card-top"><span class="eyebrow">Memory</span><span class="data-badge">Retrieved</span></div>
+          <div class="memory-item"><span class="memory-dot"></span><span class="memory-copy">Auth changes must preserve constitutional scope checks and explicit operator authority.</span></div>
+          <div class="memory-item"><span class="memory-dot"></span><span class="memory-copy">Operator prefers squash-merge for refactor branches after Council review.</span></div>
+        </section>
+
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script src="/static/mission-control.js"></script>
+</body>
+</html>
