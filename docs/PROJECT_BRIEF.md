@@ -90,8 +90,10 @@ chat is only discussion about it).
   the only colour — with **honest** host telemetry (`/api/host`, gauges only on
   attested `simulated:false`, else Disconnected — never invented) and a command
   bar that stages real files for Claude · Architect (`/api/council/dispatch`,
-  honest `Not sent` + local retention until an adapter is wired).
-  See `docs/DESIGN-mission-control.md`.
+  honest `Not sent` + local retention until an adapter is wired). It ships with
+  a Windows **desktop icon** (`scripts/` launcher) and **phone/tablet access on
+  the same Wi-Fi** — an installable PWA plus a `/connect` helper (Devices link)
+  that shows the LAN URL + a scan-to-open QR. See `docs/DESIGN-mission-control.md`.
 - **Access:** local network + Tailscale (device-only; no app login).
 - **Setup:** one-command `bootstrap.py` (venv + deps + pulls all 3 models + launch).
 
