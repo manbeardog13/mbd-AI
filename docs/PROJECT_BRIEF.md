@@ -6,6 +6,19 @@ It doubles as a self-contained handoff you can give to an external advisor
 gaps, the roadmap, and pointed open questions. Blunt, specific feedback is
 welcome — what to cut as readily as what to add.*
 
+*Latest (2026-07-15): the **cross-host continuity ledger** is integrated on a
+clean branch from the current remote tip. It is a cold, standard-library-only
+SQLite transport for deliberately selected Claude/Codex handoffs with
+hash-chained receipts, deterministic recall, sensitive-input refusal, and no
+resident process. A real Codex→Claude equation challenge passed blind, and the
+Claude→Codex transport returned the matching event and hash. Status is
+**partial live verification**: the disabled-adapter `UNAVAILABLE` control and
+the complete correction protocol remain before `LIVE_BIDIRECTIONAL_VERIFIED`.
+The ledger is separate from the standalone app's `data/memory.db`; provenance
+labels remain claimed rather than provider-attested. See
+[ADR-0016](adr/0016-cross-host-continuity-ledger.md) and
+[the Codex live update](../audit/nero-continuity/CODEX_LIVE_UPDATE.md).*
+
 *Last updated: **PR #9 merged to `main`** — the NERO Design System UI redesign,
 the ChatGPT-style two-button voice composer, hands-free conversation mode, and
 Nero's local neural voice (Kokoro) playing her replies with iOS Web-Audio
@@ -40,17 +53,43 @@ capabilities, one PR each: `fs.list`, `git.log`, then the human-in-the-loop
 terminal (the confirmation Approve/Deny UX lands with the first MEDIUM+
 capability).*
 
-*Toni now also runs a **local Claude Code instance** on the PC (repo at
-`D:\mbd AI`) that verifies and drives things directly on the 4070 — the cloud
-session owns planning + merges; the local instance is the hands on the machine.*
+*Mission Control Milestone 1 is implemented and verified locally on
+`codex/nero-mission-control-m1`; it has not been pushed. Under
+[ADR-0017](adr/0017-authoritative-core-and-host-boundaries.md), the manually
+launched, model-independent Nero Core owns measured Git state, tasks, a
+repository-global lease, approvals, and hash-chained events. Claude and Codex
+are bounded, replaceable worker definitions; M1 does not call either provider
+and never invents a reply. The dashboard exposes explicit fetch, exact
+branch/upstream wording, the task queue, workers, approvals, timeline, and
+health. Commit/merge/pull/rebase/reset/checkout/push have no execution route.
+See [the M1 design](DESIGN-mission-control-m1.md) and
+[operator guide](MISSION_CONTROL.md).*
+
+*In progress — **the Action Journal (Nero's accountability spine)**, the third
+leg of the **executive control layer**: Capability Registry (*what can I do?*) ·
+Trust Engine / security gate (*am I allowed?*) · **Action Journal** (*what did I
+do, and can I prove it?*). Design approved + finalized (immutable/event-sourced;
+hybrid durability — strict for mutations; 3-layer retention; an integrity check
+that drops Nero into read-only **safe-mode** if her records can't be trusted) plus
+**Amendment V1.1** (Emergency Lockdown · Explain-Before-Execute · Action Replay
+metadata). Being built as a **controlled, staged PR**: **Stage 1 — storage
+foundation** is pushed (append-only `action_journal` table with DB-level
+immutability triggers, event-sourcing, `add_action`/`get_action`/`get_actions`;
+10 storage tests green, 0 regressions), awaiting review before Stage 2. Separately,
+the **Voice System V1.2.1** implementation map has been produced (Step-0 inspection
+of the adopted `docs/VOICE.md` "Bible") and awaits approval — a parallel,
+interface-only track (voice acts on nothing; it never touches the Trust Engine or
+the Journal), whose GPU milestones run on the local instance.*
 
 ---
 
 ## 1. What Nero is
 
-A **personal AI companion** named **Nero** (she/her) that runs **100% locally**
-on the owner's own PC. Private, offline inference — nothing leaves the machine.
-Reachable from anywhere over a private encrypted network (Tailscale).
+A **local-first personal AI companion** named **Nero** (she/her). The standalone
+application and its private memory run on the owner's PC and remain reachable
+over a private encrypted network (Tailscale). Hosted Claude/Codex interfaces are
+explicit adapters under the cloud-escalation policy; they do not receive local
+databases or private context by default.
 
 The explicit goal is to grow from "a chatbot" into a **cognitive companion**.
 **North Star: continuity** — she should wake up already knowing what the owner

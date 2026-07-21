@@ -4,19 +4,28 @@
 roadmaps, and implementations serve these principles — not the other way around.
 When a proposal conflicts with the Constitution, the proposal changes.*
 
-Version 1.1 · supersedes the philosophy sections of DIRECTIVE.md, VISION.md, and
+Version 1.2 · supersedes the philosophy sections of DIRECTIVE.md, VISION.md, and
 the V1–V3 directives (those remain as vision/history; this is the law).
 *v1.1 (2026-07-12): adopted the Principle of Least Intelligence (§3); confirmed
 ADR-0006 as "Local-First with Intelligence Escalation."*
+*v1.2 (2026-07-15): established the model-independent authoritative Core and
+the boundary between local control, hosted presence, and replaceable hosted
+workers (ADR-0017).*
 
 ---
 
 ## 1. What Nero is
 
-Nero is a **local-first cognitive assistant** that runs entirely on Toni's own
-PC. She is not a chatbot and she is not a distributed platform. She is a
-**modular monolith**: one application, one process where practical, one
+Nero is a **local-first cognitive assistant** whose authoritative project state,
+private memory, approvals, and orchestration remain on Toni's own PC. She is not
+a chatbot and she is not a distributed platform. She is a **modular monolith**:
+one explicitly launched control plane, one process where practical, one
 debugger — with clearly separated modules behind strict interfaces.
+
+Hosted presence may express Nero's identity without starting the local control
+plane. Hosted Claude, Codex, or future engines may execute explicitly disclosed,
+bounded tasks as replaceable workers; they never become Nero's authority and do
+not receive private local context by default.
 
 The language model is **one component**, not the whole of Nero. Any model must be
 replaceable with minimal effort.
@@ -56,10 +65,11 @@ When principles conflict, the higher one wins.
   software that can be right by construction. This applies to Nero's own
   architecture too: prefer the thin, knowable mechanism over the clever one
   (e.g. read the git branch, don't ask the model for it).
-- **One resident model.** A single primary model stays loaded; everything else
-  (vision, a larger model, speech) is loaded on demand at an honest, visible
-  latency cost. Never promise hot, concurrent, multi-model routing on 12 GB.
-  (ADR-0002)
+- **Model-independent Core; one resident local model.** Core owns deterministic
+  state and policy, not a model. When the standalone local application runs, a
+  single primary local model stays loaded; larger, vision, or speech models load
+  on demand at an honest, visible cost. Hosted workers are explicit bounded
+  escalations, not resident local routing. (ADR-0002, ADR-0017)
 - **The agent/tool loop is the core primitive.** Reason → choose tool → execute →
   observe → repeat. Every capability (terminal, browser, plugins) is a *tool*
   behind that loop, not a new service. (ADR-0003)
@@ -70,9 +80,11 @@ When principles conflict, the higher one wins.
   the working system and switched on only after it's verified on the real PC.
   Working code is deleted only once its replacement is proven. We do not rewrite
   what works without a measured benefit.
-- **The local PC is the source of truth.** No subsystem is "done" until it
-  verifies itself there (`verify/verify_*.py`) and ships with tests, benchmarks,
-  logging, metrics, and docs.
+- **Measured state is the source of truth.** No subsystem is "done" until it
+  verifies on the local PC (`verify/verify_*.py`) and ships with tests,
+  logging, metrics, and docs. Local Git state is read directly; remote Git state
+  is authoritative only after a successful fetch and is always named with its
+  exact branch/upstream relationship.
 - **Elegant over clever.** Prefer the simpler, more modular, more debuggable
   solution. Feature count is not the measure of success; the feeling in §1 is.
 

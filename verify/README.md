@@ -44,6 +44,7 @@ skips are fine.
 | `verify_embeddings.py` | Local embeddings (`nomic-embed-text`) return vectors | yes |
 | `verify_reflection.py` | Nero extracts a memory from a sample exchange | yes |
 | `verify_tts.py` | Nero's local neural voice synthesizes a playable WAV (skips if the optional voice deps aren't installed) | — |
+| `verify_mission_control.py` | Core contracts, real disposable Git-state matrix, scheduler/lease failures, API policy, and interface safety | no |
 
 The `no`/offline checks pass on any machine (including CI); the `yes` checks
 skip when Ollama isn't running and pass on your PC once it is.

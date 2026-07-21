@@ -1,0 +1,4 @@
+# Explicitly launched Mission Control only; no local model or voice packages.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+httpx==0.28.1  # FastAPI TestClient for offline verification

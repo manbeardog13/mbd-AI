@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "mode": "host",
+  "runtime_policy": "hosted-only",
+  "presence_source": "global-static-capsule",
+  "presence_capsule_version": "NERO_GLOBAL_CAPSULE_V1",
+  "delivery": "text-only-until-hosted-voice-channel",
+  "local_model_inference": false,
+  "voice_enabled": false,
+  "auto_speak": false,
+  "desktop_voice_warmup": false,
+  "background_processes": false,
+  "project_server_startup": false,
+  "memory_preload": false,
+  "local_fallback": false
+}

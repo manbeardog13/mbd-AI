@@ -1,5 +1,10 @@
 # Setup Guide
 
+> [!IMPORTANT]
+> **Historical only:** this local setup path is hard-disabled under ADR-0014.
+> Do not install, start, or configure Ollama, local models, the project server,
+> or local voice for Nero. Use zero-start Codex Host Presence instead.
+
 Getting your personal AI running on your NVIDIA PC. Takes about 15 minutes.
 
 ---

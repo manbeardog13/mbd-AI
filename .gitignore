@@ -31,3 +31,11 @@ models/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Nero cross-host continuity: live ledger, backups, journals, exports stay local.
+# (data/ is already ignored above; these are defensive companion patterns.)
+data/continuity/
+*.db-journal
+*.db-wal
+*.db-shm
+*.continuity-export.json
