@@ -8,7 +8,8 @@ animated, real-time Unreal Engine 5 avatar streamed to the web at 60 FPS.*
 > asset. It was produced from a multi-source, adversarially-verified web study
 > (Epic Games documentation + peer-reviewed papers + practitioner sources; 25
 > sources fetched, 112 claims extracted, 25 verified, **22 confirmed / 3
-> refuted**). The **actual Unreal work** — MetaHuman assembly, materials,
+> refuted** — full audit trail in **Appendix A**). The **actual Unreal work** —
+> MetaHuman assembly, materials,
 > Niagara, retargeting, and the **measured 60 FPS evidence** — must be created
 > and validated on an **Unreal seat** (matching the operator's own stated
 > requirement). Where a figure was refuted or unverifiable, this doc says so
@@ -24,12 +25,18 @@ animation/VFX states (see §7).
 
 ## 0. The reference material (what the operator actually has)
 
-The operator provided a **model sheet / turnaround**, not a single render:
+The operator provided **multi-view concept sheets**, not a single render:
 
-- A **full-body A-pose** turnaround — front, front-¾, both profiles, back-¾, back.
-- A **full-body T-pose** turnaround — same angles.
-- A **labeled head/bust** turnaround — `FRONT · FRONT ¾ R · RIGHT PROFILE ·
+- A **full-body A-pose** sheet — front, front-¾, both profiles, back-¾, back.
+- A **full-body T-pose** sheet — same angles.
+- A **labeled head/bust** sheet — `FRONT · FRONT ¾ R · RIGHT PROFILE ·
   BACK ¾ R · BACK · BACK ¾ L · LEFT PROFILE · FRONT ¾ L`.
+
+> **What they are (honest framing):** these are **AI-generated multi-view concept
+> sheets**, *not* geometry-accurate orthographic turnarounds. The eight views per
+> sheet are useful but **not perfectly consistent** angle-to-angle (proportions
+> and detail drift between panels), so treat them as **modeling guidance to block
+> out and reconcile against** — not ortho planes to project-model verbatim.
 - A **"Stellar Specter" texture package** — twelve 2048×2048 channel panels
   (base color, emissive, normal, ORM, roughness, metallic, AO, height, opacity,
   subsurface, scatter/transmission) + a reference render, and a written
@@ -48,9 +55,11 @@ Two consequences that shape the whole plan:
    call (the research is explicit that stylized *proportions* break the facial
    rig; see §3.4). Keep the body/face near-human; put the "celestial" entirely
    into **materials + VFX**, not geometry.
-2. **A real orthographic turnaround upgrades "concept → 3D" from guesswork to a
-   standard modeling task.** Front/side/back drive the blockout; the **T-pose**
-   is the rigging/bind reference. This is what artists model *from*.
+2. **Multi-view concept sheets upgrade "concept → 3D" from a single-view guess to
+   workable modeling guidance.** Front/side/back/¾ inform the blockout and the
+   **T-pose** sheet guides the bind pose — but because they are AI-generated and
+   **not geometry-accurate** (views aren't perfectly consistent), the artist
+   **blocks out and reconciles across views** rather than projecting them verbatim.
 
 ---
 
@@ -70,13 +79,14 @@ novel views are driven by 2D/3D diffusion priors, exposed as a single
 "exploration ↔ exploitation" trade-off knob — i.e. fidelity to the drawing and
 plausible unseen geometry **fight each other** and must be hand-tuned.
 
-**What a turnaround genuinely provides** (the operator now has this):
+**What the multi-view sheets genuinely provide** (the operator now has this):
 - **Silhouette / alpha** per view → blockout volumes and proportion matching.
 - **Color palette** (white → ice → cyan → spectral blue) → the material/emissive ramp.
 - **Emissive stylization masks** — the constellation/filament "starmap" and the
-  glowing edges → authored as **emissive/opacity masks**, not photographed PBR.
-- **Consistent multi-angle design** → front/side/back modeling reference; the
-  **T-pose** as the bind/rig reference.
+    glowing edges → authored as **emissive/opacity masks**, not photographed PBR.
+- **Multi-angle design coverage** (front/side/back/¾) → modeling guidance —
+  *not* perfectly consistent between views; the **T-pose** sheet as bind/pose
+  guidance to reconcile against.
 
 **What it still does *not* provide** (must be authored, on any number of views):
 - **UVs**, a **multi-channel PBR set**, **topology**, a **skeleton/rig**, or true
@@ -94,7 +104,7 @@ plausible unseen geometry **fight each other** and must be hand-tuned.
 > mocap retargets with minimal setup" was refuted 0-3 — directly contradicted by
 > the IK-bone gotcha in §3.2. **Setup is not trivial.**
 
-**Bottom line for NERO:** use the turnaround as a **model sheet** → build a
+**Bottom line for NERO:** use the sheets as **multi-view reference** → build a
 **near-human MetaHuman** → realize "made of light" in **materials + Niagara**.
 Do **not** try to bake the look into a texture pulled from the art.
 
@@ -117,7 +127,7 @@ and is the documented path for **rim / edge lighting**. Feed Fresnel into
   (see §5 — translucency is the #1 budget risk).
 - **Emissive** = palette ramp × (Fresnel rim + **constellation/filament mask**).
   The starmap is an authored **emissive mask** (hand-painted or derived from the
-  turnaround), optionally animated (panning/twinkling) via a second UV or noise.
+  concept sheets), optionally animated (panning/twinkling) via a second UV or noise.
 - **Fresnel** for edge glow; **Depth-Fade** so she doesn't hard-clip against
   geometry; light **refraction/distortion** for the "energy" shimmer;
   **dithered opacity** (or WPO shimmer) for a living surface.
@@ -241,7 +251,7 @@ elongated jaw). A stylized head needs **Mesh-to-MetaHuman** (sculpt in a DCC →
 Identity Solve wraps the MetaHuman template topology onto it → derives a **DNA**
 for a working rig), but **extreme non-human proportions cause deformation
 artifacts at expression extremes** (correctives are calibrated for human range).
-**NERO is near-human (per the turnaround), so this is a non-issue** — keep her
+**NERO is near-human (per the concept sheets), so this is a non-issue** — keep her
 proportions human, push the "celestial" into look/VFX.
 *Sources: [nastyrodent](https://nastyrodent.com/ue5-metahuman/); Epic,
 [Mesh to MetaHuman](https://dev.epicgames.com/documentation/metahuman/mesh-to-metahuman).*
@@ -319,12 +329,12 @@ stream resolution/bitrate.
 
 ## 6. Recommended end-to-end pipeline (tool by tool)
 
-0. **Concept audit** — from the turnaround, pull the **palette**, per-view
+0. **Concept audit** — from the concept sheets, pull the **palette**, per-view
    **silhouette/alpha**, and the **constellation emissive mask**. No texture
    extraction.
 1. **Base identity (MetaHuman)** — build a **near-human** NERO. Face via MetaHuman
    Creator; if custom proportions are needed, **Mesh-to-MetaHuman** (sculpt head in
-   Blender/ZBrush against the head turnaround → Identity Solve → DNA). Body from a
+   Blender/ZBrush against the head concept sheet → Identity Solve → DNA). Body from a
    MetaHuman preset matched to the T-pose proportions.
 2. **The look (materials)** — **bake mesh-specific 2K maps** against the real UVs
    using the **Stellar Specter** panels as the visual target (§2.1), then build
@@ -436,7 +446,89 @@ hardware** with **Pixel Streaming active**:
 
 ---
 
-*Sources are linked inline. Full verification detail (per-claim votes, evidence,
-and the 25-source table) is in the research run this doc was compiled from.
-This is a plan to be executed and measured on an Unreal seat — not a claim that
-any asset has been built.*
+## Appendix A — Verification audit trail
+
+*So the report's totals can be audited from this document alone. **Method:** each
+candidate claim received **3 independent adversarial verification votes**; a claim
+is killed on **≥2 refutations**. Votes below are **confirm–refute**.*
+
+**A.1 — Run stats.** 5 search angles · **25 sources fetched** · **112 claims
+extracted** · **25 claims verified** (top-ranked by importance × source quality)
+· **22 confirmed · 3 refuted · 0 unverified** · 11 findings after semantic-dedup
+synthesis · 107 agent calls.
+
+**A.2 — Per-claim verification (the 25 verified claims).**
+
+| # | Claim (as verified) | Vote | Verdict |
+|---|---|:---:|:---:|
+| 1 | Reconstructing 3D geometry from a single-view image is ill-posed | 3–0 | ✓ |
+| 2 | A realistic material/appearance for a single-view result is *synthesized* via a generative prior | 3–0 | ✓ |
+| 3 | In single-image-to-3D, only the reference view is supervised by the input image | 3–0 | ✓ |
+| 4 | Single-image 3D forces an explicit exploration↔exploitation (imaginative vs precise) trade-off | 3–0 | ✓ |
+| 5 | Translucency overdraw cost stacks with each successive transparent layer | 3–0 | ✓ |
+| 6 | The Fresnel node computes falloff from dot(surface normal, view direction) | 3–0 | ✓ |
+| 7 | Fresnel = viewing-angle-dependent brightness → rim / edge lighting | 3–0 | ✓ |
+| 8 | Runtime retarget of UE5 Mannequin (Quinn) animation onto the MetaHuman body | 3–0 | ✓ |
+| 9 | The retarget Anim BP (`ABM_MHRuntimeRTG`) drives the MetaHuman body skeleton | 3–0 | ✓ |
+| 10 | MetaHuman Animator supports audio-driven animation (offline high-fidelity solve) | 3–0 | ✓ |
+| 11 | The real-time audio solver mode produces **no** head motion | 3–0 | ✓ |
+| 12 | MetaHuman **DNA** encodes head/body/rigs (geometry+skeleton) across LODs | 3–0 | ✓ |
+| 13 | **RigLogic** is a runtime operator/node in both Unreal and Maya | 3–0 | ✓ |
+| 14 | Pixel Streaming runs the UE app server-side, streaming frames+audio over WebRTC | 3–0 | ✓ |
+| 15 | Unreal Insights is the primary tool for measuring Niagara performance | 3–0 | ✓ |
+| 16 | The Niagara Debugger includes profiling tools usable alongside PIE | 3–0 | ✓ |
+| 17 | Particle-system overdraw is measured with the Quad Overdraw view mode | 3–0 | ✓ |
+| 18 | *(80.lv)* a specific PBR-authoring characterization | 0–3 | ✗ **refuted** |
+| 19 | The MetaHuman body skeleton omits IK bones (`ik_foot_root`/`l`/`r`) by default | 3–0 | ✓ |
+| 20 | ~3–6 ms GPU/char → only 1–4 hero MetaHumans at 60 FPS (concrete budget) | 1–2 | ✗ **refuted** |
+| 21 | Dominant per-character CPU cost = anim thread evaluating corrective bones | 2–1 | ✓ |
+| 22 | MetaHuman Creator is bounded by human plausibility (no stylized proportions) | 3–0 | ✓ |
+| 23 | Live Link Face (iPhone ARKit) provides real-time facial capture | 2–1 | ✓ |
+| 24 | Mesh-to-MetaHuman converts a custom head mesh into a rigged MetaHuman (derives DNA) | 3–0 | ✓ |
+| 25 | All MetaHumans share the Manny/Quinn skeleton → mocap retargets with minimal setup | 0–3 | ✗ **refuted** |
+
+**Result: 22 confirmed · 3 refuted (#18, #20, #25) · 0 unverified.** The three
+refuted claims are flagged in-line where relevant (§1, §3.2, §5) and must not be
+relied on.
+
+**A.3 — Sources (25 fetched).** *Quality:* **primary** = peer-reviewed paper or
+official Epic doc · *secondary/blog/forum* = practitioner · *unreliable* =
+low-trust (produced no usable claims). "Claims" = claims extracted from that source.
+
+| # | Source | Quality | Angle | Claims |
+|---|---|---|---|:---:|
+| 1 | medium.com/@Jamesroha/metahuman-5-6-5-7-pipeline-reference-170d302b078e | blog | pipeline | 5 |
+| 2 | nastyrodent.com/ue5-metahuman/ | blog | pipeline | 5 |
+| 3 | forums.unrealengine.com/t/ue5-mannequin-metahuman-retargeting-deformation-ik-rig/541543 | forum | pipeline | 5 |
+| 4 | mocaponline.com/blogs/mocap-news/ue5-metahuman-motion-capture-guide | blog | pipeline | 5 |
+| 5 | medium.com/@fulton_shaun/how-to-create-a-golden-halo-aura-…-niagara-5156707caf1f | blog | pipeline | 5 |
+| 6 | medium.com/@Jamesroha/a-beginners-guide-to-metahumans-in-unreal-engine-5-6-and-5-7-e9b14fadbf3d | blog | pipeline | 5 |
+| 7 | help.scenario.com/en/articles/introduction-to-3d-generation | blog | concept→3D | 5 |
+| 8 | **arxiv.org/pdf/2408.11465** (MeTTA) | **primary** | concept→3D | 4 |
+| 9 | 80.lv/articles/stylized-art-turning-concept-art-into-3d-characters | blog | concept→3D | 4 |
+| 10 | artstation.com/blogs/valeronart/O9X4/3d-pipeline-for-character-concept-art | unreliable | concept→3D | 0 |
+| 11 | **arxiv.org/pdf/2306.17843** (Magic123) | **primary** | concept→3D | 4 |
+| 12 | 80.lv/articles/thesis-overview-workflows-for-creating-3d-game-characters | secondary | concept→3D | 4 |
+| 13 | fps.fish/blog/fps-deep-dive/5-techniques-for-optimizing-transparency-in-unreal-engine | blog | ethereal | 5 |
+| 14 | **dev.epicgames.com/…/using-transparency-in-unreal-engine-materials** | **primary** | ethereal | 5 |
+| 15 | **dev.epicgames.com/…/using-fresnel-in-your-unreal-engine-materials** | **primary** | ethereal | 5 |
+| 16 | dev.epicgames.com/community/…/creating-a-hologram-shader-in-unreal-engine-5-6 | blog | ethereal | 3 |
+| 17 | cghow.com/…multi-layer-ribbon-trail-vfx-in-ue5-niagara… | blog | ethereal | 4 |
+| 18 | **dev.epicgames.com/…/metahuman/retargeting-animations-to-a-metahuman-at-runtime** | **primary** | rig/face | 5 |
+| 19 | **dev.epicgames.com/documentation/metahuman/audio-driven-animation** | **primary** | rig/face | 5 |
+| 20 | **dev.epicgames.com/documentation/metahuman/metahuman-dna-rig-definition-and-rig-operation** | **primary** | rig/face | 5 |
+| 21 | github.com/droganaida/meta-human-ik-retargeting-guide-ue5 | blog | rig/face | 5 |
+| 22 | streampixel.io/post/improve-pixel-streaming-performance-unreal-engine-5-best-practises | blog | perf/stream | 5 |
+| 23 | **dev.epicgames.com/…/pixel-streaming-in-unreal-engine** | **primary** | perf/stream | 4 |
+| 24 | **dev.epicgames.com/…/measuring-performance-in-niagara** | **primary** | perf/stream | 5 |
+| 25 | morevfxacademy.com/niagara-vfx-optimization-part-2-profiling-scalability-and-performance-tips/ | blog | perf/stream | 5 |
+
+*(1 duplicate URL was de-duped; 4 lower-priority claims were dropped by the
+verification budget — 25 of 112 extracted claims were verified. Full source URLs
+are also linked inline throughout §1–§5.)*
+
+---
+
+*Sources are linked inline and consolidated in Appendix A. This is a plan to be
+executed and measured on an Unreal seat — not a claim that any asset has been
+built.*
