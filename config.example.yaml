@@ -156,6 +156,23 @@ agent_max_seconds: 60
 # from. Use a full path to point her at a specific project.
 agent_project_dir: ""
 
+# ---- External Council (optional cloud escalation) ----
+# OFF by default. A request leaves this PC only after you press a Council send
+# button. API usage is billed separately from consumer subscriptions.
+collaboration:
+  enabled: false
+  openai:
+    api_key: ""
+    # Enter a model ID available in your OpenAI API account.
+    model: ""
+  anthropic:
+    api_key: ""
+    # Enter a model ID available in your Anthropic API account.
+    model: ""
+  timeout_seconds: 90
+  max_output_tokens: 1800
+  max_handoff_chars: 12000
+
 # ---- Server ----
 
 # 0.0.0.0 lets your other devices (via Tailscale) reach the AI.

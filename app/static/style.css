@@ -186,6 +186,17 @@ html, body {
 }
 @keyframes breathe { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
 
+.council-result { width: min(100%, 760px); max-width: 100%; }
+.council-result h3 { margin: 0 0 12px; font-size: 16px; }
+.council-turn { border-top: 1px solid var(--hairline); padding: 14px 0; }
+.council-turn h4 { margin: 0; font-size: 14px; }
+.council-model, .council-note { margin: 4px 0 10px; color: var(--muted); font-size: 12px; }
+.council-turn pre, .council-sent pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: 12px/1.55 var(--mono); }
+.council-sent { margin-top: 4px; border-top: 1px solid var(--hairline); padding-top: 12px; color: var(--text-2); }
+.council-sent summary { cursor: pointer; font-size: 13px; font-weight: 650; color: var(--accent-pressed); }
+.council-sent p { margin: 12px 0 4px; font-size: 12px; font-weight: 650; }
+.council-sent pre { background: var(--surface-2); border-radius: 10px; padding: 10px; }
+
 .empty {
   margin: auto;
   text-align: center;
@@ -264,6 +275,20 @@ html, body {
   color: #fff;
   animation: pulse 1.3s ease-in-out infinite;
 }
+.council-btn {
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid rgba(118, 102, 255, 0.22);
+  border-radius: 12px;
+  background: var(--accent-tint);
+  color: var(--accent-pressed);
+  cursor: pointer;
+  font: 650 12px/1 var(--font);
+  letter-spacing: 0.01em;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+.council-btn:hover:not(:disabled) { background: #E4DFFF; color: var(--accent-pressed); }
+.council-btn:disabled { opacity: 0.48; cursor: not-allowed; }
 @keyframes pulse {
   0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
   50% { box-shadow: 0 0 0 12px rgba(118, 102, 255, 0); }

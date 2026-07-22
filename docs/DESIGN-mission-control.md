@@ -65,10 +65,15 @@ These come straight from the handoff's Master Directive and match Nero's own
 - `multipart/form-data`: `prompt`, `target=claude`, `role=architect`, `files[]`.
 - Staged files stay **local** and are shown as removable chips. They are cleared
   **only** after an HTTP-2xx adapter success.
-- No Claude adapter is wired in this repo yet, so the endpoint returns **503**;
-  the UI shows `Not sent: … Files remain local.` and **retains every file**.
-  Nothing is uploaded anywhere. When a real adapter lands, forward here and
-  return 2xx only on genuine success.
+- The route checks the private opt-in configuration before parsing files. While
+  disabled or missing an Anthropic key/model it returns **503** and the UI shows
+  `Not sent: … Files remain local.`
+- A configured request sends only the typed task and explicitly staged files in
+  one Anthropic Messages request. UTF-8 text/code, PDF, PNG, JPEG, GIF, and WebP
+  are supported inline; no persistent Files API upload is created. Unsupported
+  files fail before provider contact. Bounds: 20 files, 7 MiB each, 16 MiB total.
+- HTTP 2xx requires a genuine Claude text response. Mission Control renders that
+  response in the Claude Architect card before clearing the local staging area.
 
 ### Preview vs measured
 Repository stats, orchestration, Council states, approvals, and memory are
@@ -152,6 +157,6 @@ the features degrade honestly when absent.
   (~27–28 px), matching the design source rather than the 44 px touch target;
   they remain keyboard-operable. Revisit if Mission Control gains a touch
   surface.
-- `/api/council/dispatch` is an honest 503 stub — the real Claude · Architect
-  adapter is future work (it is *the* thing that makes the command bar live).
+- `/api/council/dispatch` still returns an honest 503 until the operator enables
+  cloud collaboration and supplies a private Anthropic key and model ID.
 - Nav items beyond Mission Control are visual placeholders.

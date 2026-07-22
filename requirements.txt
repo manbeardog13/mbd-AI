@@ -7,3 +7,4 @@ httpx==0.28.1            # talks to your local Ollama model
 pyyaml==6.0.2            # reads your config.yaml
 psutil==6.1.1            # optional: real host telemetry for /api/host (Mission Control)
 segno==1.6.1             # optional: scan-to-open QR on /connect (phone/tablet)
+python-multipart==0.0.32  # bounded file staging for explicit Council dispatch

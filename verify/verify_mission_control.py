@@ -11,7 +11,8 @@ Live route checks run through Starlette's TestClient when FastAPI is importable:
 ``/mission-control`` serves the page, ``/api/host`` is honest (measured →
 ``simulated: false`` with GPU null+reason when psutil is present, otherwise a
 ``503`` — never invented numbers), ``/api/council/dispatch`` returns an honest
-``503`` until a real adapter exists, and the chat page still works.
+``503`` until the operator explicitly configures the adapter, and the chat page
+still works.
 
 Exit codes (the shared contract): 0 = pass · 2 = skip · other = fail.
 """
@@ -52,6 +53,8 @@ def offline_checks() -> None:
     # Dispatch honesty: right contract; failure says Not sent and keeps files.
     check("dispatch targets claude/architect via the council endpoint",
           "'claude'" in js and "'architect'" in js and "/api/council/dispatch" in js)
+    check("successful dispatch renders Claude's real response",
+          "claude-response-text" in html and "d.text" in js and "dispatch_architect" in main)
     check("dispatch failure says 'Not sent' and retains files", "Not sent" in js)
     # Files are cleared exactly once, on the success path — before the "Not
     # sent" failure branch, which never clears. So files are retained on failure.
@@ -91,7 +94,7 @@ def live_checks() -> None:
         check("GET /api/host honest UNAVAILABLE (503, no invented numbers)", r.status_code == 503)
 
     r = c.post("/api/council/dispatch", data={"prompt": "x", "target": "claude", "role": "architect"})
-    check("POST /api/council/dispatch -> honest 503 (no adapter)", r.status_code == 503)
+    check("POST /api/council/dispatch -> honest 503 while unconfigured", r.status_code == 503)
 
     r = c.get("/")
     check("chat page still serves and links Mission Control",

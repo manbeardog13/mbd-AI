@@ -50,6 +50,8 @@ def test_gpu_null_states_a_reason():
 def test_dispatch_contract():
     assert "/api/council/dispatch" in JS
     assert "'claude'" in JS and "'architect'" in JS
+    assert "claude-response-text" in HTML and "d.text" in JS
+    assert "dispatch_architect" in MAIN and '"/api/council/status"' in MAIN
 
 
 def test_dispatch_failure_is_honest_and_retains_files():

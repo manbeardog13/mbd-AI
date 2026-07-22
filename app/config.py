@@ -77,6 +77,15 @@ class Config:
     agent_max_steps: int
     agent_max_seconds: float
     agent_project_dir: str
+    # Human-triggered External Council and direct Claude Architect dispatch.
+    collaboration_enabled: bool = False
+    collaboration_openai_api_key: str = ""
+    collaboration_openai_model: str = ""
+    collaboration_anthropic_api_key: str = ""
+    collaboration_anthropic_model: str = ""
+    collaboration_timeout_seconds: float = 90.0
+    collaboration_max_output_tokens: int = 1800
+    collaboration_max_handoff_chars: int = 12000
 
 
 def ensure_config() -> None:
@@ -143,6 +152,9 @@ def load_config() -> Config:
     languages = _list("languages", ["English", "Croatian"])
     goals = _list("goals", DEFAULT_GOALS)
     principles = _list("principles", DEFAULT_PRINCIPLES)
+    collaboration = _nested_mapping(data, "collaboration")
+    collaboration_openai = _nested_mapping(collaboration, "openai")
+    collaboration_anthropic = _nested_mapping(collaboration, "anthropic")
 
     # Every field below is written to tolerate a present-but-blank key in
     # config.yaml (which YAML parses as None). `or` handles strings; `_num`
@@ -193,4 +205,28 @@ def load_config() -> Config:
         agent_max_steps=_clamp(_num(data.get("agent_max_steps"), 8, int), 1, 32),
         agent_max_seconds=_num(data.get("agent_max_seconds"), 60.0, float),
         agent_project_dir=(data.get("agent_project_dir") or ""),
+        collaboration_enabled=_mapping_bool(collaboration, "enabled", False),
+        collaboration_openai_api_key=(collaboration_openai.get("api_key") or "").strip(),
+        collaboration_openai_model=(collaboration_openai.get("model") or "").strip(),
+        collaboration_anthropic_api_key=(collaboration_anthropic.get("api_key") or "").strip(),
+        collaboration_anthropic_model=(collaboration_anthropic.get("model") or "").strip(),
+        collaboration_timeout_seconds=max(
+            5.0, min(_num(collaboration.get("timeout_seconds"), 90.0, float), 300.0)
+        ),
+        collaboration_max_output_tokens=_clamp(
+            _num(collaboration.get("max_output_tokens"), 1800, int), 128, 4096
+        ),
+        collaboration_max_handoff_chars=_clamp(
+            _num(collaboration.get("max_handoff_chars"), 12000, int), 1000, 20000
+        ),
     )
+
+
+def _nested_mapping(block: dict, key: str) -> dict:
+    value = block.get(key)
+    return value if isinstance(value, dict) else {}
+
+
+def _mapping_bool(block: dict, key: str, default: bool) -> bool:
+    value = block.get(key)
+    return default if value is None else bool(value)

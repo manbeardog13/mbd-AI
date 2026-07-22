@@ -9,6 +9,8 @@ const els = {
   input: document.getElementById("input"),
   send: document.getElementById("send"),
   mic: document.getElementById("mic"),
+  council: document.getElementById("council"),
+  councilStatus: document.getElementById("council-status"),
   aiName: document.getElementById("ai-name"),
   statusDot: document.getElementById("status-dot"),
   statusText: document.getElementById("status-text"),
@@ -38,6 +40,7 @@ let aiName = "Your AI";
 let ownerName = "friend";
 let busy = false;
 let thinkingEnabled = false;
+let councilReady = false;
 
 // Hide <think>…</think> reasoning from the reply unless thinking is on.
 // Also hides an unclosed <think> mid-stream so tags never flash on screen.
@@ -218,6 +221,117 @@ async function deleteMemory(id, li) {
     await fetch(`/api/memories/${id}`, { method: "DELETE" });
     li.remove();
   } catch (_) { /* ignore */ }
+}
+
+// ---- External Council: explicit, user-controlled cloud escalation -----
+
+function stageLabel(stage) {
+  return {
+    architect: "OpenAI — Architect",
+    builder: "Claude — Builder",
+    reviewer: "OpenAI — Reviewer",
+  }[stage] || stage;
+}
+
+function addCouncilResult(run) {
+  clearEmptyState();
+  const card = document.createElement("section");
+  card.className = "msg ai council-result";
+  const heading = document.createElement("h3");
+  heading.textContent = "External Council";
+  card.appendChild(heading);
+
+  for (const turn of run.turns || []) {
+    const turnEl = document.createElement("section");
+    turnEl.className = "council-turn";
+    const title = document.createElement("h4");
+    title.textContent = stageLabel(turn.stage);
+    const model = document.createElement("p");
+    model.className = "council-model";
+    model.textContent = turn.model ? `Model: ${turn.model}` : "";
+    const output = document.createElement("pre");
+    output.textContent = turn.text || "(No text returned.)";
+    turnEl.append(title, model, output);
+    card.appendChild(turnEl);
+  }
+
+  const sent = document.createElement("details");
+  sent.className = "council-sent";
+  const summary = document.createElement("summary");
+  summary.textContent = "What Nero sent outside";
+  sent.appendChild(summary);
+  for (const transmission of run.transmissions || []) {
+    const label = document.createElement("p");
+    label.textContent = `${transmission.provider} · ${stageLabel(transmission.stage)}`;
+    const content = document.createElement("pre");
+    content.textContent = transmission.project_content || "";
+    sent.append(label, content);
+  }
+  card.appendChild(sent);
+  const note = document.createElement("p");
+  note.className = "council-note";
+  note.textContent = run.notice || "Council output is not stored in Nero's memory.";
+  card.appendChild(note);
+  els.messages.appendChild(card);
+  scrollToBottom();
+}
+
+function updateCouncilButton() {
+  els.council.disabled = busy || !councilReady || !els.input.value.trim();
+}
+
+async function loadCouncilStatus() {
+  try {
+    const response = await fetch("/api/collaboration/status");
+    const state = await response.json();
+    councilReady = response.ok && !!state.configured;
+    els.councilStatus.textContent = state.message || "External Council status unavailable.";
+    els.council.title = councilReady
+      ? "Ask OpenAI and Claude. Sends only the text you type after confirmation."
+      : "Set up External Council in config.yaml to use it.";
+  } catch (_) {
+    councilReady = false;
+    els.councilStatus.textContent = "External Council status could not be checked.";
+  }
+  updateCouncilButton();
+}
+
+async function runCouncil(text) {
+  if (busy || !councilReady || !text.trim()) return;
+  const approved = window.confirm(
+    "External Council will send only the text you typed to OpenAI and Claude. " +
+    "It will not send Nero's saved memories, normal chat history, local files, or API keys. Continue?"
+  );
+  if (!approved) return;
+
+  stopSpeaking();
+  busy = true;
+  els.send.disabled = true;
+  updateCouncilButton();
+  addMessage("user", `External Council request:\n${text}`);
+  els.input.value = "";
+  autoGrow();
+  updateComposerButtons();
+  els.statusText.textContent = "External Council is coordinating OpenAI and Claude…";
+  try {
+    const response = await fetch("/api/collaboration", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ task: text, mode: "plan-build-review" }),
+    });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.detail || "External Council could not complete the handoff.");
+    addCouncilResult(body);
+    els.statusText.textContent = "External Council handoff complete. Review it before acting.";
+  } catch (err) {
+    addMessage("ai", `**External Council stopped:** ${err.message}`);
+    els.statusText.textContent = "External Council stopped before completing.";
+  } finally {
+    busy = false;
+    els.send.disabled = false;
+    updateComposerButtons();
+    loadCouncilStatus();
+  }
 }
 
 // ---- Voice: speaking (text-to-speech) --------------------------------
@@ -558,6 +672,7 @@ function updateComposerButtons() {
   const hasText = els.input.value.trim().length > 0;
   els.send.hidden = !hasText;
   els.convoMode.hidden = hasText;
+  updateCouncilButton();
 }
 
 // Enter to send, Shift+Enter for a new line.
@@ -572,6 +687,8 @@ els.mic.addEventListener("click", () => {
   if (listening) stopListening();
   else startListening();
 });
+
+els.council.addEventListener("click", () => runCouncil(els.input.value));
 
 els.newChat.addEventListener("click", async () => {
   await fetch("/api/new", { method: "POST" });
@@ -724,6 +841,7 @@ els.humor.addEventListener("input", () => {
   await loadConfig();
   showEmptyState();
   await Promise.all([loadStatus(), loadHistory(), loadMemories(), loadSettings()]);
+  await loadCouncilStatus();
   els.input.focus();
   setInterval(loadStatus, 30000);
 })();

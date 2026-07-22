@@ -18,12 +18,14 @@ Serves the chat web app and exposes a small API the browser talks to:
 from __future__ import annotations
 
 import asyncio
+import mimetypes
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from starlette.datastructures import UploadFile
 
 import io
 import socket
@@ -38,7 +40,7 @@ try:  # optional — renders a scan-to-open QR on /connect when installed
 except Exception:  # noqa: BLE001 - contained; /connect still shows the URL without it
     segno = None  # type: ignore
 
-from . import db, memory, tts, world_model
+from . import collaboration, db, memory, tts, world_model
 from .agent import loop as agent_loop, state as agent_state
 from .capabilities import Context, Registry
 from .capabilities.builtin import register_builtins
@@ -96,6 +98,11 @@ class SettingsIn(BaseModel):
 
 class AgentIn(BaseModel):
     message: str
+
+
+class CollaborationIn(BaseModel):
+    task: str
+    mode: str = "plan-build-review"
 
 
 # ---- Pages & basic info ----
@@ -331,6 +338,25 @@ def metrics() -> dict:
     }
 
 
+# ---- Explicit cloud collaboration (ordinary chat stays local) ----
+
+@app.get("/api/collaboration/status")
+def collaboration_status() -> dict:
+    return collaboration.status(load_config())
+
+
+@app.post("/api/collaboration")
+async def collaboration_run(payload: CollaborationIn) -> dict:
+    try:
+        return await collaboration.coordinate(load_config(), payload.task, payload.mode)
+    except collaboration.CollaborationConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except collaboration.CollaborationProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except collaboration.CollaborationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 # ---- Mission Control (honest host telemetry + Council dispatch) ----
 
 @app.get("/api/host")
@@ -366,22 +392,66 @@ def host_telemetry() -> dict:
     }
 
 
-@app.post("/api/council/dispatch")
-async def council_dispatch() -> Response:
-    """Stage the operator's instruction + files for Claude · Architect.
+@app.get("/api/council/status")
+def council_dispatch_status() -> dict:
+    return collaboration.architect_status(load_config())
 
-    The Mission Control command surface POSTs ``multipart/form-data``
-    (``prompt``, ``target=claude``, ``role=architect``, ``files``). A real
-    Claude adapter is not wired in this repo yet, so — rather than pretend files
-    were delivered — we return ``503``. The browser honours that by showing
-    "Not sent" and **retaining every staged file locally** (nothing is uploaded
-    anywhere). When an adapter is added, forward here and return ``2xx`` only on
-    a genuine success.
+
+@app.post("/api/council/dispatch")
+async def council_dispatch(request: Request) -> dict:
+    """Send one explicit task and selected files to Claude Architect.
+
+    Configuration is checked before multipart parsing. Supported files are sent
+    inline in one Messages request; no persistent Files API upload is created.
     """
-    raise HTTPException(
-        status_code=503,
-        detail="Claude · Architect adapter is not connected. Files were not sent.",
-    )
+    cfg = load_config()
+    try:
+        collaboration.ensure_architect_ready(cfg)
+    except collaboration.CollaborationConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > collaboration.MAX_MULTIPART_BYTES:
+                raise HTTPException(status_code=413, detail="Council request exceeds 24 MiB.")
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="Invalid Content-Length header.") from exc
+
+    try:
+        form = await request.form(max_files=collaboration.MAX_FILES, max_fields=8)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Invalid multipart Council request.") from exc
+
+    target = str(form.get("target") or "").strip().lower()
+    role = str(form.get("role") or "").strip().lower()
+    if target != "claude" or role != "architect":
+        raise HTTPException(status_code=400, detail="Only target=claude and role=architect are supported.")
+    prompt = str(form.get("prompt") or "")
+
+    attachments: list[collaboration.Attachment] = []
+    for value in form.getlist("files"):
+        if not isinstance(value, UploadFile):
+            raise HTTPException(status_code=400, detail="Invalid file attachment.")
+        name = value.filename or "attachment"
+        guessed_type = mimetypes.guess_type(name)[0]
+        media_type = value.content_type or guessed_type or "application/octet-stream"
+        if media_type == "application/octet-stream" and guessed_type:
+            media_type = guessed_type
+        try:
+            data = await value.read(collaboration.MAX_FILE_BYTES + 1)
+        finally:
+            await value.close()
+        attachments.append(collaboration.Attachment(name, media_type, data))
+
+    try:
+        return await collaboration.dispatch_architect(cfg, prompt, attachments)
+    except collaboration.CollaborationAttachmentError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+    except collaboration.CollaborationProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except collaboration.CollaborationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 def _lan_ipv4s() -> list[str]:

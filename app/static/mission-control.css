@@ -262,6 +262,7 @@ button,input{font:inherit;color:inherit}button{border:0;background:none}input{ou
 .dispatch-note{position:absolute;left:18px;right:18px;bottom:-22px;font-size:8px;letter-spacing:.06em;color:var(--muted)}
 .dispatch-note.error{color:var(--amber)}
 .dispatch-note.success{color:var(--green)}
+[hidden]{display:none!important}
 .drop-overlay{position:absolute;inset:6px;border-radius:21px;border:1px dashed rgba(118,229,255,.32);
   background:rgba(9,20,23,.5);display:flex;align-items:center;justify-content:center;gap:9px;color:var(--ice);font-size:10px;
   letter-spacing:.09em;text-transform:uppercase;pointer-events:none;opacity:0;transition:.2s var(--ease)}
@@ -275,6 +276,8 @@ button,input{font:inherit;color:inherit}button{border:0;background:none}input{ou
 .context-card{padding:18px;border-radius:22px;animation:rise .7s var(--ease) backwards}
 .context-card:nth-child(1){animation-delay:.1s}.context-card:nth-child(2){animation-delay:.16s}
 .context-card:nth-child(3){animation-delay:.22s}.context-card:nth-child(4){animation-delay:.28s}
+.claude-response-text{max-height:300px;overflow:auto;white-space:pre-wrap;word-break:break-word;
+  font:10px/1.55 var(--mono);color:var(--text);scrollbar-width:thin}
 .card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .data-badge{padding:4px 7px;border-radius:7px;border:1px solid var(--edge);background:rgba(255,255,255,.02);
   font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}

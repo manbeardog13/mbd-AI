@@ -67,6 +67,8 @@
     nero: 'idle',
     selected: 'arc',
     files: [],
+    dispatching: false,
+    architectReady: false,
     dragging: false,
     telemetry: { status: 'connecting', reason: 'Connecting to Companion host adapter…', cpu: null, ram: null, ramTotal: null, disk: null, diskTotal: null, gpu: null, gpuReason: 'No vendor-neutral GPU source is connected on this host.', runtime: 'Unknown' },
     approvals: [
@@ -81,6 +83,7 @@
   var orchList = $('#orch-list'), councilLayer = $('#council-layer'), filaments = $('#filaments'), stateControl = $('#state-control');
   var command = $('#command'), dropOverlay = $('#drop-overlay'), fileInput = $('#file-input'), promptEl = $('#prompt');
   var sendBtn = $('#send'), dispatchNote = $('#dispatch-note'), fileChips = $('#file-chips');
+  var claudeResponse = $('#claude-response'), claudeResponseBadge = $('#claude-response-badge'), claudeResponseText = $('#claude-response-text');
   var telemetryBadge = $('#telemetry-badge'), telemetryBody = $('#telemetry-body');
   var approvalsEl = $('#approvals'), approvalCount = $('#approval-count'), overlap = $('#overlap');
 
@@ -324,12 +327,27 @@
     });
     updateSend();
   }
-  function updateSend() { sendBtn.disabled = !promptEl.value.trim() && !app.files.length; }
+  function updateSend() { sendBtn.disabled = app.dispatching || !app.architectReady || !promptEl.value.trim(); }
 
   // ---- Dispatch note ------------------------------------------------------
   function setDispatch(kind, message) {
     dispatchNote.textContent = message;
     dispatchNote.className = 'dispatch-note mono' + (kind && kind !== 'idle' ? ' ' + kind : '');
+  }
+
+  function fetchCouncilStatus() {
+    fetch('/api/council/status').then(function (r) {
+      return r.json().then(function (d) { return { ok: r.ok, data: d }; });
+    }).then(function (result) {
+      var d = result.data || {};
+      app.architectReady = !!d.configured;
+      setDispatch(d.configured ? 'success' : 'idle', d.message || 'Claude Architect status unavailable.');
+      updateSend();
+    }).catch(function () {
+      app.architectReady = false;
+      setDispatch('error', 'Claude Architect status could not be checked. Files remain local.');
+      updateSend();
+    });
   }
 
   // ========================================================================
@@ -447,7 +465,8 @@
 
   // ---- Dispatch to Claude · Architect ------------------------------------
   function dispatch() {
-    if (!promptEl.value.trim() && !app.files.length) return;
+    if (app.dispatching || !promptEl.value.trim()) return;
+    app.dispatching = true; updateSend();
     setNero('executing');
     setDispatch('idle', 'Contacting Claude adapter…');
     var fd = new FormData();
@@ -456,14 +475,23 @@
     fd.append('role', 'architect');
     app.files.forEach(function (f) { fd.append('files', f.file, f.name); });
     fetch('/api/council/dispatch', { method: 'POST', body: fd }).then(function (r) {
-      if (!r.ok) throw new Error('Claude adapter returned HTTP ' + r.status);
-      return r.json().catch(function () { return {}; });
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) throw new Error((d && d.detail) || ('Claude adapter returned HTTP ' + r.status));
+        return d;
+      });
     }).then(function (d) {
+      if (!d || typeof d.text !== 'string' || !d.text.trim()) throw new Error('Claude returned no visible response');
       promptEl.value = ''; app.files = []; renderFiles();
-      setDispatch('success', (d && d.message) || 'Files and instruction accepted by Claude · Architect.');
+      claudeResponseText.textContent = d.text;
+      claudeResponseBadge.textContent = d.model || 'Completed';
+      claudeResponse.hidden = false;
+      setDispatch('success', d.message || 'Claude Architect completed the dispatch.');
+      setNero('reviewing');
     }).catch(function (e) {
       setDispatch('error', 'Not sent: ' + ((e && e.message) ? e.message : 'Claude adapter is not connected') + '. Files remain local.');
       setNero('waiting');
+    }).finally(function () {
+      app.dispatching = false; updateSend();
     });
   }
 
@@ -478,6 +506,7 @@
     countUp();
     initCanvas();
     fetchTelemetry(); setInterval(fetchTelemetry, 5000);
+    fetchCouncilStatus();
 
     stage.addEventListener('mousemove', stageMove);
     window.addEventListener('resize', function () { computeScale(); sizeCanvas(); });

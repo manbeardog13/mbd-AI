@@ -61,6 +61,7 @@
             <button id="mic" type="button" class="voice-btn" aria-label="Voice recording" title="Voice recording">
               <svg viewBox="0 0 24 24"><use href="#i-mic"/></svg>
             </button>
+            <button id="council" type="button" class="council-btn" aria-label="Ask OpenAI and Claude for an External Council" title="Ask OpenAI and Claude. Sends only the text you type after confirmation." disabled>Council</button>
             <button id="convo-mode" type="button" class="voice-btn accent" aria-label="Conversation mode" title="Conversation mode">
               <svg viewBox="0 0 24 24"><use href="#i-wave"/></svg>
             </button>
@@ -119,6 +120,11 @@
           <button type="submit" class="btn small">Add</button>
         </form>
         <ul id="memory-list" class="memory-list"></ul>
+      </section>
+
+      <section class="panel">
+        <h3>External Council</h3>
+        <p id="council-status" class="hint">Checking whether the optional cloud council is available…</p>
       </section>
 
       <p class="footer-note">Private. On your machine.</p>
