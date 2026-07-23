@@ -105,6 +105,10 @@
   //  Deterministic projected-3D Nero field (visual only — never a measurement)
   // ========================================================================
   var cw = 0, ch = 0, t = 0, last = 0, raf = 0, px = 0, py = 0, parts = [], flyWrap = null;
+  // Advanced-motion state: cur = eased field config (state interpolation);
+  // gx/gy = smoothed gaze toward the operator; pEnergy/tEnergy = pointer-velocity
+  // and typing reactivity (both decay each frame); pLast* track pointer velocity.
+  var cur = null, gx = 0, gy = 0, pEnergy = 0, tEnergy = 0, pLastX = 0, pLastY = 0, pLastT = 0;
 
   function seeded(seed) {
     return function () {
@@ -141,8 +145,9 @@
     if (reduceMotion) { flyWrap.style.transform = 'translate(-50%,-50%)'; return; }
     var cfg = CFG[app.nero] || CFG.idle;
     var roam = cfg.gray ? 0.3 : 1;                       // offline: she barely drifts
-    var wx = (Math.sin(t * 0.13) * 96 + Math.sin(t * 0.071 + 1.3) * 54) * roam + px * 46;
-    var wy = (Math.cos(t * 0.11) * 54 + Math.cos(t * 0.083 + 0.7) * 30) * roam + py * 30;
+    var lean = 46 * (1 + pEnergy * .4);                  // surges toward you when you're active
+    var wx = (Math.sin(t * 0.13) * 96 + Math.sin(t * 0.071 + 1.3) * 54) * roam + gx * lean;
+    var wy = (Math.cos(t * 0.11) * 54 + Math.cos(t * 0.083 + 0.7) * 30) * roam + gy * (lean * .65);
     var tilt = Math.sin(t * 0.17) * 2.6 * roam;          // banks as she turns
     var breath = 1 + Math.sin(t * 0.6) * 0.02;
     flyWrap.style.transform = 'translate(-50%,-50%) translate(' + wx.toFixed(1) + 'px,' + wy.toFixed(1) + 'px) rotate(' + tilt.toFixed(2) + 'deg) scale(' + breath.toFixed(3) + ')';
@@ -171,15 +176,30 @@
   function draw(dt) {
     if (!canvas || !cw) return;
     var ctx = canvas.getContext('2d'), w = cw, h = ch, cx = w / 2, cy = h / 2, md = Math.min(w, h);
-    var cfg = CFG[app.nero] || CFG.idle;
+    var tgt = CFG[app.nero] || CFG.idle;
     var motion = reduceMotion ? 0 : 1;
-    var hue = (app.nero === 'idle' || app.nero === 'listening' || app.nero === 'speaking') ? 188 : cfg.hue;
-    if (cfg.gray) hue = 210;
+    // Target hue (idle/listening/speaking use the accent; offline greys out).
+    var tHue = (app.nero === 'idle' || app.nero === 'listening' || app.nero === 'speaking') ? 188 : tgt.hue;
+    if (tgt.gray) tHue = 210;
+    // State interpolation: ease the whole field toward the target — morph, never snap.
+    if (!cur) cur = { hue: tHue, speed: tgt.speed, intensity: tgt.intensity, wire: tgt.wire };
+    var ea = 1 - Math.exp(-dt * (reduceMotion ? 1 : .006));   // ~170ms time constant
+    cur.hue += (tHue - cur.hue) * ea; cur.speed += (tgt.speed - cur.speed) * ea;
+    cur.intensity += (tgt.intensity - cur.intensity) * ea; cur.wire += (tgt.wire - cur.wire) * ea;
+    var cfg = { hue: cur.hue, speed: cur.speed, intensity: cur.intensity, wire: cur.wire,
+                ripple: tgt.ripple, dense: tgt.dense, branch: tgt.branch, scan: tgt.scan, beam: tgt.beam, gray: tgt.gray };
+    var hue = cfg.hue;
+    // Reactivity: she responds to your pointer energy + typing (both decay each frame).
+    if (reduceMotion) { pEnergy = 0; tEnergy = 0; }
+    else { pEnergy *= Math.pow(.90, dt / 16.7); tEnergy *= Math.pow(.94, dt / 16.7); }
+    var react = Math.min(.4, pEnergy * .18 + tEnergy * .24);
     t += dt * .001 * cfg.speed * (motion || .00001);
-    var ax = t * .37 + py * .16, ay = t * .51 + px * .2, az = t * .16;
+    // Gaze: her orientation eases toward the operator's cursor (attention).
+    gx += (px - gx) * ea; gy += (py - gy) * ea;
+    var ax = t * .37 + gy * .2, ay = t * .51 + gx * .26, az = t * .16;
     // "life": a gentle breath + a slow one-sided swell — a warm smile of light.
     var life = reduceMotion ? 1 : (1 + Math.sin(t * .5) * .05 + Math.max(0, Math.sin(t * .19)) * .06);
-    var glow = cfg.intensity * life;
+    var glow = cfg.intensity * life * (1 + react);
     ctx.clearRect(0, 0, w, h); ctx.globalCompositeOperation = 'lighter';
 
     var aur = ctx.createRadialGradient(cx, cy, 0, cx, cy, md * .44);
@@ -246,6 +266,10 @@
     var x = (e.clientX - r.left) / s, y = (e.clientY - r.top) / s;
     aura.style.transform = 'translate(' + (x - 270) + 'px,' + (y - 270) + 'px)';
     px = (x / 1820 - .5) * 2; py = (y / 780 - .5) * 2;
+    // Pointer velocity → reactivity energy (she responds to fast movement).
+    var now = performance.now(), ddt = Math.max(1, now - pLastT);
+    pEnergy = Math.min(1, pEnergy + Math.hypot(x - pLastX, y - pLastY) / ddt * .18);
+    pLastX = x; pLastY = y; pLastT = now;
   }
 
   // ========================================================================
@@ -508,7 +532,7 @@
     // Command surface
     $('#attach').addEventListener('click', function () { fileInput.click(); });
     fileInput.addEventListener('change', function (e) { addFiles(e.target.files); fileInput.value = ''; });
-    promptEl.addEventListener('input', function () { updateSend(); setDispatch('idle', 'Files remain local until a Claude adapter is connected.'); });
+    promptEl.addEventListener('input', function () { tEnergy = Math.min(1, tEnergy + .5); updateSend(); setDispatch('idle', 'Files remain local until a Claude adapter is connected.'); });
     promptEl.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); dispatch(); } });
     sendBtn.addEventListener('click', dispatch);
     $('#voice').addEventListener('click', function () { setNero('listening'); });
