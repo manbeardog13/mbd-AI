@@ -96,7 +96,9 @@ chat is only discussion about it).
   that shows the LAN URL + a scan-to-open QR. See `docs/DESIGN-mission-control.md`.
   *(In progress on `claude/mission-control-alive`, not yet merged: the field now
   comes alive — Nero drifts/flies around the space, warms with a living pulse of
-  light, and leans toward the operator's cursor; reduced-motion freezes it.)*
+  light, gazes toward the operator's cursor, **morphs fluidly between states**
+  (eased interpolation), and **reacts to pointer velocity + typing**;
+  reduced-motion-safe and transform/rAF-only.)*
 - **Access:** local network + Tailscale (device-only; no app login).
 - **Setup:** one-command `bootstrap.py` (venv + deps + pulls all 3 models + launch).
 
